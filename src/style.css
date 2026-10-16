@@ -57,3 +57,63 @@ h1 {
 .intro__role {
   margin-top: 1.5rem;
 }
+
+.experience,
+.projects {
+  width: min(100%, 52rem);
+  margin-top: 3rem;
+}
+
+.experience h2,
+.projects h2 {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.experience ul,
+.projects ul {
+  display: grid;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.project {
+  padding: 1.25rem;
+  border: 1px solid rgb(241 239 232 / 16%);
+  border-radius: 0.5rem;
+  background: rgb(241 239 232 / 3%);
+}
+
+.experience h3,
+.project h3,
+.experience p,
+.project p {
+  margin: 0;
+}
+
+.experience h3,
+.project h3 {
+  font-size: 1rem;
+}
+
+.experience p,
+.project p {
+  margin-top: 0.5rem;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.project a {
+  display: inline-block;
+  margin-top: 1rem;
+  color: var(--color-accent);
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
