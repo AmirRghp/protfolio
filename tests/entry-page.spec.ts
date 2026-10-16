@@ -87,6 +87,10 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
   await page.getByRole("link", { name: "Read portfolio" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
 });

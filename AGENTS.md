@@ -6,7 +6,7 @@
 2. Read only the files, tests, and local skill entrypoints relevant to that task.
 3. Use [docs/skills.md](docs/skills.md) for the individual audit, rankings, prerequisites, and known skill defects. Do not load its entire inventory for ordinary implementation.
 
-Preparation P01–P08 and the user-approved B01–B03 are complete and recorded in [docs/plans.md](docs/plans.md). B04–B13 still require the user's approval before implementation. The approved plan takes precedence over generic instructions in vendored skills about worktrees, commits, additional specifications, or execution pipelines.
+Preparation P01–P08 and the user-approved B01–B05 are complete and recorded in [docs/plans.md](docs/plans.md). B06–B13 still require the user's approval before implementation. The approved plan takes precedence over generic instructions in vendored skills about worktrees, commits, additional specifications, or execution pipelines.
 
 ## Product decisions
 

@@ -1,4 +1,5 @@
 import { useReducer } from "react";
+import OwnerContent from "./OwnerContent";
 import RoomPreview from "./RoomPreview";
 import { portfolioContent } from "./content";
 import { initialRoomNavigation, roomNavigationReducer } from "./roomNavigation";
@@ -11,26 +12,10 @@ export default function App() {
       <RoomPreview
         navigation={navigation}
         onNavigate={(destination) => dispatch({ type: "navigate", destination })}
+        onSelectProject={(projectId) => dispatch({ type: "select-project", projectId })}
       />
       <main className="intro" aria-labelledby="name">
-        <p className="intro__eyebrow">Portfolio</p>
-        <h1 id="name">{portfolioContent.owner.name}</h1>
-        <p className="intro__role">{portfolioContent.owner.role}</p>
-
-        <section className="experience" aria-labelledby="experience-heading">
-          <h2 id="experience-heading">Experience</h2>
-          <ul>
-            {portfolioContent.owner.experience.map((role) => (
-              <li key={`${role.company}-${role.title}-${role.period}`}>
-                <h3>{role.title}</h3>
-                <p>
-                  {role.company} · {role.period}
-                </p>
-              </li>
-            ))}
-          </ul>
-        </section>
-
+        <OwnerContent />
         <section className="projects" aria-labelledby="projects-heading">
           <h2 id="projects-heading">Selected projects</h2>
           <ul>

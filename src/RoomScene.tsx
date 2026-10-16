@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { DoubleSide, Vector3 } from "three";
+import { CanvasTexture, SRGBColorSpace, DoubleSide, Vector3 } from "three";
+import { portfolioContent } from "./content";
+import { boardCardLayout } from "./boardLayout";
 import { ROOM_FOV, roomCameraDistance } from "./roomCamera";
 import type { RoomDestination } from "./roomNavigation";
 import RoomUnavailable from "./RoomUnavailable";
@@ -20,6 +22,37 @@ function Block({ position, size, color, rotation, glow }: {
       <meshStandardMaterial color={color} roughness={0.8} emissive={glow} emissiveIntensity={glow ? 0.6 : 0} />
     </mesh>
   );
+}
+
+function MonitorText() {
+  const material = useRef<import("three").MeshBasicMaterial>(null);
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1024;
+    canvas.height = 512;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.fillStyle = "#17303b";
+    context.fillRect(0, 0, 1024, 512);
+    context.fillStyle = "#f1efe8";
+    context.font = "48px system-ui";
+    context.fillText(portfolioContent.owner.name, 64, 220, 896);
+    context.fillStyle = "#d6bc87";
+    context.font = "32px system-ui";
+    context.fillText(portfolioContent.owner.role, 64, 290, 896);
+    const texture = new CanvasTexture(canvas);
+    texture.colorSpace = SRGBColorSpace;
+    const target = material.current!;
+    target.map = texture;
+    target.needsUpdate = true;
+    invalidate();
+    return () => { target.map = null; texture.dispose(); };
+  }, [invalidate]);
+  return <mesh position={[-0.25, 2.82, -0.22]}>
+    <planeGeometry args={[2.75, 1.38]} />
+    <meshBasicMaterial ref={material} toneMapped={false} />
+  </mesh>;
 }
 
 const overviewTarget = new Vector3(0, 2.7, 0);
@@ -124,6 +157,8 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
 }
 
 function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => void }) {
+  const boardCards = boardCardLayout(portfolioContent.projects.length);
+
   return (
     <>
       <color attach="background" args={["#151718"]} />
@@ -143,14 +178,18 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
       <group name="board" position={[-2.8, 3.65, -1.18]}>
         <Block position={[0, 0, 0]} size={[4.7, 3.25, 0.16]} color="#51321d" />
         <Block position={[0, 0, 0.1]} size={[4.5, 3.05, 0.08]} color="#91603b" />
-        {[-1.4, 0, 1.4].map((x, i) => (
-          <group key={x} position={[x, i === 1 ? -0.28 : 0.15, 0.2]} rotation={[0, 0, (i - 1) * -0.045]}>
-            <Block position={[0, 0, 0]} size={[1.18, 1.32, 0.035]} color="#d6c3a0" />
-            <Block position={[0, 0.15, 0.03]} size={[0.97, 0.75, 0.02]} color={i === 1 ? "#344a57" : "#38413b"} />
-            <Block position={[0, -0.42, 0.03]} size={[0.76, 0.05, 0.02]} color="#8b7557" />
-            <Block position={[0, 0.65, 0.04]} size={[0.13, 0.14, 0.06]} color="#22282a" />
-          </group>
-        ))}
+        {portfolioContent.projects.map((project, index) => {
+          const pose = boardCards[index];
+          const accents = ["#344a57", "#38413b", "#4a3e50"];
+          return (
+            <group key={project.id} position={pose.position} rotation={pose.rotation}>
+              <Block position={[0, 0, 0]} size={[0.76, 0.58, 0.035]} color="#d6c3a0" />
+              <Block position={[0, 0.035, 0.03]} size={[0.62, 0.27, 0.02]} color={accents[index % accents.length]} />
+              <Block position={[0, -0.2, 0.03]} size={[0.48, 0.035, 0.02]} color="#8b7557" />
+              <Block position={[0, 0.27, 0.04]} size={[0.1, 0.1, 0.06]} color="#22282a" />
+            </group>
+          );
+        })}
       </group>
       <FocusHotspot destination="board" position={[-2.8, 3.65, -1.06]} size={[4.5, 3.05]} onNavigate={onNavigate} />
 
@@ -172,6 +211,7 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
           <meshStandardMaterial color="#c4a15b" emissive="#ed9e3c" emissiveIntensity={0.5} side={DoubleSide} />
         </mesh>
       </group>
+      <MonitorText />
       <FocusHotspot destination="monitor" position={[-0.25, 2.82, -0.19]} size={[2.75, 1.38]} onNavigate={onNavigate} />
 
       <group name="cabinet" position={[-4.35, 0.78, 0]}>

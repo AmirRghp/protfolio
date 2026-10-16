@@ -21,13 +21,19 @@ test("HTML destination controls focus each room and return to the overview", asy
     const button = page.getByRole("button", { name: destination, exact: true });
     await button.click();
     await expect(button).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByRole("button", { name: "Back to room" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
     await expect(page.getByText(`Focused on ${destination}.`)).toBeVisible();
     await page.waitForTimeout(350);
     expect(await canvas.screenshot()).not.toEqual(overview);
 
-    await page.getByRole("button", { name: "Back to room" }).click();
-    await expect(page.getByRole("button", { name: "Back to room" })).toHaveCount(0);
+    if (destination === "Project board") {
+      await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
+    } else if (destination === "Monitor") {
+      await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
+    } else {
+      await page.getByRole("button", { name: "Back to room", exact: true }).click();
+    }
+    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
     await expect(button).toHaveAttribute("aria-pressed", "false");
     await page.waitForTimeout(350);
     expect(await canvas.screenshot()).toEqual(overview);
@@ -39,14 +45,15 @@ test("quick destination changes and a mid-transition return restore overview con
   await page.goto("/");
 
   await page.getByRole("button", { name: "Project board" }).click();
+  await page.getByRole("button", { name: "Close board · Back to room" }).click();
   await page.waitForTimeout(60);
   await page.getByRole("button", { name: "Arcade" }).click();
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
   await page.waitForTimeout(60);
-  await page.getByRole("button", { name: "Back to room" }).click();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
   await page.waitForTimeout(350);
 
-  await expect(page.getByRole("button", { name: "Back to room" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Project board" })).toHaveAttribute("aria-pressed", "false");
 });
 
@@ -64,8 +71,17 @@ test("room hotspots use the same destination state as the HTML menu", async ({ p
     await canvas.click({ position: { x: hotspot.x, y: hotspot.y } });
     await expect(page.getByRole("button", { name: hotspot.destination, exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText(`Focused on ${hotspot.destination}.`)).toBeVisible();
-    await page.getByRole("button", { name: "Back to room" }).click();
-    await expect(page.getByRole("button", { name: "Back to room" })).toHaveCount(0);
+    if (hotspot.destination === "Project board") {
+      await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
+    } else if (hotspot.destination === "Monitor") {
+      await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
+    } else {
+      await page.getByRole("button", { name: "Back to room", exact: true }).click();
+    }
+    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
+    if (hotspot.destination === "Monitor") {
+      await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+    }
   }
 });
 
@@ -93,9 +109,9 @@ test("destination controls and the return button work from the keyboard", async 
   await page.keyboard.press("Enter");
   await expect(board).toHaveAttribute("aria-pressed", "true");
 
-  const back = page.getByRole("button", { name: "Back to room" });
+  const back = page.getByRole("button", { name: "Close board · Back to room", exact: true });
   await back.focus();
   await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Back to room" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
   await expect(board).toHaveAttribute("aria-pressed", "false");
 });
