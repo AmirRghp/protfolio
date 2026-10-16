@@ -285,4 +285,5 @@
 - کاربر پس از تحویل آماده‌سازی، صریحاً commit و push وضعیت فعلی به `git@github.com:AmirRghp/protfolio.git` را مجاز کرد؛ مجوز ساخت B01 همچنان صادر نشده است.
 - بررسی مجدد با Python: ۱۷۴ فایل vendored و ۲۶ بسته با manifest منطبق؛ checksum تصویر مرجع صحیح؛ بررسی نام فایل‌های حساس و الگوهای credential بدون مورد مشکوک.
 - `git ls-remote git@github.com:AmirRghp/protfolio.git`: موفق و بدون ref؛ remote مقصد در زمان بررسی خالی بود. `origin` با همین نشانی ثبت شد.
-- برنامه هنوز وجود ندارد؛ build، lint، typecheck و تست مرورگر قابل‌اجرا نیستند. بررسی پیش از کامیت با `git diff --cached --check` انجام می‌شود؛ نتیجهٔ push و همگامی HEAD در تحویل گزارش خواهد شد.
+- برنامه هنوز وجود ندارد؛ build، lint، typecheck و تست مرورگر قابل‌اجرا نیستند. `git diff --cached --check` در snapshotهای upstream هشدار whitespace داشت؛ برای حفظ hashها دست‌نخورده ماندند. بررسی `.gitignore`، `AGENTS.md` و `docs/` با `git show --format= --check HEAD -- .gitignore AGENTS.md docs` موفق بود.
+- کامیت آماده‌سازی `446de2e` با `git push -u origin main` ارسال شد؛ `git ls-remote origin refs/heads/main` با HEAD محلی یکسان بود. این ثبت نتیجه در کامیت مستندات جدا ذخیره می‌شود.
