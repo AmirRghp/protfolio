@@ -65,7 +65,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
   const targets = {
     monitor: { target: new Vector3(-0.25, 2.82, -0.25), width: 4, height: 3 },
     board: { target: new Vector3(-2.8, 3.65, -1.08), width: 4.5, height: 3.05 },
-    arcade: { target: new Vector3(4.35, 2.5, 0.25), width: 2, height: 5 },
+    arcade: { target: new Vector3(4.35, 3.2, -0.38), width: 2.1, height: 1.85 },
   }[destination];
   const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
   const distance = Math.max(targets.width / (2 * tangent * aspect), targets.height / (2 * tangent)) * 1.32;

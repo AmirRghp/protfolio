@@ -115,3 +115,56 @@ test("destination controls and the return button work from the keyboard", async 
   await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
   await expect(board).toHaveAttribute("aria-pressed", "false");
 });
+
+test("arcade loads only on request, keeps an external exit, and restores focus", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 740 });
+  let gameRequests = 0;
+  await page.route("https://www.ps1fun.com/play/crash-bandicoot/1212", async (route) => {
+    gameRequests++;
+    await route.fulfill({ contentType: "text/html", body: "<title>Game</title>" });
+  });
+  await page.goto("/");
+
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+  await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeVisible();
+  expect(gameRequests).toBe(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+  await page.getByRole("button", { name: "Play game" }).click();
+  const game = page.getByTitle("Crash Bandicoot on PS1FUN");
+  await expect(game).toBeVisible();
+  await expect(page.locator("[class*=arcadeViewport]")).toHaveCSS("overflow", "hidden");
+  await expect(game).not.toHaveCSS("transform", "none");
+  await expect.poll(() => gameRequests).toBe(1);
+  await expect(page.getByRole("button", { name: "Exit game" })).toBeVisible();
+  for (const width of [320, 375, 768, 1024, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await expect(game).toBeVisible();
+    await expect(page.getByRole("button", { name: "Exit game" })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  }
+  await page.setViewportSize({ width: 375, height: 740 });
+  const exit = page.getByRole("button", { name: "Exit game" });
+  await exit.focus();
+  await expect(exit).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(game).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+  await page.getByRole("button", { name: "Play game" }).click();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(game).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toHaveCount(0);
+});
+
+test("arcade keeps the direct link available when the embed is offline", async ({ page }) => {
+  await page.route("https://www.ps1fun.com/play/crash-bandicoot/1212", (route) => route.abort());
+  await page.goto("/");
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await page.getByRole("button", { name: "Play game" }).click();
+  await expect(page.getByTitle("Crash Bandicoot on PS1FUN")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Exit game" })).toBeVisible();
+});

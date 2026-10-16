@@ -6,7 +6,7 @@
 
 .header {
   position: absolute;
-  z-index: 1;
+  z-index: 3;
   inset: 0 0 auto;
   display: grid;
   gap: 0.75rem;
@@ -58,9 +58,144 @@
 }
 
 .scene {
+  position: relative;
   width: 100%;
   height: max(240px, 56.25vw);
   max-height: 90svh;
+}
+
+.arcade {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(38vw, 68vh);
+  aspect-ratio: 1.15;
+  transform: translate(-50%, -50%);
+  color: #f1efe8;
+}
+
+.arcadeScreen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  container-type: inline-size;
+  border: 0.25rem solid #111719;
+  background: #071014;
+  box-shadow: 0 0 0 0.2rem #27414a;
+}
+
+.arcadeViewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+}
+
+.arcadeViewport iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1000px;
+  border: 0;
+  background: #000;
+  transform: scale(calc(100cqw / 740px)) translate(-582.5px, -240px);
+  transform-origin: top left;
+}
+
+.arcadePrompt {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 0.75rem;
+  height: 100%;
+  padding: 1rem;
+  text-align: center;
+}
+
+.arcadePrompt h2 {
+  margin: 0;
+  font-size: clamp(0.875rem, 2vw, 1.25rem);
+}
+
+.arcadePrompt p {
+  max-width: 24rem;
+  margin: 0;
+  color: #b6c2c4;
+  font-size: clamp(0.625rem, 1.2vw, 0.8125rem);
+  line-height: 1.4;
+}
+
+.arcadeControls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+}
+
+.arcadeControls button,
+.arcadePrompt button {
+  min-height: 2.5rem;
+  padding: 0.55rem 0.85rem;
+  border: 1px solid var(--color-accent);
+  border-radius: 999px;
+  color: #111719;
+  background: var(--color-accent);
+  font: inherit;
+  cursor: pointer;
+}
+
+.arcadeControls a {
+  display: inline-flex;
+  min-height: 2.5rem;
+  align-items: center;
+  color: var(--color-accent);
+  font-size: 0.8125rem;
+  text-underline-offset: 0.25em;
+}
+
+.arcadeControls button:active,
+.arcadePrompt button:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 480px) {
+  .preview:has(.arcade) .header {
+    position: relative;
+  }
+
+  .preview:has(.arcade) .scene {
+    height: max(360px, 56.25vw);
+  }
+
+  .arcade {
+    width: min(65vw, 68vh);
+  }
+
+  .arcadePrompt {
+    gap: 0.35rem;
+    padding: 0.4rem;
+  }
+
+  .arcadeControls {
+    gap: 0.25rem 0.5rem;
+    padding-top: 0.5rem;
+  }
+
+  .arcadeControls button,
+  .arcadePrompt button {
+    min-height: 2.25rem;
+    padding: 0.4rem 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .arcadeControls a {
+    min-height: 2.25rem;
+    font-size: 0.6875rem;
+  }
 }
 
 .message {

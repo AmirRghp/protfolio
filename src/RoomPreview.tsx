@@ -1,4 +1,4 @@
-import { Component, lazy, Suspense, type ReactNode } from "react";
+import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { portfolioContent } from "./content";
 import MonitorPanel from "./MonitorPanel";
 import ProjectBoard from "./ProjectBoard";
@@ -32,6 +32,45 @@ const destinations: { id: Exclude<RoomDestination, "room">; label: string }[] = 
   { id: "arcade", label: "Arcade" },
 ];
 
+function ArcadePanel() {
+  const [playing, setPlaying] = useState(false);
+  const playButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!playing) playButton.current?.focus();
+  }, [playing]);
+
+  return (
+    <section className={styles.arcade} aria-label="Crash Bandicoot arcade screen">
+      <div className={styles.arcadeScreen}>
+        {playing ? (
+          <div className={styles.arcadeViewport}>
+            <iframe
+              title="Crash Bandicoot on PS1FUN"
+              src="https://www.ps1fun.com/play/crash-bandicoot/1212"
+              scrolling="no"
+              allow="fullscreen"
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <div className={styles.arcadePrompt}>
+            <h2>Crash Bandicoot</h2>
+            <button ref={playButton} type="button" onClick={() => setPlaying(true)}>Play game</button>
+            <p>Hosted by PS1FUN. The game loads after you choose to play.</p>
+          </div>
+        )}
+      </div>
+      <div className={styles.arcadeControls}>
+        {playing && <button type="button" onClick={() => setPlaying(false)}>Exit game</button>}
+        <a href="https://www.ps1fun.com/play/crash-bandicoot/1212" target="_blank" rel="noreferrer">
+          Open game on PS1FUN
+        </a>
+      </div>
+    </section>
+  );
+}
+
 export default function RoomPreview({ navigation, onNavigate, onSelectProject }: RoomPreviewProps) {
   return (
     <section className={styles.preview} aria-label="Study room overview">
@@ -64,6 +103,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
             }} />
           </Suspense>
         </SceneBoundary>
+        {navigation.destination === "arcade" && <ArcadePanel />}
       </div>
       {navigation.destination === "monitor" && <MonitorPanel onNavigate={onNavigate} />}
       {navigation.destination === "board" && <ProjectBoard
