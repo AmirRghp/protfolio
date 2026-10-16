@@ -1,0 +1,47 @@
+.preview {
+  position: relative;
+  background: #151718;
+  border-bottom: 1px solid rgb(241 239 232 / 16%);
+}
+
+.header {
+  position: absolute;
+  z-index: 1;
+  inset: 0 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 2rem);
+  font-size: 0.875rem;
+}
+
+.header a {
+  color: var(--color-accent);
+  text-underline-offset: 0.25em;
+}
+
+.scene {
+  width: 100%;
+  height: max(240px, 56.25vw);
+  max-height: 90svh;
+}
+
+.message {
+  display: grid;
+  place-content: center;
+  height: 100%;
+  margin: 0;
+  padding: 4rem 1.5rem;
+  color: var(--color-muted);
+  text-align: center;
+}
+
+.caption {
+  margin: 0;
+  padding: 0.75rem 1.5rem;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+}
