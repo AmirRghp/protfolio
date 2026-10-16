@@ -6,7 +6,7 @@
 2. Read only the files, tests, and local skill entrypoints relevant to that task.
 3. Use [docs/skills.md](docs/skills.md) for the individual audit, rankings, prerequisites, and known skill defects. Do not load its entire inventory for ordinary implementation.
 
-Current authorization covers preparation P01–P08 only. Stop before B01, application dependencies, or scene implementation until the user approves that stage. The approved plan takes precedence over generic instructions in vendored skills about worktrees, commits, additional specifications, or execution pipelines.
+Preparation P01–P08 is complete, and the user approved B01, which is now implemented and recorded in [docs/plans.md](docs/plans.md). B02–B13 still require the user's approval before implementation. The approved plan takes precedence over generic instructions in vendored skills about worktrees, commits, additional specifications, or execution pipelines.
 
 ## Product decisions
 
@@ -69,7 +69,7 @@ Context7 and browser skills require available external tools; their copied instr
 
 Each task in `docs/plans.md` has a dependency, output, skill, checkboxes, and acceptance checks. Tick its parent only after every required subtask/check passes. Record actual commands/results and blockers. On handoff, preserve accepted scope, current task, changed paths, Git state, exact verification outcomes, and the next pending task.
 
-There is currently no application `package.json` or runnable website. App commands (`npm run build`, lint, typecheck, tests) are planned in B01; do not report them as existing or passing before that task creates and runs them.
+B01 created the application `package.json` and runnable page scaffold. Its commands and verification results are recorded in [docs/plans.md](docs/plans.md). Do not report later scene or feature tasks as implemented or validated until their work and checks are complete.
 
 ## Vendored maintenance
 
