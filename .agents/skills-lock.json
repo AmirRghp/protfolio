@@ -1,0 +1,573 @@
+{
+  "format_version": 1,
+  "prepared_on": "2026-10-16",
+  "scope": "Repository-local skill snapshots; not a package-manager lock or MCP configuration.",
+  "packages": [
+    {
+      "name": "browser-testing-with-devtools",
+      "path": ".agents/skills/browser-testing-with-devtools",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/browser-testing-with-devtools/SKILL.md",
+        "installed_folder_hash": "42be59520831f02c46bce7bed1aac6ab0592947c",
+        "installed_at": "2026-09-24T10:25:13.991Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "4e3aacd6a380cd25bc6c2d67fdd1c926a9b22535b8a62109ecd33cefd909e3d9",
+      "modifications": []
+    },
+    {
+      "name": "code-review-and-quality",
+      "path": ".agents/skills/code-review-and-quality",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/code-review-and-quality/SKILL.md",
+        "installed_folder_hash": "8c26aef07c0ac94770d48ed68e72c0fd585420a6",
+        "installed_at": "2026-09-24T10:25:13.993Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "8f3cabca581bbf7cb5f0add3f7454e7a4523f9d4353a6a4a217e6fa515309612",
+      "modifications": []
+    },
+    {
+      "name": "code-simplification",
+      "path": ".agents/skills/code-simplification",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/code-simplification/SKILL.md",
+        "installed_folder_hash": "15b6e21924188ee46402a8c91963162fd9056c7d",
+        "installed_at": "2026-09-24T10:25:13.994Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "f0c5ed754057eb0c1e027e2587f59de816651feb5e837242296c43ea21cf621d",
+      "modifications": []
+    },
+    {
+      "name": "context-engineering",
+      "path": ".agents/skills/context-engineering",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/context-engineering/SKILL.md",
+        "installed_folder_hash": "5da63415256218e76f85e7e371bb21ceef4293e1",
+        "installed_at": "2026-09-24T10:25:13.995Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "8b736cb9e55b82b265ab6ff78349c0e826e8a6df550deddf665b7fb3ff858b63",
+      "modifications": []
+    },
+    {
+      "name": "context7-mcp",
+      "path": ".agents/skills/context7-mcp",
+      "origin": {
+        "repository": "https://github.com/upstash/context7",
+        "plugin": "context7",
+        "version": "1.0.2",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "d1ea3447e915a7fc49ad7c6635fc4eb264ce2b15d87e4d5aa42703b5efb9d726",
+      "modifications": []
+    },
+    {
+      "name": "documentation-and-adrs",
+      "path": ".agents/skills/documentation-and-adrs",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/documentation-and-adrs/SKILL.md",
+        "installed_folder_hash": "eeff83d93dd39454d0b9d193ba3ea5c85f681530",
+        "installed_at": "2026-09-24T10:25:13.995Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "87ae44a0c7bb3eefc2131a9d11caabcc14e4d8dcb27d66a3a675551ee2ce1671",
+      "modifications": []
+    },
+    {
+      "name": "emil-design-eng",
+      "path": ".agents/skills/emil-design-eng",
+      "origin": {
+        "repository": "https://github.com/emilkowalski/skills.git",
+        "path": "skills/emil-design-eng/SKILL.md",
+        "installed_folder_hash": "db7a20dc1d8ad26a0307dcb45ebc79fc372f5c69",
+        "installed_at": "2026-09-28T18:54:16.256Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "ffbe68e6007fb42cb8149f089b400a1ca007d59ba23e8948e2be4476f3175939",
+      "modifications": []
+    },
+    {
+      "name": "frontend-design",
+      "path": ".agents/skills/frontend-design",
+      "origin": {
+        "repository": null,
+        "snapshot": "Codex installed frontend-design",
+        "license": "LICENSE.txt",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3",
+      "modifications": []
+    },
+    {
+      "name": "frontend-ui-engineering",
+      "path": ".agents/skills/frontend-ui-engineering",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/frontend-ui-engineering/SKILL.md",
+        "installed_folder_hash": "8fdd24f2b93c198e4973f4008d694929a6082406",
+        "installed_at": "2026-09-24T10:25:13.996Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "549044e9bd8d7fe993ce8e5c0d2b0f5465650676dc15805329973f936179eb1e",
+      "modifications": []
+    },
+    {
+      "name": "git-workflow-and-versioning",
+      "path": ".agents/skills/git-workflow-and-versioning",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/git-workflow-and-versioning/SKILL.md",
+        "installed_folder_hash": "92d87ae1fe98e6b67403bace2ef01264f9664468",
+        "installed_at": "2026-09-24T10:25:13.996Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "b7465d187935c52546d39fdc7bd6ac36d94eda25a9500ef8c18b767d2eb116ea",
+      "modifications": []
+    },
+    {
+      "name": "gsap-core",
+      "path": ".agents/skills/gsap-core",
+      "origin": {
+        "repository": "https://github.com/greensock/gsap-skills.git",
+        "path": "skills/gsap-core/SKILL.md",
+        "installed_folder_hash": "135754edd728103e329a8df8b471b197375b370e",
+        "installed_at": "2026-09-23T12:19:39.843Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "3887b47e050ab5afbe2a9a820f23d39fa02ab785e06a343be44c6f91d84d12b3",
+      "modifications": []
+    },
+    {
+      "name": "gsap-performance",
+      "path": ".agents/skills/gsap-performance",
+      "origin": {
+        "repository": "https://github.com/greensock/gsap-skills.git",
+        "path": "skills/gsap-performance/SKILL.md",
+        "installed_folder_hash": "34dec2f051872f8d02df06de97450e448bac9c5e",
+        "installed_at": "2026-09-23T12:19:39.845Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "cb5408d6fba707aabcbfe3320317a14c1f8fca6070074e5261047930f50d441e",
+      "modifications": []
+    },
+    {
+      "name": "gsap-react",
+      "path": ".agents/skills/gsap-react",
+      "origin": {
+        "repository": "https://github.com/greensock/gsap-skills.git",
+        "path": "skills/gsap-react/SKILL.md",
+        "installed_folder_hash": "ac01a338b96fddbc6cf65a89858d2e6068887b39",
+        "installed_at": "2026-09-23T12:19:39.846Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "88e2a5312b45e8cc7b3c496637ff5bc9af2ae9c925b555c8b235b34cbc989d74",
+      "modifications": []
+    },
+    {
+      "name": "gsap-timeline",
+      "path": ".agents/skills/gsap-timeline",
+      "origin": {
+        "repository": "https://github.com/greensock/gsap-skills.git",
+        "path": "skills/gsap-timeline/SKILL.md",
+        "installed_folder_hash": "37eb5d623c3e14367864d57160acb64f13950994",
+        "installed_at": "2026-09-23T12:19:39.846Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "1a8b0f39cc4be3ed3d834b89672e4ae2f151b901dc3450bebf10bbc45379fe02",
+      "modifications": []
+    },
+    {
+      "name": "impeccable",
+      "path": ".agents/skills/impeccable",
+      "origin": {
+        "repository": "https://github.com/pbakaus/impeccable.git",
+        "path": ".agents/skills/impeccable/SKILL.md",
+        "installed_folder_hash": "01fe78e7bc253016bfc30a3d12036bbf90f1c1bc",
+        "installed_at": "2026-09-28T05:40:13.842Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "5ce02fc8f353d7f659535fb80e453963dc047a07c4396adf098fe010b479e7c0",
+      "modifications": []
+    },
+    {
+      "name": "no-ai-slop",
+      "path": ".agents/skills/no-ai-slop",
+      "origin": {
+        "repository": "https://github.com/petergyang/no-ai-slop",
+        "plugin": "no-ai-slop",
+        "version": "1.0.6",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "73f87f7f79bd3540c4d8494b5c43d37d25584be6886212e1516fdd8d1c539846",
+      "modifications": []
+    },
+    {
+      "name": "performance-optimization",
+      "path": ".agents/skills/performance-optimization",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/performance-optimization/SKILL.md",
+        "installed_folder_hash": "d7cc0bec423819ebe153ec70177caaec4bad3fea",
+        "installed_at": "2026-09-24T10:25:13.998Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "00694d0c69bbde674d0e39de24052d90afea32d9fef9553eaee21a50a7e9b8cf",
+      "modifications": []
+    },
+    {
+      "name": "planning-and-task-breakdown",
+      "path": ".agents/skills/planning-and-task-breakdown",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/planning-and-task-breakdown/SKILL.md",
+        "installed_folder_hash": "3045f95a156dc71d7b5ac1e29ce795bb5cac2b71",
+        "installed_at": "2026-09-24T10:25:13.998Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "ed0f90cc5951ddd4bcab7f871f64efec93a49af9279ef93bc470da77ad8da3f7",
+      "modifications": []
+    },
+    {
+      "name": "ponytail",
+      "path": ".agents/skills/ponytail",
+      "origin": {
+        "repository": "https://github.com/DietrichGebert/ponytail",
+        "plugin": "ponytail",
+        "version": "5.3.0",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "9badd22a32e19cb884e46dfa8d3aae82bb81dfa5484105b8b4f0262df823a509",
+      "modifications": []
+    },
+    {
+      "name": "ponytail-review",
+      "path": ".agents/skills/ponytail-review",
+      "origin": {
+        "repository": "https://github.com/DietrichGebert/ponytail",
+        "plugin": "ponytail",
+        "version": "5.3.0",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "33fe4ebe22a460924e5d4a261e223df22e409cc94ab76182bee9fb91a3ef022e",
+      "modifications": []
+    },
+    {
+      "name": "review-animations",
+      "path": ".agents/skills/review-animations",
+      "origin": {
+        "repository": "https://github.com/emilkowalski/skills.git",
+        "path": "skills/review-animations/SKILL.md",
+        "installed_folder_hash": "0e0d3cb3e07ca307fe946ccaf57f6c82eb75124a",
+        "installed_at": "2026-09-28T18:54:16.259Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "6ff590d29e436766135aa3d137be1fac2a867165c7257fc315b189361f1873af",
+      "modifications": []
+    },
+    {
+      "name": "source-driven-development",
+      "path": ".agents/skills/source-driven-development",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/source-driven-development/SKILL.md",
+        "installed_folder_hash": "29e1dcc180d54898aa7c5f4c466864c59ac2ee41",
+        "installed_at": "2026-09-24T10:25:13.999Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "c59faf851377f0eeda45306398d16eb96d77ab1c2fd3e1a7fb58e9a0af33c1e9",
+      "modifications": []
+    },
+    {
+      "name": "test-driven-development",
+      "path": ".agents/skills/test-driven-development",
+      "origin": {
+        "repository": "https://github.com/addyosmani/agent-skills.git",
+        "path": "skills/test-driven-development/SKILL.md",
+        "installed_folder_hash": "b812b07dc0c5084dbffe58a1cc856de2fdd99116",
+        "installed_at": "2026-09-24T10:25:14.000Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "7c0c6ac057c19d7f8be65d9f49c3a638703b868f4625c78b70da5439d5d74fca",
+      "modifications": []
+    },
+    {
+      "name": "vercel-react-best-practices",
+      "path": ".agents/skills/vercel-react-best-practices",
+      "origin": {
+        "repository": "https://github.com/vercel-labs/agent-skills.git",
+        "path": "skills/react-best-practices/SKILL.md",
+        "installed_folder_hash": "343db72180d05814949fef7d46be96b5c6ee86b3",
+        "installed_at": "2026-09-30T10:31:51.855Z",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "71ed7794962fa6e803ee83030517b5b93a9f70fbfeb431ec4535c5480a8d8355",
+      "modifications": [
+        {
+          "path": "AGENTS.md",
+          "reason": "Repair three upstream generated links to bundled rules/*.md; no rule text changed.",
+          "replacements": {
+            "./async-defer-await.md": "./rules/async-defer-await.md",
+            "./async-cheap-condition-before-await.md": "./rules/async-cheap-condition-before-await.md",
+            "./server-hoist-static-io.md": "./rules/server-hoist-static-io.md"
+          }
+        }
+      ]
+    },
+    {
+      "name": "verification-before-completion",
+      "path": ".agents/skills/verification-before-completion",
+      "origin": {
+        "repository": "https://github.com/obra/superpowers",
+        "plugin": "superpowers",
+        "version": "6.4.2",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3",
+      "modifications": []
+    },
+    {
+      "name": "writing-plans",
+      "path": ".agents/skills/writing-plans",
+      "origin": {
+        "repository": "https://github.com/obra/superpowers",
+        "plugin": "superpowers",
+        "version": "6.4.2",
+        "upstream_commit": null
+      },
+      "source_entrypoint_sha256": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a",
+      "modifications": []
+    }
+  ],
+  "shared_references": {
+    "repository": "https://github.com/addyosmani/agent-skills",
+    "commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+    "paths": [
+      ".agents/references/definition-of-done.md",
+      ".agents/references/accessibility-checklist.md",
+      ".agents/references/performance-checklist.md",
+      ".agents/references/security-checklist.md",
+      ".agents/references/testing-patterns.md"
+    ],
+    "note": "Recovered separately; installed entrypoints are unchanged and not all match this upstream revision."
+  },
+  "license_recovery": [
+    {
+      "repo": "upstash/context7",
+      "path": "LICENSE",
+      "blob": "17900de42d69131467aaa7a53fa88b92d238dc63",
+      "license": "MIT",
+      "url": "https://github.com/upstash/context7/blob/master/LICENSE"
+    },
+    {
+      "repo": "pbakaus/impeccable",
+      "path": "LICENSE",
+      "blob": "bb3f6d23b1f8025514a62a12b51b47d73e3c9aa9",
+      "license": "Apache-2.0",
+      "url": "https://github.com/pbakaus/impeccable/blob/main/LICENSE"
+    },
+    {
+      "repo": "vercel-labs/agent-skills",
+      "error": "HTTP Error 404: Not Found"
+    }
+  ],
+  "files": {
+    ".agents/licenses/addyosmani-agent-skills/LICENSE": "6f202f8bd568cd730dbb2b0d1f8e243bc74c2fa1f64dbce9b2c7ea08bd5c9fd7",
+    ".agents/licenses/context7/LICENSE": "85cfb556dc2b22b55d2565674fcdaac82f3f2f6b7a928d27003132721bb6736c",
+    ".agents/licenses/emilkowalski-skills/LICENSE": "4ff5bdb7887ec1435c9cab0e8d1a7caee704d894d65c2a008ccc68b1cc2f260b",
+    ".agents/licenses/greensock-gsap-skills/LICENSE": "51b04b06556662dd817e8f4aa6d06bc7139dc73739e1319a7233cfde3e147b90",
+    ".agents/licenses/impeccable/LICENSE": "02bb8c3b4e70190e3986c0404ad2fd8d639b4f534252d82379cc1b502b6d1812",
+    ".agents/licenses/no-ai-slop/LICENSE": "b7a7fe370cc4c9e974528c7cea7841cf8ac886bc9ed947edb11b289441fba4a8",
+    ".agents/licenses/ponytail/LICENSE": "fb1bc6909ac3ef82d5c22106e32ef682b0cff66788fa915fb9b53b15c9d2f3ab",
+    ".agents/licenses/superpowers/LICENSE": "a37e0e9697144819e1d965176ac4ae5bc3fa02d11e7812036bbcadf6dafe2400",
+    ".agents/licenses/vercel-react-best-practices/NOTICE.md": "08c28eb82113c12ba57eb554a20aafe31d3ddf7292a6483ae7993d7b8bbf3fda",
+    ".agents/references/accessibility-checklist.md": "61c759d94d52296231f5f310b92b401f56c44e4430dc3cc95ebac5d7b1d5ffac",
+    ".agents/references/definition-of-done.md": "d1c75d2ae65d2c7a9cd01f93fa8de63e00e75f2fe5d08be224d576157054dcee",
+    ".agents/references/performance-checklist.md": "fffc38b8f3b328a973aab8b1a2efdd72b65710d8f4b57f28f8374ddae7f8a88b",
+    ".agents/references/security-checklist.md": "37774056502fe8970dcd2fd27dca5fa31f2a55232649fc3056c89c3af7d62755",
+    ".agents/references/testing-patterns.md": "f0bf05acd0edcadc27297ad5b74f104c8103ccfedba1a05cd6d6ae4af8364c56",
+    ".agents/skills/browser-testing-with-devtools/SKILL.md": "4e3aacd6a380cd25bc6c2d67fdd1c926a9b22535b8a62109ecd33cefd909e3d9",
+    ".agents/skills/code-review-and-quality/SKILL.md": "8f3cabca581bbf7cb5f0add3f7454e7a4523f9d4353a6a4a217e6fa515309612",
+    ".agents/skills/code-simplification/SKILL.md": "f0c5ed754057eb0c1e027e2587f59de816651feb5e837242296c43ea21cf621d",
+    ".agents/skills/context-engineering/SKILL.md": "8b736cb9e55b82b265ab6ff78349c0e826e8a6df550deddf665b7fb3ff858b63",
+    ".agents/skills/context7-mcp/SKILL.md": "d1ea3447e915a7fc49ad7c6635fc4eb264ce2b15d87e4d5aa42703b5efb9d726",
+    ".agents/skills/documentation-and-adrs/SKILL.md": "87ae44a0c7bb3eefc2131a9d11caabcc14e4d8dcb27d66a3a675551ee2ce1671",
+    ".agents/skills/emil-design-eng/SKILL.md": "ffbe68e6007fb42cb8149f089b400a1ca007d59ba23e8948e2be4476f3175939",
+    ".agents/skills/frontend-design/LICENSE.txt": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+    ".agents/skills/frontend-design/SKILL.md": "d91970639e9f5c37682ac7ab60094d35f1c7c1f38d731bd56396563aee10c1d3",
+    ".agents/skills/frontend-ui-engineering/SKILL.md": "549044e9bd8d7fe993ce8e5c0d2b0f5465650676dc15805329973f936179eb1e",
+    ".agents/skills/git-workflow-and-versioning/SKILL.md": "b7465d187935c52546d39fdc7bd6ac36d94eda25a9500ef8c18b767d2eb116ea",
+    ".agents/skills/gsap-core/SKILL.md": "3887b47e050ab5afbe2a9a820f23d39fa02ab785e06a343be44c6f91d84d12b3",
+    ".agents/skills/gsap-performance/SKILL.md": "cb5408d6fba707aabcbfe3320317a14c1f8fca6070074e5261047930f50d441e",
+    ".agents/skills/gsap-react/SKILL.md": "88e2a5312b45e8cc7b3c496637ff5bc9af2ae9c925b555c8b235b34cbc989d74",
+    ".agents/skills/gsap-timeline/SKILL.md": "1a8b0f39cc4be3ed3d834b89672e4ae2f151b901dc3450bebf10bbc45379fe02",
+    ".agents/skills/impeccable/SKILL.md": "5ce02fc8f353d7f659535fb80e453963dc047a07c4396adf098fe010b479e7c0",
+    ".agents/skills/impeccable/agents/impeccable_asset_producer.toml": "249f0437a52ab3eb4bc4d4a9f38e085334c0fbb7795e88dd419e32b5f58c924d",
+    ".agents/skills/impeccable/agents/impeccable_documenter.toml": "2feb3768125ba6469c92a50d516727e6d42f44579165ddfd33409948e2a3803d",
+    ".agents/skills/impeccable/agents/impeccable_finish_reviewer.toml": "869fa5390b84bfd00d072f5280a9002ea3e3936edf5985241be641a87f03ff7b",
+    ".agents/skills/impeccable/agents/impeccable_manual_edit_applier.toml": "6c9ce3e27ec4520ead001da3aad2a2ebba481c4e5cd22873db8890259ee579fe",
+    ".agents/skills/impeccable/agents/openai.yaml": "cbd8bd68fa00935dd0f179adb169252629cf7ee443ea9dc7db77e7ef2cf77446",
+    ".agents/skills/impeccable/reference/adapt.md": "bead87679caad7c537dd7c04c3bb78be56ac7eec279ad6aad7322f48ff2df2d9",
+    ".agents/skills/impeccable/reference/adapt.native.md": "6acc0bf221a4ddc6e5c6438348920b2ca2393b29c4314dbde2cdc23f2b1a9639",
+    ".agents/skills/impeccable/reference/android.md": "058f81f256134841875fd3183e06b37a023de0c877fd2b9eecd97011640791fe",
+    ".agents/skills/impeccable/reference/animate.md": "d658c48ffbe0031e8e3b318996cad6ceafe29e40aa50d5bb25e4bf1d6839dc7c",
+    ".agents/skills/impeccable/reference/audit.md": "910461b1c1f8216155165955c860a884a1e2f557cb38f21ef512ea90ef6503c2",
+    ".agents/skills/impeccable/reference/audit.native.md": "960cb922bc934adbf9192e9428ff6bec1f382038166f02a785939c93b7391067",
+    ".agents/skills/impeccable/reference/bolder.md": "f964506c0fae87b3c2c1db7016ddc9be9ef970bbcf5548d684b997b5d5991586",
+    ".agents/skills/impeccable/reference/clarify.md": "173dd66abe65633910dcb04a51f40d6ff2a793f87088f022a02fc4cad24dd133",
+    ".agents/skills/impeccable/reference/colorize.md": "bc5f71f1129d0f2c310d913d07c8dc609a1d25644121bd78c308f42d52a0b9e9",
+    ".agents/skills/impeccable/reference/craft-floor.md": "e802e4f7bdc89050a9c0f2ca506e1d493a2316e6e810c0336c57aa073717ef3e",
+    ".agents/skills/impeccable/reference/craft.md": "9205e222bc6565b37fb504ceec93233c2d2a456802b69d16e6b1c44723907c4c",
+    ".agents/skills/impeccable/reference/critique.md": "4a8a45a46b79948a64b484edf389aa0b00fc80de855470cbabe3c7c71268f345",
+    ".agents/skills/impeccable/reference/degraded/asset-producer.md": "3dd45e1c32db3d3163a96ef198954905807b25cb9a1d206a7d77986f21d27652",
+    ".agents/skills/impeccable/reference/degraded/documenter.md": "bcc05ea92faebb5c74037a9d4263a5ce9a56f5ab07c8ab3c59ee704d8cade745",
+    ".agents/skills/impeccable/reference/degraded/finish-reviewer.md": "5f24c5a97b4ffcabc7c432b064cfdd04c7a2ad52f52e765be648dc0aadab8f38",
+    ".agents/skills/impeccable/reference/degraded/manual-edit-applier.md": "5fae7f8a2fc3ddd49ad0a413446dc44daedef5b6b7de5eb935bd2fbfad646d58",
+    ".agents/skills/impeccable/reference/delight.md": "098a891028ce59c212b747d3c70468dd750aff7053a703d1336045ed31e0da7c",
+    ".agents/skills/impeccable/reference/distill.md": "ea8432c90c30ecb0426662a681ead5c0941113079704e1a766cda09e85b15b4f",
+    ".agents/skills/impeccable/reference/doctor.md": "49a7b37b98fb6e3ef68154174677ff4b9f1715efcffdbf6b30c3535b3e4e302c",
+    ".agents/skills/impeccable/reference/document.md": "3673248740bcdd1122ccc610093ba2fe52f3943a61ce0b7170b74dc49e5b6098",
+    ".agents/skills/impeccable/reference/extract.md": "31b90048c0b540daec46762a10c2b6b6434737a89af005054d8b848d829d003b",
+    ".agents/skills/impeccable/reference/harden.md": "b31ff29c7a1ea979c6d039f7e8d17007410697ab49536690dca109f0af3f20f8",
+    ".agents/skills/impeccable/reference/hooks.md": "5b30a06646ad5e453d6b5ed1b8d446f69fca3cd13b8aeda28f0d0b2cbe8f62d1",
+    ".agents/skills/impeccable/reference/init.md": "bb069b43c09109d7031b0374e31955749fec657b252d39782f11e8985aca2b51",
+    ".agents/skills/impeccable/reference/ios.md": "40c87038b5f75147a5952a96237acf312a327bf70c1bcd8e0a5f064625ae9668",
+    ".agents/skills/impeccable/reference/layout.md": "706c68612a7c6b899a0abf0b407eca7cabcd371deae60f830aa38aa86947694e",
+    ".agents/skills/impeccable/reference/live-setup.md": "bea6ebfda78c51b9cf372097a1d77431d0f6bcd96eadec13a2ac95afbb87fb6d",
+    ".agents/skills/impeccable/reference/live.md": "e7dd10af2c3c18c60dc20734d55ff870c323a10dadd337600f7bb980fc6b53c8",
+    ".agents/skills/impeccable/reference/new-work.md": "e71d6b97680084a7ccec01844e658cbd2042aec00da0c91bec62a240ad7dcf6a",
+    ".agents/skills/impeccable/reference/onboard.md": "ef2dde00030580ed2765cbf7be9b2ea4a6f64cb915b804fd6f6abcf38051c7b9",
+    ".agents/skills/impeccable/reference/operate.md": "a9d2203acd45ca33a13d5c68b02b23ed512425ac15f0e8438318ed124b43729d",
+    ".agents/skills/impeccable/reference/optimize.md": "f672ef8251a3ed4051a053d30819664951b17540b2899acd27d20e500c234abc",
+    ".agents/skills/impeccable/reference/overdrive.md": "fce6688138d2ceb1e3d2cde5231f54b1d8dc8748b4c95a7919aa83b6f924cf96",
+    ".agents/skills/impeccable/reference/polish.md": "03b30331c176a248a3b3bd17abdff1a1fd658f09ffb2a412b36ae9627dd3f33b",
+    ".agents/skills/impeccable/reference/quieter.md": "190a4e642ca362d7499f3c3ab123e21f18f75457d11f072b545a183f296e6495",
+    ".agents/skills/impeccable/reference/routing.md": "8eb466778023fccea641654d662157b123eeb360f4a0875bf6fbe3d93680851c",
+    ".agents/skills/impeccable/reference/shape.md": "a55f016c046cb6a27c55bd7f346375aeb506a755c4fbca19a5f92dbd42309c23",
+    ".agents/skills/impeccable/reference/typeset.md": "244e5b7bca6d22a51b4e22104a52a36e477056b03d257b56d1d4e319cd6167a8",
+    ".agents/skills/impeccable/reference/visualize.md": "44a91b3f0810f43829d8584e912812444d15614e4b57ca8070aee7ab899f7c1e",
+    ".agents/skills/impeccable/scripts/VERSION": "800cf1c0392b24de7c0a1c6ea6778ecb433dec71c49a150bce96a98477527b2f",
+    ".agents/skills/impeccable/scripts/command-metadata.json": "6bdbc3f745ceee15e10b050f109ce42bbeb53ab3c3b5239257de1d596654dee7",
+    ".agents/skills/impeccable/scripts/data/font-index-failures.json": "835f19a0a3812f3652dd6979a2ce5597f654fd01f26e1b420b92d5f42b997ce4",
+    ".agents/skills/impeccable/scripts/data/font-index.json": "47edbdfaf27073c47033d1ac7dfee881be49e2dcbda7671d1157300481dde6da",
+    ".agents/skills/impeccable/scripts/impeccable": "39d9600489073e227e4f4d55c451ce4252a6632ed7ae37923efbbcbc91f16d07",
+    ".agents/skills/impeccable/scripts/impeccable.cmd": "759bab1d8adc071fdde2efcf6e2157aa4026f3c2b4f3c342a8070bf328011616",
+    ".agents/skills/impeccable/scripts/live-browser-dom.js": "de1b7404f4cdfd7b515196afb17b74b1980f0bc88cb8681ae93a76ca48ec7bdb",
+    ".agents/skills/impeccable/scripts/live-browser-ignores.js": "c1cb6877ca99a0c1b38ba0c7d59f32702d3022f6821d8045f7133f7c40b6362f",
+    ".agents/skills/impeccable/scripts/live-browser-session.js": "edddeb3fad88adec9a055b1bf9d5c75418cbe97a13b1a7f6765e73249e482563",
+    ".agents/skills/impeccable/scripts/live-browser.js": "7af0a8665057c83b39bca2c8c7427ef2343734f70d4128c377113a6726a1e3b1",
+    ".agents/skills/impeccable/scripts/modern-screenshot.umd.js": "bb36665889124a0b6e15f16045265737449c3bdcf2712cdb08af3cfa01563e2b",
+    ".agents/skills/no-ai-slop/SKILL.md": "73f87f7f79bd3540c4d8494b5c43d37d25584be6886212e1516fdd8d1c539846",
+    ".agents/skills/no-ai-slop/eval.md": "b274cdc623e57ff1b4f673aedef929ba2b01419d13097248c3c74a5dbd80ccfd",
+    ".agents/skills/performance-optimization/SKILL.md": "00694d0c69bbde674d0e39de24052d90afea32d9fef9553eaee21a50a7e9b8cf",
+    ".agents/skills/planning-and-task-breakdown/SKILL.md": "ed0f90cc5951ddd4bcab7f871f64efec93a49af9279ef93bc470da77ad8da3f7",
+    ".agents/skills/ponytail/SKILL.md": "9badd22a32e19cb884e46dfa8d3aae82bb81dfa5484105b8b4f0262df823a509",
+    ".agents/skills/ponytail-review/SKILL.md": "33fe4ebe22a460924e5d4a261e223df22e409cc94ab76182bee9fb91a3ef022e",
+    ".agents/skills/review-animations/SKILL.md": "6ff590d29e436766135aa3d137be1fac2a867165c7257fc315b189361f1873af",
+    ".agents/skills/review-animations/STANDARDS.md": "e7d3605034acda54ca13e43aec9e64d65b53de20f75b11b8d694e373012fbe07",
+    ".agents/skills/source-driven-development/SKILL.md": "c59faf851377f0eeda45306398d16eb96d77ab1c2fd3e1a7fb58e9a0af33c1e9",
+    ".agents/skills/test-driven-development/SKILL.md": "7c0c6ac057c19d7f8be65d9f49c3a638703b868f4625c78b70da5439d5d74fca",
+    ".agents/skills/vercel-react-best-practices/AGENTS.md": "1fe182a457585dc5d1f532beef4c956f2d071d452a1fa243602297c97b7eb7e4",
+    ".agents/skills/vercel-react-best-practices/README.md": "9eafb2123d3b8b2aef41fba0db2648a3f4f49996f8c7c8bb2c86263befd8b48a",
+    ".agents/skills/vercel-react-best-practices/SKILL.md": "71ed7794962fa6e803ee83030517b5b93a9f70fbfeb431ec4535c5480a8d8355",
+    ".agents/skills/vercel-react-best-practices/rules/_sections.md": "01c59969e4e867f0708c8f8ef9c6d87fab9a07d0586244f429ff84013db8a115",
+    ".agents/skills/vercel-react-best-practices/rules/_template.md": "99df2a3ea088c6c22de2484ddc7e964d0e9923846f44c63380343ecc64455442",
+    ".agents/skills/vercel-react-best-practices/rules/advanced-effect-event-deps.md": "55ed8f9f27a1bff803d6fa55828176207714b02123cbb97ddb8a90d88024a723",
+    ".agents/skills/vercel-react-best-practices/rules/advanced-event-handler-refs.md": "a3097edeecfb2ff6851cd66ed8cdf0617c3c88180504bee824aa6e75a215bbbc",
+    ".agents/skills/vercel-react-best-practices/rules/advanced-init-once.md": "3e4dc22173eb0e2b6dcf583e3babd862b8696328f8f59aee7c4d746c5bc05f6c",
+    ".agents/skills/vercel-react-best-practices/rules/advanced-use-latest.md": "8a3f64dfe5a77d1564248faf17fe662ae75b55d497a243cb30b38eb07ccbbf9a",
+    ".agents/skills/vercel-react-best-practices/rules/async-api-routes.md": "523338540d73427dc14c0cbb19f2741ebccdf8b105a7b2c1b33d2905cf237a42",
+    ".agents/skills/vercel-react-best-practices/rules/async-cheap-condition-before-await.md": "03107c1f70a293cd58a8abc5474c5548e20ea4efdf01b6d45aae7ad0ac1cb32c",
+    ".agents/skills/vercel-react-best-practices/rules/async-defer-await.md": "f3c142d090615abdcc99d31c123be37b31f0f1ed8d9ec9f7789a3bc6883ae0fb",
+    ".agents/skills/vercel-react-best-practices/rules/async-dependencies.md": "16ef469f877e30c6b8e1e1b4bc3e527312fa3c6318cb785a4eca186ea236131a",
+    ".agents/skills/vercel-react-best-practices/rules/async-parallel.md": "6d2f841896279e976dfcdc1ac89e70771ac188baadfd43c096b5706cb838b961",
+    ".agents/skills/vercel-react-best-practices/rules/async-suspense-boundaries.md": "de05fedac2eb7ae563b887b5a424464ec3dfaf84e5b7797467ebe2a796ac8afc",
+    ".agents/skills/vercel-react-best-practices/rules/bundle-analyzable-paths.md": "62090b5c815fd71bf1133dce754f51abc16a9456d0ccd025fd627de27726e92a",
+    ".agents/skills/vercel-react-best-practices/rules/bundle-barrel-imports.md": "e648f6d54525f07a691357040ca5bff6ea3424788a91ff63812adb29622a671b",
+    ".agents/skills/vercel-react-best-practices/rules/bundle-conditional.md": "09c8259c3efb04fc0abb8e412ccbda217c222ae8118516283e571c995fe3a7d4",
+    ".agents/skills/vercel-react-best-practices/rules/bundle-defer-third-party.md": "3719fb47b191e8db4fe22686ec88448ad5af9e6838585425abbe103d0b642e37",
+    ".agents/skills/vercel-react-best-practices/rules/bundle-dynamic-imports.md": "401817a7369f315fc5a68a1095742ff7d53d0461906880dc9d64a41495ee1986",
+    ".agents/skills/vercel-react-best-practices/rules/bundle-preload.md": "d1f7cc28da7cd5ab249acd287edc5b761afcfb194e9cb62cd44c5f3543db2de2",
+    ".agents/skills/vercel-react-best-practices/rules/client-event-listeners.md": "242a873349febc1ce685e85617994784dbab92c2eaa68aed7fed5a83e7680e93",
+    ".agents/skills/vercel-react-best-practices/rules/client-localstorage-schema.md": "0fb7cdf9dc93fdf22f87e3669f953fb9d4ac9b0be42eec4a29fe9a2560610b88",
+    ".agents/skills/vercel-react-best-practices/rules/client-passive-event-listeners.md": "1f35016f9053de69e884ee9be00654e37979c2ca85f5e57764dc2626ff7acb4b",
+    ".agents/skills/vercel-react-best-practices/rules/client-swr-dedup.md": "644652c39c6cc00de8d1c77a7273612e868dc3f7edda30764164c12ec0f764a3",
+    ".agents/skills/vercel-react-best-practices/rules/js-batch-dom-css.md": "480b891b9eaf96e929dc1e964274a4828e3a78009b7d00ccd965a0d425215959",
+    ".agents/skills/vercel-react-best-practices/rules/js-cache-function-results.md": "3daaa11d24f4295cb6be8bc6f407f2ce83cc7b5bd1f0e68891ea8ab835721dc7",
+    ".agents/skills/vercel-react-best-practices/rules/js-cache-property-access.md": "73e47431e74878a927061bf0ddc7cd91a7556cb35d2573f3421e82300d9ae311",
+    ".agents/skills/vercel-react-best-practices/rules/js-cache-storage.md": "11b826b0433898c1ece2d3547010d8e77db9fb240185748c45db91493de9b6cc",
+    ".agents/skills/vercel-react-best-practices/rules/js-combine-iterations.md": "71add08aeeb43091d4ff4c0b2842cce8b4bdef8ad3e732cc034bb5a84827e746",
+    ".agents/skills/vercel-react-best-practices/rules/js-early-exit.md": "925ce5ce87f3347186ca62212f29cc6baa2b8c85a96d2720ad07c3d0abf781c0",
+    ".agents/skills/vercel-react-best-practices/rules/js-flatmap-filter.md": "9e5b166a41914d975bef7635467f8fb32cd98b5c3126c0bc6f163490812fb5f0",
+    ".agents/skills/vercel-react-best-practices/rules/js-hoist-regexp.md": "f9e9aef2f7c2307dd7310f283df85dcada45fc43e9bb941b0c3aa414dec21ec4",
+    ".agents/skills/vercel-react-best-practices/rules/js-index-maps.md": "5df1bdc2cfabb2c98abd55d26762e5c18189535c2e686184f426082e62920391",
+    ".agents/skills/vercel-react-best-practices/rules/js-length-check-first.md": "8b54a311c826b299272f29187fc58bc55772a04c4a72eeb29456ee96dc9fc624",
+    ".agents/skills/vercel-react-best-practices/rules/js-min-max-loop.md": "87dfb67e2f39df6ad8bcfb5b78c5fb364d3c07554ad188a202408d99f3763421",
+    ".agents/skills/vercel-react-best-practices/rules/js-request-idle-callback.md": "ee08f83905b4011abbc33d594033157d77561b5bbd9b36b04f0f409581ffec32",
+    ".agents/skills/vercel-react-best-practices/rules/js-set-map-lookups.md": "a7fd781a6ba9ad49065961b6f9a90ef486bf6b648390e1a08704025f98e1642b",
+    ".agents/skills/vercel-react-best-practices/rules/js-tosorted-immutable.md": "d0a5e1b0fec48a0a81397957e2f068e224329f7c42cb5feeed8aae6fa64025e8",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-activity.md": "1e5e7eaf3555e61d6a2e900089c676527d26259501db5594f59544b6c664f85a",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-animate-svg-wrapper.md": "9c6ae0ca7a51434e803887c64cded760956579a1452ccb80a461a03f9c937c77",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-conditional-render.md": "2ec2fa23c4148285144687050c52369adba3da2fbe3d486f8d3e0aad8f06f2bc",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-content-visibility.md": "64eee6d5b916fe74df33363994b27fc7f71bea3bcedc7ee04bda23107ca3e6e4",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-hoist-jsx.md": "93b229560fae92005ed9a2a829064607b39b2e984e92d221d05b2d41df2b7c0e",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-hydration-no-flicker.md": "dc7ab358c67c177bca6e6f360fbc935ebe4efa928c0ba3ebd3f9f3d9e2000ca3",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-hydration-suppress-warning.md": "915bacb934e2927d84b37a3f3d225a47b309ac8f9e494ed2bcb66ce07c5676a2",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-resource-hints.md": "351b1095d641717b930f1b2253282b7120af3023bc74e06c17675168d4286864",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-script-defer-async.md": "4cea07b7875ba7fc2c7465ff23b63a2bb334f90aaf2d9293d38d67b05fdb32ab",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-svg-precision.md": "ed468533f6e95f622859c884b122cf21f9f593ed6bb3d500a54de4b9f9bcb9fb",
+    ".agents/skills/vercel-react-best-practices/rules/rendering-usetransition-loading.md": "3a1249c3f13026b6f54ab5712c388df219d6af01b12aa542749acd99a46f4bc1",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-defer-reads.md": "234050a77faf50cb306be10a9e15bd4421134ab5907e75f13e6d78e2bd262dc9",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-dependencies.md": "17eb5830956fb56486fd3cfc7431f5849d39751730c05ad9e77dd4f0c27169c5",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-derived-state-no-effect.md": "cb11ec76f50aa7b6847269f02d79b120c889a30d9ecd2c1d578f75144419c77a",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-derived-state.md": "1c326bb67b01fb084eb00c8911b0a7cff54681c2315b629f88e49b64eaa6481d",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-functional-setstate.md": "5e68df6b2ae8058e67f476ff1ac67bde159f5a9d18df439e46eabcdeb7b52e58",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-lazy-state-init.md": "4ae844740f266fc8cbf050701230286624a2440ec5be67b9a63d9edc3c580573",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-memo-with-default-value.md": "81c47476564ad8a79fc68fc442734255ca7d6829424359464503fda0a9f9a0dd",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-memo.md": "1f258990c2f27ff6256b3cc5c43300631bb3f0d81f749aed08d07fcdcc131dd1",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-move-effect-to-event.md": "abc2cbf167bee056743023351e96806a411d3398da8802093620aecf0721f029",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-no-inline-components.md": "1cc32907a770272524ba682eef9e7efdd8ad4533b6f89b718a1fcd7d1d0eb6a3",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-simple-expression-in-memo.md": "5bdcf2d1558ba5204e643c887b7b4060f89630969425651eb68e96427d97f800",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-split-combined-hooks.md": "6f45d703343484ef9acef9388397f3642966ae6a5a258899a0cf1f9977cfbf6c",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-transitions.md": "60f4033909a62df5e5b8c601494f9e50a562e2f8c1c2d81eac24f38142265f1c",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-use-deferred-value.md": "8c3579576a61a949884167745dcfaf1d5426ba305cc61fd0a79602d70fda4909",
+    ".agents/skills/vercel-react-best-practices/rules/rerender-use-ref-transient-values.md": "f1a649af9d1d0b5c762f6c9c4c1c70c90d7df82aa10296ee87aadb78c1b76c54",
+    ".agents/skills/vercel-react-best-practices/rules/server-after-nonblocking.md": "d0b8d24a3db9f0f65f9e2bddbf230b0e03a5f60e1229d93a4a18f5e7a991c7c2",
+    ".agents/skills/vercel-react-best-practices/rules/server-auth-actions.md": "a2ca8aa102839251c7971ec784560fab943c20b36fe6f80365d4110c13260c23",
+    ".agents/skills/vercel-react-best-practices/rules/server-cache-lru.md": "1924b64561841923b88a657085097a0aeba3e0ba2d5470b9f5c15cc10d6ae70f",
+    ".agents/skills/vercel-react-best-practices/rules/server-cache-react.md": "fddeea6c870bb3da4134b61d54b7d09b83d2603f929b7547cd3dc1dc269edd5c",
+    ".agents/skills/vercel-react-best-practices/rules/server-dedup-props.md": "c2747424cdac46be62f835f245a0aa887b0090b416d28e2ac8676702645eeb37",
+    ".agents/skills/vercel-react-best-practices/rules/server-hoist-static-io.md": "5abea4dd882b13661bd5f7dfb93f9e547d5f08176c61c448ade91b210ed5d49f",
+    ".agents/skills/vercel-react-best-practices/rules/server-no-shared-module-state.md": "4d869bf1cd2f1632e5ca4c0e64b1cf0e71c5f5a0f940bc8a22174d205e735ed7",
+    ".agents/skills/vercel-react-best-practices/rules/server-parallel-fetching.md": "569a2e9fc04f9606686cd75c5894ef8781b502786a7fffe241396846c7733472",
+    ".agents/skills/vercel-react-best-practices/rules/server-parallel-nested-fetching.md": "ad5d9656984d4a959997a2367bf59cc6632297b4634a1dd13a087939d83f30b3",
+    ".agents/skills/vercel-react-best-practices/rules/server-serialization.md": "f4c7d68b29c82381baad059c4a7f09e868e71ec9c3115a26ad3ae7d24c0dfe1f",
+    ".agents/skills/verification-before-completion/SKILL.md": "2befe7fc55bcadaa3d97dd9e8efeb633d2561c0ebe74c5a8b17c4d9e7e4520b3",
+    ".agents/skills/verification-before-completion/agents/openai.yaml": "0eaad1a982ab8c95d8b938f1567f207dbc6fd9d172707b1e268e0cc8ab999705",
+    ".agents/skills/writing-plans/SKILL.md": "a6c67c1900064347c2a329990dd3c555657c51c3ec53b259a08aa01a2c26139a",
+    ".agents/skills/writing-plans/agents/openai.yaml": "de6a2f3d9de78d9c5027512ab1abab998f9acbef70960ecdbad525f4dce2e1bb"
+  },
+  "license_sources": [
+    {
+      "path": ".agents/licenses/addyosmani-agent-skills/LICENSE",
+      "recovered_commit": "aeac41d4d005999432bb7312f7ff06383a91d59d",
+      "note": "License recovered independently; installed skill upstream commit remains unknown."
+    },
+    {
+      "path": ".agents/licenses/emilkowalski-skills/LICENSE",
+      "recovered_commit": "2d228630ba1446365f614a108cb8252f1feda202",
+      "note": "License recovered independently; installed skill upstream commit remains unknown."
+    },
+    {
+      "path": ".agents/licenses/greensock-gsap-skills/LICENSE",
+      "recovered_commit": "aed9cfd3277740755f6bfc1155c7aa645403b760",
+      "note": "License recovered independently; installed skill upstream commit remains unknown."
+    }
+  ]
+}
