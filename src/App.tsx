@@ -1,10 +1,17 @@
+import { useReducer } from "react";
 import RoomPreview from "./RoomPreview";
 import { portfolioContent } from "./content";
+import { initialRoomNavigation, roomNavigationReducer } from "./roomNavigation";
 
 export default function App() {
+  const [navigation, dispatch] = useReducer(roomNavigationReducer, initialRoomNavigation);
+
   return (
     <>
-      <RoomPreview />
+      <RoomPreview
+        navigation={navigation}
+        onNavigate={(destination) => dispatch({ type: "navigate", destination })}
+      />
       <main className="intro" aria-labelledby="name">
         <p className="intro__eyebrow">Portfolio</p>
         <h1 id="name">{portfolioContent.owner.name}</h1>

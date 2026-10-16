@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { Canvas, useThree } from "@react-three/fiber";
-import { DoubleSide } from "three";
+import { useEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { DoubleSide, Vector3 } from "three";
 import { ROOM_FOV, roomCameraDistance } from "./roomCamera";
+import type { RoomDestination } from "./roomNavigation";
 import RoomUnavailable from "./RoomUnavailable";
 
 type Triple = [number, number, number];
@@ -21,15 +22,96 @@ function Block({ position, size, color, rotation, glow }: {
   );
 }
 
-function FixedCamera() {
+const overviewTarget = new Vector3(0, 2.7, 0);
+
+function destinationPose(destination: RoomDestination, aspect: number) {
+  if (destination === "room") {
+    return { position: new Vector3(0, 2.7, roomCameraDistance(aspect)), target: overviewTarget.clone() };
+  }
+
+  const targets = {
+    monitor: { target: new Vector3(-0.25, 2.82, -0.25), width: 4, height: 3 },
+    board: { target: new Vector3(-2.8, 3.65, -1.08), width: 4.5, height: 3.05 },
+    arcade: { target: new Vector3(4.35, 2.5, 0.25), width: 2, height: 5 },
+  }[destination];
+  const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
+  const distance = Math.max(targets.width / (2 * tangent * aspect), targets.height / (2 * tangent)) * 1.32;
+  return {
+    position: new Vector3(targets.target.x, targets.target.y, targets.target.z + distance),
+    target: targets.target,
+  };
+}
+
+function CameraFocus({ destination }: { destination: RoomDestination }) {
   const { camera, size, invalidate } = useThree();
+  const lookAt = useRef(overviewTarget.clone());
+  const startPosition = useRef(new Vector3());
+  const endPosition = useRef(new Vector3());
+  const startTarget = useRef(new Vector3());
+  const endTarget = useRef(new Vector3());
+  const elapsed = useRef(0);
+  const active = useRef(false);
+  const initialized = useRef(false);
+
   useEffect(() => {
-    camera.position.set(0, 2.7, roomCameraDistance(size.width / size.height));
-    camera.lookAt(0, 2.7, 0);
-    camera.updateProjectionMatrix();
+    const pose = destinationPose(destination, size.width / size.height);
+    if (!initialized.current) {
+      camera.position.copy(pose.position);
+      lookAt.current.copy(pose.target);
+      camera.lookAt(lookAt.current);
+      initialized.current = true;
+      invalidate();
+      return;
+    }
+
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      camera.position.copy(pose.position);
+      lookAt.current.copy(pose.target);
+      camera.lookAt(lookAt.current);
+      active.current = false;
+      invalidate();
+      return;
+    }
+
+    startPosition.current.copy(camera.position);
+    startTarget.current.copy(lookAt.current);
+    endPosition.current.copy(pose.position);
+    endTarget.current.copy(pose.target);
+    elapsed.current = 0;
+    active.current = true;
     invalidate();
-  }, [camera, size.width, size.height, invalidate]);
+  }, [camera, destination, size.width, size.height, invalidate]);
+
+  useFrame((_, delta) => {
+    if (!active.current) return;
+    elapsed.current = Math.min(elapsed.current + delta, 0.28);
+    const progress = elapsed.current / 0.28;
+    const eased = progress * progress * (3 - 2 * progress);
+    camera.position.lerpVectors(startPosition.current, endPosition.current, eased);
+    lookAt.current.lerpVectors(startTarget.current, endTarget.current, eased);
+    camera.lookAt(lookAt.current);
+    if (progress === 1) active.current = false;
+    else invalidate();
+  });
   return null;
+}
+
+function FocusHotspot({ destination, position, size, onNavigate }: {
+  destination: Exclude<RoomDestination, "room">;
+  position: Triple;
+  size: [number, number];
+  onNavigate: (destination: RoomDestination) => void;
+}) {
+  return (
+    <mesh
+      position={position}
+      onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
+    >
+      <planeGeometry args={size} />
+      <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
+    </mesh>
+  );
 }
 
 function ContextGuard({ onLost }: { onLost: () => void }) {
@@ -41,7 +123,7 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
   return null;
 }
 
-function Study() {
+function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => void }) {
   return (
     <>
       <color attach="background" args={["#151718"]} />
@@ -70,6 +152,7 @@ function Study() {
           </group>
         ))}
       </group>
+      <FocusHotspot destination="board" position={[-2.8, 3.65, -1.06]} size={[4.5, 3.05]} onNavigate={onNavigate} />
 
       <group name="workstation">
         <Block position={[-1.05, 1.8, 0]} size={[8.5, 0.18, 1.85]} color="#89552e" />
@@ -89,6 +172,7 @@ function Study() {
           <meshStandardMaterial color="#c4a15b" emissive="#ed9e3c" emissiveIntensity={0.5} side={DoubleSide} />
         </mesh>
       </group>
+      <FocusHotspot destination="monitor" position={[-0.25, 2.82, -0.19]} size={[2.75, 1.38]} onNavigate={onNavigate} />
 
       <group name="cabinet" position={[-4.35, 0.78, 0]}>
         <Block position={[0, 0, 0]} size={[1.1, 1.5, 1.25]} color="#303638" />
@@ -122,18 +206,22 @@ function Study() {
         {[0.15, 0.45, 0.75].map((x) => <Block key={x} position={[x, 2.33, 0.6]} size={[0.17, 0.09, 0.17]} color="#d3a14b" />)}
         <Block position={[0, 1.35, 0.85]} size={[0.35, 0.48, 0.04]} color="#1e272b" />
       </group>
+      <FocusHotspot destination="arcade" position={[4.35, 3.2, -0.31]} size={[1.5, 1.3]} onNavigate={onNavigate} />
     </>
   );
 }
 
-export default function RoomScene() {
+export default function RoomScene({ destination, onNavigate }: {
+  destination: RoomDestination;
+  onNavigate: (destination: RoomDestination) => void;
+}) {
   const [contextLost, setContextLost] = useState(false);
   if (contextLost) return <RoomUnavailable />;
   return (
     <Canvas shadows="percentage" frameloop="demand" dpr={[1, 1.5]} camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }} fallback={<RoomUnavailable />} aria-label="Frontal study with project board, workstation and arcade">
-      <FixedCamera />
+      <CameraFocus destination={destination} />
       <ContextGuard onLost={() => setContextLost(true)} />
-      <Study />
+      <Study onNavigate={onNavigate} />
     </Canvas>
   );
 }
