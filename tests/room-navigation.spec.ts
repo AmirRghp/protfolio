@@ -2,6 +2,40 @@ import { expect, test } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
+test("arcade cabinet GLB loads in the room scene", async ({ page }, testInfo) => {
+  const browserErrors: string[] = [];
+  page.on("pageerror", (error) => browserErrors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") browserErrors.push(message.text());
+  });
+  const assetResponse = page.waitForResponse((response) =>
+    new URL(response.url()).pathname === "/assets/models/arcade-cabinet.glb",
+  );
+  await page.goto("/");
+  await expect(page.locator("canvas")).toBeVisible();
+  expect((await assetResponse).status()).toBe(200);
+  await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
+  await page.locator("canvas").screenshot({ path: testInfo.outputPath("arcade-cabinet-overview.png") });
+
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await expect(page.getByText("Focused on Arcade.")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("arcade-cabinet-focused.png"), fullPage: true });
+  expect(browserErrors).toEqual([]);
+});
+
+test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async ({ page }) => {
+  await page.route("**/assets/models/arcade-cabinet.glb", (route) => route.abort());
+  await page.goto("/");
+
+  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await page.getByRole("button", { name: "Project board", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByRole("button", { name: "Open Enterprise Knowledge Copilot" })).toBeVisible();
+});
+
 function changedBytes(first: Buffer, second: Buffer) {
   if (first.length !== second.length) return Math.abs(first.length - second.length) + 1;
   let changed = 0;
@@ -89,6 +123,7 @@ test("reduced motion snaps to a destination without a camera transition", async 
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
+  await page.waitForLoadState("networkidle");
   const canvas = page.locator("canvas");
 
   await page.getByRole("button", { name: "Arcade" }).click();

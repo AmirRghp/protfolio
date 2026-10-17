@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { CanvasTexture, SRGBColorSpace, DoubleSide, Vector3 } from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { portfolioContent } from "./content";
 import { boardCardLayout } from "./boardLayout";
 import { ROOM_FOV, roomCameraDistance } from "./roomCamera";
@@ -9,19 +10,26 @@ import RoomUnavailable from "./RoomUnavailable";
 
 type Triple = [number, number, number];
 
-function Block({ position, size, color, rotation, glow }: {
+function Block({ position, size, color, rotation, glow, roughness = 0.8, metalness = 0 }: {
   position: Triple;
   size: Triple;
   color: string;
   rotation?: Triple;
   glow?: string;
+  roughness?: number;
+  metalness?: number;
 }) {
   return (
     <mesh position={position} rotation={rotation} castShadow receiveShadow>
       <boxGeometry args={size} />
-      <meshStandardMaterial color={color} roughness={0.8} emissive={glow} emissiveIntensity={glow ? 0.6 : 0} />
+      <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} emissive={glow} emissiveIntensity={glow ? 0.6 : 0} />
     </mesh>
   );
+}
+
+function ArcadeCabinet() {
+  const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-cabinet.glb");
+  return <primitive object={scene} position={[4.35, 0, 0]} scale={[2.2, 2.4, 1.4]} />;
 }
 
 function MonitorText() {
@@ -149,7 +157,7 @@ function FocusHotspot({ destination, position, size, onNavigate }: {
 
 function ContextGuard({ onLost }: { onLost: () => void }) {
   const canvas = useThree((state) => state.gl.domElement);
-  useEffect(() => {
+  useLayoutEffect(() => {
     canvas.addEventListener("webglcontextlost", onLost);
     return () => canvas.removeEventListener("webglcontextlost", onLost);
   }, [canvas, onLost]);
@@ -162,10 +170,10 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
   return (
     <>
       <color attach="background" args={["#151718"]} />
-      <ambientLight intensity={0.65} color="#d6cfbf" />
-      <directionalLight position={[1, 7, 6]} intensity={1.4} color="#e6d9bf" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={6} shadow-camera-bottom={-4} />
-      <pointLight position={[1.5, 3.2, 0.7]} color="#ffb45d" intensity={22} distance={7} decay={2} />
-      <pointLight position={[3, 1.6, 0.7]} color="#467dff" intensity={7} distance={5} decay={2} />
+      <ambientLight intensity={0.5} color="#d6cfbf" />
+      <directionalLight position={[1, 7, 6]} intensity={1.15} color="#e6d9bf" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={6} shadow-camera-bottom={-4} />
+      <pointLight position={[1.5, 3.2, 0.7]} color="#ffb45d" intensity={12} distance={7} decay={2} />
+      <pointLight position={[3, 1.6, 0.7]} color="#467dff" intensity={2.5} distance={5} decay={2} />
 
       <group name="room">
         <Block position={[0, -0.12, 0.1]} size={[12, 0.24, 5]} color="#513726" />
@@ -194,9 +202,9 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
       <FocusHotspot destination="board" position={[-2.8, 3.65, -1.06]} size={[4.5, 3.05]} onNavigate={onNavigate} />
 
       <group name="workstation">
-        <Block position={[-1.05, 1.8, 0]} size={[8.5, 0.18, 1.85]} color="#89552e" />
-        {[-5, 2.9].map((x) => <Block key={x} position={[x, 0.85, 0.45]} size={[0.16, 1.7, 0.9]} color="#252a2d" />)}
-        <Block position={[-0.25, 2.82, -0.35]} size={[2.95, 1.58, 0.16]} color="#11181b" />
+        <Block position={[-1.05, 1.8, 0]} size={[8.5, 0.18, 1.85]} color="#89552e" roughness={0.68} />
+        {[-5, 2.9].map((x) => <Block key={x} position={[x, 0.85, 0.45]} size={[0.16, 1.7, 0.9]} color="#252a2d" roughness={0.42} metalness={0.52} />)}
+        <Block position={[-0.25, 2.82, -0.35]} size={[2.95, 1.58, 0.16]} color="#11181b" roughness={0.42} metalness={0.42} />
         <Block position={[-0.25, 2.82, -0.25]} size={[2.75, 1.38, 0.04]} color="#17303b" glow="#1e5261" />
         <Block position={[-0.25, 2.15, -0.35]} size={[0.15, 0.6, 0.16]} color="#272c2d" />
         <Block position={[-0.25, 1.94, -0.25]} size={[0.8, 0.06, 0.45]} color="#22272a" />
@@ -233,20 +241,10 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
         {[-0.65, 0.65].map((x) => <Block key={x} position={[x, 1.27, 0.4]} size={[0.12, 0.12, 0.7]} color="#202629" />)}
       </group>
 
-      <group name="arcade" position={[4.35, 0, 0]}>
-        <Block position={[0, 1.1, 0.1]} size={[1.85, 2.2, 1.45]} color="#423329" />
-        {[-0.92, 0.92].map((x) => <Block key={x} position={[x, 2.65, -0.2]} size={[0.14, 3.1, 1.45]} color="#714827" />)}
-        <Block position={[0, 3.2, -0.5]} size={[1.8, 1.65, 0.18]} color="#1b252a" rotation={[-0.15, 0, 0]} />
-        <Block position={[0, 3.2, -0.38]} size={[1.5, 1.3, 0.04]} color="#1e4953" rotation={[-0.15, 0, 0]} glow="#306d86" />
-        <Block position={[0, 4.3, -0.12]} size={[2, 0.62, 1.5]} color="#9e612b" />
-        <Block position={[0, 4.3, 0.65]} size={[1.75, 0.4, 0.035]} color="#e1b45b" glow="#d39836" />
-        <Block position={[0, 2.2, 0.4]} size={[2, 0.18, 1]} color="#6d4c2b" rotation={[0.12, 0, 0]} />
-        <Block position={[-0.45, 2.43, 0.6]} size={[0.06, 0.35, 0.06]} color="#20282b" />
-        <mesh position={[-0.45, 2.62, 0.6]}><sphereGeometry args={[0.12, 12, 8]} /><meshStandardMaterial color="#b95134" /></mesh>
-        {[0.15, 0.45, 0.75].map((x) => <Block key={x} position={[x, 2.33, 0.6]} size={[0.17, 0.09, 0.17]} color="#d3a14b" />)}
-        <Block position={[0, 1.35, 0.85]} size={[0.35, 0.48, 0.04]} color="#1e272b" />
-      </group>
-      <FocusHotspot destination="arcade" position={[4.35, 3.2, -0.31]} size={[1.5, 1.3]} onNavigate={onNavigate} />
+      <Suspense fallback={null}>
+        <ArcadeCabinet />
+      </Suspense>
+      <FocusHotspot destination="arcade" position={[4.35, 3.1, 0.82]} size={[1.5, 1.3]} onNavigate={onNavigate} />
     </>
   );
 }
