@@ -168,3 +168,45 @@ test("arcade keeps the direct link available when the embed is offline", async (
   await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Exit game" })).toBeVisible();
 });
+
+test("touch-emulated visitors can use the project board and arcade controls", async ({ browser }, testInfo) => {
+  const context = await browser.newContext({
+    viewport: { width: 375, height: 740 },
+    isMobile: true,
+    hasTouch: true,
+    reducedMotion: "reduce",
+  });
+  const page = await context.newPage();
+  let gameRequests = 0;
+  await page.route("https://www.ps1fun.com/play/crash-bandicoot/1212", async (route) => {
+    gameRequests++;
+    await route.fulfill({ contentType: "text/html", body: "<title>Game</title>" });
+  });
+
+  await page.goto("/");
+  await page.getByRole("button", { name: "Project board", exact: true }).tap();
+  const board = page.getByRole("dialog", { name: "Project board" });
+  await expect(board).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("mobile-project-board.png") });
+  await board.getByRole("button", { name: "Open Enterprise Knowledge Copilot" }).tap();
+  await expect(board.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toBeVisible();
+  await board.getByRole("button", { name: "Close board · Back to room" }).tap();
+
+  await page.getByRole("button", { name: "Arcade", exact: true }).tap();
+  const play = page.getByRole("button", { name: "Play game" });
+  await expect(play).toBeInViewport();
+  await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeInViewport();
+  expect(gameRequests).toBe(0);
+  await page.screenshot({ path: testInfo.outputPath("mobile-arcade-ready.png") });
+  await play.tap();
+  await expect.poll(() => gameRequests).toBe(1);
+  const exit = page.getByRole("button", { name: "Exit game" });
+  await expect(exit).toBeInViewport();
+  await page.screenshot({ path: testInfo.outputPath("mobile-arcade-playing.png") });
+  await exit.tap();
+  await expect(page.getByTitle("Crash Bandicoot on PS1FUN")).toHaveCount(0);
+  await expect(play).toBeInViewport();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+
+  await context.close();
+});
