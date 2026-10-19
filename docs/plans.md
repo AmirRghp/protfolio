@@ -346,11 +346,21 @@
 
 **وابستگی:** B12. **Skill:** `verification-before-completion` + `code-review-and-quality`. **خروجی:** نسخهٔ قابل‌بررسی، نه انتشار خودکار.
 
-- [ ] اجرای `npm run typecheck`، `npm run lint`، `npm test -- --run`، `npm run build` و `npm run test:e2e` با نتایج واقعی.
-- [ ] بازبینی مرورگری مقصدها، focus، responsive، reduced motion، مسیر بدون WebGL، خطای بازی و دارایی؛ کنترل console/network و محتوای واقعی.
-- [ ] نوشتن راهنمای راه‌اندازی و به‌روزرسانی محتوا، محدودیت‌ها و منابع دارایی؛ تحویل برای بازبینی کاربر، بدون deploy/commit/push مگر درخواست صریح.
-- [ ] **پذیرش/بررسی:** همهٔ نیازها به شاهد اجرا متصل، هیچ تست لازم صرفاً skipped نباشد؛ وضعیت Git و موارد انجام‌نشده گزارش شوند.
-- [ ] **B13 تکمیل شد.**
+- [x] اجرای `npm run typecheck`، `npm run lint`، `npm test -- --run`، `npm run build` و `npm run test:e2e` با نتایج واقعی.
+- [x] بازبینی مرورگری مقصدها، focus، responsive، reduced motion، مسیر بدون WebGL، خطای بازی و دارایی؛ کنترل console/network و محتوای واقعی.
+- [x] نوشتن راهنمای راه‌اندازی و به‌روزرسانی محتوا، محدودیت‌ها و منابع دارایی؛ تحویل برای بازبینی کاربر، بدون deploy/commit/push مگر درخواست صریح.
+- [x] **پذیرش/بررسی:** همهٔ نیازها به شاهد اجرا متصل، هیچ تست لازم صرفاً skipped نباشد؛ وضعیت Git و موارد انجام‌نشده گزارش شوند.
+- [x] **B13 تکمیل شد.**
+
+**گزارش اجرای B13 — ۲۰۲۶-۱۰-۱۷**
+
+- راهنمای فارسی [README.md](../README.md) افزوده شد: پیش‌نیازها، اجرا و بررسی محلی، ویرایش محتوای `src/content.ts`، دارایی‌های scene و محدودیت‌های صحنهٔ سه‌بعدی و بازی بیرونی. وضعیت بالا در `AGENTS.md` نیز با ledger هماهنگ شد.
+- بازبینی کد و مرور responsive یک نقص را در عرض ۳۲۰ پیکسل آشکار کرد: `body { min-width: 320px; }` با scrollbar عمودی مرورگر ۱۵ پیکسل اسکرول افقی می‌ساخت. حداقل عرض برداشته شد و آزمون آرکید اکنون `scrollWidth` را با `clientWidth` هم می‌سنجد؛ مرور دوبارهٔ build تولیدی در ChatGPT in-app browser نشان داد محتوای صفحه در این عرض به ۳۰۵ پیکسل قابل‌استفاده جمع می‌شود و اسکرول افقی ندارد.
+- `npm run typecheck` و `npm run lint` موفق شدند. `npm test -- --run`: پنج فایل و ۱۳ تست پاس شدند. `npm run build` موفق شد؛ هشدار Vite برای chunk صحنه با حجم `966.69 kB / 257.95 kB gzip` باقی است. Vitest هشدار CommonJS خود Three.js و Playwright هشدار محیطی `NO_COLOR`/`FORCE_COLOR` را چاپ کردند.
+- اجرای اولیهٔ `npm run test:e2e` به علت اشغال بودن پورت `4173` توسط برنامهٔ نامرتبط Attestara به محتوای همان برنامه وصل شد و ۱۱ تست شکست و ۹ تست اجرا نشدند؛ این اجرا به‌عنوان موفق شمرده نشد. برای حفظ پردازش دیگر، همان فرمان با config موقت بیرون مخزن روی پورت آزاد `4175` اجرا شد: `npm run test:e2e -- --config=/tmp/portfolio-b13-playwright.config.mjs`؛ build و هر ۲۰ تست Chromium موفق شدند و هیچ تستی skip نشد.
+- مرور دستی صفحهٔ production در ChatGPT in-app browser مقصد Monitor و بستن با Escape و بازگشت focus، برد و جزئیات/بازگشت پروژه، نمای اتاق و آرکید در عرض ۳۲۰ پیکسل را پوشش داد. console خطای برنامه نداشت؛ هشدار شناخته‌شدهٔ `THREE.Clock` دیده شد. iframe پس از Play صفحهٔ PS1FUN و دکمهٔ Start را نمایش داد؛ Start داخل سرویس فشرده نشد و اجرای خود بازی در این مرور دستی تأیید نشد. تست خطای embed در E2E با پاسخ شبکهٔ mock پوشش داده شد. خطاهای WebGL و GLB، reduced motion، focus صفحه‌کلید و عرض‌های ۳۲۰، ۳۷۵، ۷۶۸، ۱۰۲۴ و ۱۴۴۰ نیز در suite آزموده شدند.
+- سه لینک GitHub از صفحهٔ عمومی مخزن‌های Enterprise Knowledge Copilot، Laya Fine-tuning Pipeline و Freelance Project Radar باز شدند؛ توضیحات Laya و Radar با READMEهای عمومی‌شان هم‌خوان بود. دستگاه واقعی، GPU سخت‌افزاری و Firefox/Safari بررسی نشدند؛ شرایط حقوقی PS1FUN همچنان تأییدنشده است.
+- `git diff --check` موفق بود. فایل‌های تغییرکرده: `AGENTS.md`، `README.md`، `docs/plans.md`، `src/style.css` و `tests/room-navigation.spec.ts`. بدون commit، push یا انتشار.
 
 ## شواهد آماده‌سازی و تصمیم‌های اجرایی
 
@@ -391,3 +401,19 @@
 - `git ls-remote git@github.com:AmirRghp/protfolio.git`: موفق و بدون ref؛ remote مقصد در زمان بررسی خالی بود. `origin` با همین نشانی ثبت شد.
 - برنامه هنوز وجود ندارد؛ build، lint، typecheck و تست مرورگر قابل‌اجرا نیستند. `git diff --cached --check` در snapshotهای upstream هشدار whitespace داشت؛ برای حفظ hashها دست‌نخورده ماندند. بررسی `.gitignore`، `AGENTS.md` و `docs/` با `git show --format= --check HEAD -- .gitignore AGENTS.md docs` موفق بود.
 - کامیت آماده‌سازی `446de2e` با `git push -u origin main` ارسال شد؛ `git ls-remote origin refs/heads/main` با HEAD محلی یکسان بود. این ثبت نتیجه در کامیت مستندات جدا ذخیره می‌شود.
+
+## D01 — مرجع بصری دسکتاپ مانیتور — ۲۰۲۶-۱۰-۱۹
+
+**وابستگی:** تأیید کاربر برای کانسپت بصری. **Skill:** `documentation-and-adrs`. **خروجی:** تصاویر مرجع در `docs/` و ثبت تصمیم در [PRD](PRD.md).
+
+- [x] ذخیرهٔ سه حالت تصویری دسکتاپ، فایل `about-me.txt` و اپ پروژه در پوشهٔ مستندات.
+- [x] به‌روزرسانی PRD با وضعیت تأیید کانسپت، لینک تصاویر، پس‌زمینه، آیکون‌ها و نوار وضعیت.
+- [x] ثبت روشن اینکه پیاده‌سازی محصول هنوز شروع نشده و نیازمند برنامه‌ریزی/تأیید جداست.
+- [x] **پذیرش/بررسی:** هر سه تصویر PNG سالم‌اند، لینک‌های PRD به فایل‌های موجود می‌رسند و کد برنامه دست‌نخورده می‌ماند.
+- [x] **D01 تکمیل شد.**
+
+**گزارش اجرای D01 — ۲۰۲۶-۱۰-۱۹**
+
+- تصاویر `monitor-desktop-home.png`، `monitor-about-me-open.png` و `monitor-project-app-open.png` با ابعاد `1586×992` در `docs/` ذخیره شدند.
+- PRD کانسپت تأییدشده را به‌عنوان مرجع بصری مانیتور ثبت می‌کند؛ تصاویر نمونه‌اند و تاریخ/ساعت نمونه باید در محصول از زمان محلی به‌روز شود.
+- فقط مستندات و فایل‌های تصویری این تسک تغییر کردند؛ تست برنامه لازم نبود و اجرا نشد. بدون commit، push یا انتشار.
