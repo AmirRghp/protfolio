@@ -2,16 +2,16 @@
 
 ## Start here
 
-1. Read this file, the active task in [docs/plans.md](docs/plans.md), and actual `git status --short --branch`.
-2. Read only the files, tests, and local skill entrypoints relevant to that task.
-3. Use [docs/skills.md](docs/skills.md) for the individual audit, rankings, prerequisites, and known skill defects. Do not load its entire inventory for ordinary implementation.
+1. Read this file and actual `git status --short --branch`.
+2. Read only the source files, tests, and local skill entrypoints relevant to the task.
+3. `docs/` is local-only and gitignored. Do not depend on its contents in a fresh checkout.
 
-Preparation P01–P08 and B01–B13 are complete and recorded in [docs/plans.md](docs/plans.md). Check that ledger for the current task and approval status before starting future work. The approved plan takes precedence over generic instructions in vendored skills about worktrees, commits, additional specifications, or execution pipelines.
+Preparation P01–P08 and B01–B13 were completed; their local record is not included in Git. Follow current user instructions and this file before starting future work.
 
 ## Product decisions
 
 - English personal portfolio for Amirreza Gholipour, current role AI Engineer. No portrait, video, fabricated metrics, testimonials, or invented project results.
-- The single approved visual reference is [docs/reference.png](docs/reference.png), concept v4: compact dark study, frontal view, project board left, monitor/workstation center, arcade right. No bed, visible window, avatar, free walking, or drag/orbit controls.
+- The approved room concept is v4: compact dark study, frontal view, project board left, monitor/workstation center, arcade right. No bed, visible window, avatar, free walking, or drag/orbit controls. Its reference image is local-only.
 - Fixed overview with intentional focus transitions to monitor, board, and arcade. Always provide a clear return control. Preserve an accessible HTML path to all portfolio content.
 - Build a coded blockout first; get human approval of composition/interactions before final GLB assets and materials. The reference image is not a 3D model or evidence of implemented behavior.
 - Planned stack: React + TypeScript + Vite + Three.js + React Three Fiber. No runtime backend, database, CMS, authentication, live GitHub ingestion, router, or state library without a task requiring one. Use local React state and editable local project data.

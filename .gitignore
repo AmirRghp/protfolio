@@ -13,3 +13,6 @@ __pycache__/
 .DS_Store
 
 .playwright-mcp/
+
+# Local-only documentation
+docs/
