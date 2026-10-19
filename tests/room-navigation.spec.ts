@@ -178,6 +178,9 @@ test("arcade loads only on request, keeps an external exit, and restores focus",
     await expect(game).toBeVisible();
     await expect(page.getByRole("button", { name: "Exit game" })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      await page.evaluate(() => document.documentElement.clientWidth),
+    );
   }
   await page.setViewportSize({ width: 375, height: 740 });
   const exit = page.getByRole("button", { name: "Exit game" });
