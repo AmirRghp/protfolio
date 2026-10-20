@@ -86,7 +86,10 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
             </button>
           ))}
           {navigation.destination !== "room" && (
-            <button type="button" className={styles.back} onClick={() => onNavigate("room")}>
+            <button type="button" className={styles.back} onClick={() => {
+              document.getElementById(`destination-${navigation.destination}`)?.focus({ preventScroll: true });
+              onNavigate("room");
+            }}>
               Back to room
             </button>
           )}

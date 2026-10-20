@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { roomCameraDistance } from "./roomCamera";
+import { roomCameraDistance, roomParallaxOffset } from "./roomCamera";
 
 describe("fixed room framing", () => {
   it("fits the desk width and required scene height at every target viewport", () => {
@@ -15,5 +15,11 @@ describe("fixed room framing", () => {
 
   it("moves back for a narrow frame without changing the view direction", () => {
     expect(roomCameraDistance(1)).toBeGreaterThan(roomCameraDistance(16 / 9));
+  });
+
+  it("limits idle pointer movement and keeps its center neutral", () => {
+    expect(roomParallaxOffset(0, 0)).toEqual({ x: 0, y: 0 });
+    expect(roomParallaxOffset(1, 1)).toEqual({ x: 0.12, y: 0.06 });
+    expect(roomParallaxOffset(-2, -3)).toEqual({ x: -0.12, y: -0.06 });
   });
 });

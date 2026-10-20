@@ -43,6 +43,78 @@ function changedBytes(first: Buffer, second: Buffer) {
   return changed;
 }
 
+test("idle parallax stays inside the room and returns to center around controls", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const canvas = page.locator("canvas");
+  const sceneFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 1440, height: 550 } });
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("link", { name: "Read portfolio" }).hover();
+  await page.waitForTimeout(350);
+  const centered = await sceneFrame();
+
+  await page.mouse.move(700, 395);
+  await page.waitForTimeout(350);
+  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+
+  await page.mouse.move(125, 690);
+  await page.waitForTimeout(350);
+  const shifted = await sceneFrame();
+  const shift = changedBytes(centered, shifted);
+  expect(shift).toBeGreaterThan(0);
+
+  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
+  await monitor.hover();
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+
+  await page.mouse.move(125, 690);
+  await page.waitForTimeout(350);
+  await monitor.focus();
+  await expect(monitor).toHaveCSS("outline-style", "solid");
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+});
+
+test("live reduced motion removes idle movement and a resize retargets the return", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const canvas = page.locator("canvas");
+  const sceneFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 1440, height: 550 } });
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  const initial = await sceneFrame();
+  await page.mouse.move(125, 690);
+  await page.waitForTimeout(350);
+  const shifted = await sceneFrame();
+  expect(changedBytes(initial, shifted)).toBeGreaterThan(0);
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.waitForTimeout(100);
+  const centered = await sceneFrame();
+  expect(changedBytes(shifted, centered)).toBeGreaterThan(0);
+  await page.mouse.move(1300, 690);
+  await page.waitForTimeout(350);
+  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.getByRole("link", { name: "Read portfolio" }).hover();
+  await page.waitForTimeout(350);
+  const overviewAt1024 = await page.screenshot({ clip: { x: 0, y: 180, width: 1024, height: 550 } });
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.waitForTimeout(350);
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await page.waitForTimeout(60);
+  await page.setViewportSize({ width: 1024, height: 900 });
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.waitForTimeout(350);
+  await expect(page.getByRole("button", { name: "Arcade", exact: true })).toHaveAttribute("aria-pressed", "false");
+  expect(changedBytes(overviewAt1024, await page.screenshot({ clip: { x: 0, y: 180, width: 1024, height: 550 } }))).toBe(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1024);
+});
+
 test("HTML destination controls focus each room and return to the overview", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
@@ -151,6 +223,20 @@ test("destination controls and the return button work from the keyboard", async 
   await expect(board).toHaveAttribute("aria-pressed", "false");
 });
 
+test("arcade return restores keyboard focus to its destination control", async ({ page }) => {
+  await page.goto("/");
+  const arcade = page.getByRole("button", { name: "Arcade", exact: true });
+  await arcade.focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+
+  const back = page.getByRole("button", { name: "Back to room", exact: true });
+  await back.focus();
+  await page.keyboard.press("Enter");
+  await expect(back).toHaveCount(0);
+  await expect(arcade).toBeFocused();
+});
+
 test("arcade loads only on request, keeps an external exit, and restores focus", async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 740 });
   let gameRequests = 0;
@@ -222,6 +308,13 @@ test("touch-emulated visitors can use the project board and arcade controls", as
   });
 
   await page.goto("/");
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.waitForTimeout(350);
+  const touchFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 375, height: 450 } });
+  const beforeTouch = await touchFrame();
+  await page.touchscreen.tap(25, 650);
+  await page.waitForTimeout(350);
+  expect(changedBytes(beforeTouch, await touchFrame())).toBe(0);
   await page.getByRole("button", { name: "Project board", exact: true }).tap();
   const board = page.getByRole("dialog", { name: "Project board" });
   await expect(board).toBeVisible();

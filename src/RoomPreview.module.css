@@ -12,6 +12,7 @@
   gap: 0.75rem;
   padding: clamp(1rem, 3vw, 2rem);
   font-size: 0.875rem;
+  pointer-events: none;
 }
 
 .headerTop {
@@ -24,6 +25,7 @@
 .header a {
   color: var(--color-accent);
   text-underline-offset: 0.25em;
+  pointer-events: auto;
 }
 
 .destinations {
@@ -42,6 +44,7 @@
   background: rgb(16 17 15 / 82%);
   font: inherit;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .destinations button[aria-pressed="true"] {

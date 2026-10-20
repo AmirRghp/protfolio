@@ -5,3 +5,10 @@ export function roomCameraDistance(aspect: number) {
   const halfFov = (ROOM_FOV * Math.PI) / 360;
   return Math.max(2 / Math.tan(halfFov), 5.8 / (Math.tan(halfFov) * aspect)) * 1.08 + 1.3;
 }
+
+export function roomParallaxOffset(x: number, y: number) {
+  return {
+    x: Math.max(-1, Math.min(1, x)) * 0.12,
+    y: Math.max(-1, Math.min(1, y)) * 0.06,
+  };
+}

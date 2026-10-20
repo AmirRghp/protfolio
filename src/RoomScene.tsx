@@ -1,10 +1,10 @@
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { CanvasTexture, SRGBColorSpace, DoubleSide, Vector3 } from "three";
+import { CanvasTexture, SRGBColorSpace, DoubleSide, Raycaster, Vector2, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { portfolioContent } from "./content";
 import { boardCardLayout } from "./boardLayout";
-import { ROOM_FOV, roomCameraDistance } from "./roomCamera";
+import { ROOM_FOV, roomCameraDistance, roomParallaxOffset } from "./roomCamera";
 import type { RoomDestination } from "./roomNavigation";
 import RoomUnavailable from "./RoomUnavailable";
 
@@ -86,8 +86,13 @@ function destinationPose(destination: RoomDestination, aspect: number) {
 }
 
 function CameraFocus({ destination }: { destination: RoomDestination }) {
-  const { camera, size, invalidate } = useThree();
+  const { camera, size, invalidate, gl, scene } = useThree();
   const lookAt = useRef(overviewTarget.clone());
+  const hotspotRaycaster = useRef(new Raycaster());
+  const pointerPosition = useRef(new Vector2());
+  const basePosition = useRef(new Vector3());
+  const idleOffset = useRef(new Vector3());
+  const idleTarget = useRef({ x: 0, y: 0 });
   const startPosition = useRef(new Vector3());
   const endPosition = useRef(new Vector3());
   const startTarget = useRef(new Vector3());
@@ -98,44 +103,117 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
 
   useEffect(() => {
     const pose = destinationPose(destination, size.width / size.height);
+    const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const canvas = gl.domElement;
+    const preview = canvas.closest("section");
+    const hotspots = scene.getObjectsByProperty("name", "focus-hotspot");
+    const resetIdle = () => {
+      idleTarget.current.x = 0;
+      idleTarget.current.y = 0;
+      invalidate();
+    };
+
+    basePosition.current.copy(pose.position);
+    resetIdle();
     if (!initialized.current) {
       camera.position.copy(pose.position);
       lookAt.current.copy(pose.target);
       camera.lookAt(lookAt.current);
       initialized.current = true;
       invalidate();
-      return;
-    }
-
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reducedMotion) {
+    } else if (motionPreference.matches) {
       camera.position.copy(pose.position);
       lookAt.current.copy(pose.target);
       camera.lookAt(lookAt.current);
+      idleOffset.current.set(0, 0, 0);
       active.current = false;
       invalidate();
+    } else {
+      startPosition.current.copy(camera.position);
+      startTarget.current.copy(lookAt.current);
+      endPosition.current.copy(pose.position);
+      endTarget.current.copy(pose.target);
+      idleOffset.current.set(0, 0, 0);
+      elapsed.current = 0;
+      active.current = true;
+      invalidate();
+    }
+
+    const onPointerMove = (event: PointerEvent) => {
+      const focused = document.activeElement;
+      if (destination !== "room" || active.current || motionPreference.matches ||
+        event.pointerType !== "mouse" || !finePointer.matches ||
+        (focused instanceof HTMLElement && preview?.contains(focused) && focused !== canvas)) {
+        resetIdle();
+        return;
+      }
+      const bounds = canvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) return;
+      const x = (event.clientX - bounds.left - bounds.width / 2) / (bounds.width / 2);
+      const y = (bounds.top + bounds.height / 2 - event.clientY) / (bounds.height / 2);
+      hotspotRaycaster.current.setFromCamera(pointerPosition.current.set(x, y), camera);
+      idleTarget.current = hotspotRaycaster.current.intersectObjects(hotspots).length
+        ? { x: 0, y: 0 }
+        : roomParallaxOffset(x, y);
+      invalidate();
+    };
+    const onPointerDown = (event: PointerEvent) => {
+      if (event.pointerType !== "mouse") resetIdle();
+    };
+    const onMotionChange = () => {
+      if (!motionPreference.matches) return;
+      resetIdle();
+      active.current = false;
+      idleOffset.current.set(0, 0, 0);
+      camera.position.copy(pose.position);
+      lookAt.current.copy(pose.target);
+      camera.lookAt(lookAt.current);
+      invalidate();
+    };
+    const onVisibilityChange = () => { if (document.hidden) resetIdle(); };
+
+    canvas.addEventListener("pointermove", onPointerMove);
+    canvas.addEventListener("pointerleave", resetIdle);
+    canvas.addEventListener("pointerdown", onPointerDown);
+    window.addEventListener("blur", resetIdle);
+    window.addEventListener("focusin", resetIdle);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    motionPreference.addEventListener("change", onMotionChange);
+    return () => {
+      canvas.removeEventListener("pointermove", onPointerMove);
+      canvas.removeEventListener("pointerleave", resetIdle);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      window.removeEventListener("blur", resetIdle);
+      window.removeEventListener("focusin", resetIdle);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      motionPreference.removeEventListener("change", onMotionChange);
+    };
+  }, [camera, destination, size.width, size.height, gl, scene, invalidate]);
+
+  useFrame((_, delta) => {
+    if (active.current) {
+      elapsed.current = Math.min(elapsed.current + delta, 0.28);
+      const progress = elapsed.current / 0.28;
+      const eased = progress * progress * (3 - 2 * progress);
+      camera.position.lerpVectors(startPosition.current, endPosition.current, eased);
+      lookAt.current.lerpVectors(startTarget.current, endTarget.current, eased);
+      camera.lookAt(lookAt.current);
+      if (progress === 1) active.current = false;
+      else invalidate();
       return;
     }
 
-    startPosition.current.copy(camera.position);
-    startTarget.current.copy(lookAt.current);
-    endPosition.current.copy(pose.position);
-    endTarget.current.copy(pose.target);
-    elapsed.current = 0;
-    active.current = true;
-    invalidate();
-  }, [camera, destination, size.width, size.height, invalidate]);
-
-  useFrame((_, delta) => {
-    if (!active.current) return;
-    elapsed.current = Math.min(elapsed.current + delta, 0.28);
-    const progress = elapsed.current / 0.28;
-    const eased = progress * progress * (3 - 2 * progress);
-    camera.position.lerpVectors(startPosition.current, endPosition.current, eased);
-    lookAt.current.lerpVectors(startTarget.current, endTarget.current, eased);
+    if (destination !== "room") return;
+    const target = idleTarget.current;
+    const step = 1 - Math.exp(-delta / 0.12);
+    idleOffset.current.x += (target.x - idleOffset.current.x) * step;
+    idleOffset.current.y += (target.y - idleOffset.current.y) * step;
+    if (Math.abs(target.x - idleOffset.current.x) < 0.0005) idleOffset.current.x = target.x;
+    if (Math.abs(target.y - idleOffset.current.y) < 0.0005) idleOffset.current.y = target.y;
+    camera.position.copy(basePosition.current).add(idleOffset.current);
     camera.lookAt(lookAt.current);
-    if (progress === 1) active.current = false;
-    else invalidate();
+    if (idleOffset.current.x !== target.x || idleOffset.current.y !== target.y) invalidate();
   });
   return null;
 }
@@ -148,6 +226,7 @@ function FocusHotspot({ destination, position, size, onNavigate }: {
 }) {
   return (
     <mesh
+      name="focus-hotspot"
       position={position}
       onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
     >
