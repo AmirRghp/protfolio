@@ -11,8 +11,8 @@ Preparation P01–P08 and B01–B13 were completed; their local record is not in
 ## Product decisions
 
 - English personal portfolio for Amirreza Gholipour, current role AI Engineer. No portrait, video, fabricated metrics, testimonials, or invented project results.
-- The approved room concept is v4: compact dark study, frontal view, project board left, monitor/workstation center, arcade right. No bed, visible window, avatar, free walking, or drag/orbit controls. Its reference image is local-only.
-- Fixed overview with intentional focus transitions to monitor, board, and arcade. Always provide a clear return control. Preserve an accessible HTML path to all portfolio content.
+- The approved full-screen Hero reference is local-only `docs/hero-reference.png`: the room fills the viewport edge to edge, with a close frontal crop of the upper desk, project board left, monitor center, arcade close on the right; no computer tower, floor, side walls, baseboard, chair, desk supports, plants, wall art, desk cup, or clutter, with empty shelves. Remove absent scene geometry instead of hiding it behind the camera. Design targets tablet through desktop; mobile-specific composition is deferred. The earlier `docs/reference.png` contributes room identity and lighting only, not the Hero framing. No avatar, free walking, or drag/orbit controls.
+- Fixed overview with intentional focus transitions to monitor, board, and arcade. Keep compact, visible navigation and a clear return control over the Hero. Idle parallax is subtle, stays within the Hero, does not move controls, and yields to focused transitions. Preserve an accessible HTML path to all portfolio content below the Hero.
 - Build a coded blockout first; get human approval of composition/interactions before final GLB assets and materials. The reference image is not a 3D model or evidence of implemented behavior.
 - Planned stack: React + TypeScript + Vite + Three.js + React Three Fiber. No runtime backend, database, CMS, authentication, live GitHub ingestion, router, or state library without a task requiring one. Use local React state and editable local project data.
 - Project cards share one brief + GitHub format. Adding a project must not require custom scene logic. Growing lists remain readable and reachable.
@@ -40,7 +40,7 @@ These are real copies under `.agents/skills/`, not symlinks. Open the exact loca
 | Git | `.agents/skills/git-workflow-and-versioning/SKILL.md` | only authorized Git operations |
 | Measured performance | `.agents/skills/performance-optimization/SKILL.md` | scene profiler and measured before/after results |
 
-Choose one primary skill and the support actually needed. Load supporting references progressively. Do not invoke every skill, duplicate planning workflows, or add process artifacts merely because a skill suggests them. `docs/plans.md` is the single task/decision/verification ledger; do not create parallel `tasks/todo.md` or `docs/superpowers/` plans for the same work.
+Choose one primary skill and the support actually needed. Load supporting references progressively. Do not invoke every skill, duplicate planning workflows, or add process artifacts merely because a skill suggests them. For the room redesign, `docs/plans.md` is the active task index and each linked `docs/plans/Rxx-*.md` is the detail for that task; `docs/plans/archive.md` is historical only. Do not create parallel `tasks/todo.md` or `docs/superpowers/` plans for the same work.
 
 The copied skills are guidance, not proof that their examples or API claims are correct. Check examples against official documentation for installed versions. In particular, `<dialog open>` is not a modal focus trap: use `showModal()` or an established accessible primitive and test focus behavior.
 
@@ -67,7 +67,7 @@ Context7 and browser skills require available external tools; their copied instr
 
 ## Task completion and handoffs
 
-Each task in `docs/plans.md` has a dependency, output, skill, checkboxes, and acceptance checks. Tick its parent only after every required subtask/check passes. Record actual commands/results and blockers. On handoff, preserve accepted scope, current task, changed paths, Git state, exact verification outcomes, and the next pending task.
+The active redesign index in `docs/plans.md` links to per-task files with dependencies, outputs, skills, checkboxes, and acceptance checks. Tick an index item only after every required subtask/check in its detail file passes; keep historical tasks in `docs/plans/archive.md` out of active progress. Record actual commands/results and blockers. On handoff, preserve accepted scope, current task, changed paths, Git state, exact verification outcomes, human approval gates, and the next pending task.
 
 B01 created the application `package.json` and runnable page scaffold. Its commands and verification results are recorded in [docs/plans.md](docs/plans.md). Do not report later scene or feature tasks as implemented or validated until their work and checks are complete.
 
