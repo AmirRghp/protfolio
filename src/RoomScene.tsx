@@ -10,7 +10,7 @@ import RoomUnavailable from "./RoomUnavailable";
 
 type Triple = [number, number, number];
 
-function Block({ position, size, color, rotation, glow, roughness = 0.8, metalness = 0 }: {
+function Block({ position, size, color, rotation, glow, roughness = 0.8, metalness = 0, castShadow = true, receiveShadow = true }: {
   position: Triple;
   size: Triple;
   color: string;
@@ -18,9 +18,11 @@ function Block({ position, size, color, rotation, glow, roughness = 0.8, metalne
   glow?: string;
   roughness?: number;
   metalness?: number;
+  castShadow?: boolean;
+  receiveShadow?: boolean;
 }) {
   return (
-    <mesh position={position} rotation={rotation} castShadow receiveShadow>
+    <mesh position={position} rotation={rotation} castShadow={castShadow} receiveShadow={receiveShadow}>
       <boxGeometry args={size} />
       <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} emissive={glow} emissiveIntensity={glow ? 0.6 : 0} />
     </mesh>
@@ -29,7 +31,7 @@ function Block({ position, size, color, rotation, glow, roughness = 0.8, metalne
 
 function ArcadeCabinet() {
   const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-cabinet.glb");
-  return <primitive object={scene} position={[4.35, 0, 0]} scale={[2.2, 2.4, 1.4]} />;
+  return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
 }
 
 function MonitorText() {
@@ -57,23 +59,23 @@ function MonitorText() {
     invalidate();
     return () => { target.map = null; texture.dispose(); };
   }, [invalidate]);
-  return <mesh position={[-0.25, 2.82, -0.22]}>
-    <planeGeometry args={[2.75, 1.38]} />
+  return <mesh position={[-0.25, 3.25, -0.22]}>
+    <planeGeometry args={[4.8, 2.6]} />
     <meshBasicMaterial ref={material} toneMapped={false} />
   </mesh>;
 }
 
-const overviewTarget = new Vector3(0, 2.7, 0);
+const overviewTarget = new Vector3(0, 3.45, 0);
 
 function destinationPose(destination: RoomDestination, aspect: number) {
   if (destination === "room") {
-    return { position: new Vector3(0, 2.7, roomCameraDistance(aspect)), target: overviewTarget.clone() };
+    return { position: new Vector3(0, 3.45, roomCameraDistance(aspect)), target: overviewTarget.clone() };
   }
 
   const targets = {
-    monitor: { target: new Vector3(-0.25, 2.82, -0.25), width: 4, height: 3 },
-    board: { target: new Vector3(-2.8, 3.65, -1.08), width: 4.5, height: 3.05 },
-    arcade: { target: new Vector3(4.35, 3.2, -0.38), width: 2.1, height: 1.85 },
+    monitor: { target: new Vector3(-0.25, 3.25, -0.25), width: 5, height: 3.1 },
+    board: { target: new Vector3(-3.5, 3.65, -1.08), width: 6.525, height: 3.05 },
+    arcade: { target: new Vector3(4.35, 3.55, -0.38), width: 2.6, height: 3.5 },
   }[destination];
   const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
   const distance = Math.max(targets.width / (2 * tangent * aspect), targets.height / (2 * tangent)) * 1.32;
@@ -176,14 +178,12 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
       <pointLight position={[3, 1.6, 0.7]} color="#467dff" intensity={2.5} distance={5} decay={2} />
 
       <group name="room">
-        <Block position={[0, -0.12, 0.1]} size={[12, 0.24, 5]} color="#513726" />
-        <Block position={[0, 2.8, -1.5]} size={[12, 5.6, 0.2]} color="#292a2b" />
-        <Block position={[-5.9, 2.8, 0.1]} size={[0.2, 5.6, 3.2]} color="#303030" />
-        <Block position={[5.9, 2.8, 0.1]} size={[0.2, 5.6, 3.2]} color="#24272d" />
-        <Block position={[0, 0.12, -1.32]} size={[11.8, 0.24, 0.12]} color="#171b20" />
+        <Block position={[0, 3.2, -1.5]} size={[30, 24, 0.2]} color="#292a2b" castShadow={false} receiveShadow={false} />
+        <Block position={[2.55, 5.45, -1.16]} size={[2.8, 0.16, 0.52]} color="#89552e" />
+        <Block position={[2.55, 4.2, -1.16]} size={[2.8, 0.16, 0.52]} color="#89552e" />
       </group>
 
-      <group name="board" position={[-2.8, 3.65, -1.18]}>
+      <group name="board" position={[-3.5, 3.65, -1.18]} scale={[1.45, 1, 1]}>
         <Block position={[0, 0, 0]} size={[4.7, 3.25, 0.16]} color="#51321d" />
         <Block position={[0, 0, 0.1]} size={[4.5, 3.05, 0.08]} color="#91603b" />
         {portfolioContent.projects.map((project, index) => {
@@ -199,52 +199,22 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
           );
         })}
       </group>
-      <FocusHotspot destination="board" position={[-2.8, 3.65, -1.06]} size={[4.5, 3.05]} onNavigate={onNavigate} />
+      <FocusHotspot destination="board" position={[-3.5, 3.65, -1.06]} size={[6.525, 3.05]} onNavigate={onNavigate} />
 
       <group name="workstation">
-        <Block position={[-1.05, 1.8, 0]} size={[8.5, 0.18, 1.85]} color="#89552e" roughness={0.68} />
-        {[-5, 2.9].map((x) => <Block key={x} position={[x, 0.85, 0.45]} size={[0.16, 1.7, 0.9]} color="#252a2d" roughness={0.42} metalness={0.52} />)}
-        <Block position={[-0.25, 2.82, -0.35]} size={[2.95, 1.58, 0.16]} color="#11181b" roughness={0.42} metalness={0.42} />
-        <Block position={[-0.25, 2.82, -0.25]} size={[2.75, 1.38, 0.04]} color="#17303b" glow="#1e5261" />
-        <Block position={[-0.25, 2.15, -0.35]} size={[0.15, 0.6, 0.16]} color="#272c2d" />
+        <Block position={[0, 1.8, 0.2]} size={[11.6, 0.18, 2.2]} color="#89552e" roughness={0.68} castShadow={false} />
+        <Block position={[-0.25, 3.25, -0.35]} size={[5.1, 2.9, 0.16]} color="#11181b" roughness={0.42} metalness={0.42} />
+        <Block position={[-0.25, 3.25, -0.25]} size={[4.8, 2.6, 0.04]} color="#17303b" glow="#1e5261" />
+        <Block position={[-0.25, 2.15, -0.35]} size={[0.15, 0.4, 0.16]} color="#272c2d" />
         <Block position={[-0.25, 1.94, -0.25]} size={[0.8, 0.06, 0.45]} color="#22272a" />
-        <Block position={[-0.25, 1.94, 0.55]} size={[1.65, 0.07, 0.45]} color="#363d3e" />
-        <Block position={[0.9, 1.94, 0.55]} size={[0.2, 0.09, 0.3]} color="#1b2429" />
-        <Block position={[2.35, 2.4, -0.2]} size={[0.8, 1.05, 0.95]} color="#171f2a" />
-        <Block position={[2.35, 2.4, 0.3]} size={[0.57, 0.8, 0.025]} color="#253d60" glow="#285bce" />
-        <Block position={[1.3, 2.45, -0.45]} size={[0.08, 1.1, 0.08]} color="#2a2c29" />
-        <Block position={[1.05, 3.05, -0.35]} size={[0.65, 0.1, 0.12]} color="#272b29" rotation={[0, 0, -0.35]} />
-        <mesh position={[0.75, 3.08, -0.25]} rotation={[0, 0, 0.4]}>
-          <coneGeometry args={[0.24, 0.3, 16, 1, true]} />
-          <meshStandardMaterial color="#c4a15b" emissive="#ed9e3c" emissiveIntensity={0.5} side={DoubleSide} />
-        </mesh>
       </group>
       <MonitorText />
-      <FocusHotspot destination="monitor" position={[-0.25, 2.82, -0.19]} size={[2.75, 1.38]} onNavigate={onNavigate} />
-
-      <group name="cabinet" position={[-4.35, 0.78, 0]}>
-        <Block position={[0, 0, 0]} size={[1.1, 1.5, 1.25]} color="#303638" />
-        {[-0.48, 0, 0.48].map((y) => (
-          <group key={y}>
-            <Block position={[0, y, 0.64]} size={[1, 0.44, 0.035]} color="#3b4040" />
-            <Block position={[0, y + 0.07, 0.68]} size={[0.34, 0.04, 0.04]} color="#1c2327" />
-          </group>
-        ))}
-      </group>
-
-      <group name="chair" position={[-2.15, 0, 1.25]} rotation={[0, -0.15, 0]}>
-        <Block position={[0, 1.75, 0.1]} size={[1.1, 1.35, 0.18]} color="#202b2b" rotation={[-0.12, 0, 0]} />
-        <Block position={[0, 1.04, 0.4]} size={[1.15, 0.18, 0.9]} color="#293332" />
-        <Block position={[0, 0.55, 0.35]} size={[0.12, 0.9, 0.12]} color="#3d4241" />
-        <Block position={[0, 0.13, 0.35]} size={[1.5, 0.12, 0.12]} color="#202629" />
-        <Block position={[0, 0.13, 0.35]} size={[0.12, 0.12, 1.3]} color="#202629" />
-        {[-0.65, 0.65].map((x) => <Block key={x} position={[x, 1.27, 0.4]} size={[0.12, 0.12, 0.7]} color="#202629" />)}
-      </group>
+      <FocusHotspot destination="monitor" position={[-0.25, 3.25, -0.19]} size={[4.8, 2.6]} onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <ArcadeCabinet />
       </Suspense>
-      <FocusHotspot destination="arcade" position={[4.35, 3.1, 0.82]} size={[1.5, 1.3]} onNavigate={onNavigate} />
+      <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} onNavigate={onNavigate} />
     </>
   );
 }

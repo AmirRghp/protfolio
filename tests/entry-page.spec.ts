@@ -38,7 +38,7 @@ test("production entry page loads without browser errors or horizontal overflow"
   expect(browserErrors).toEqual([]);
 });
 
-test("room renders a fixed overview and keeps the HTML path keyboard accessible", async ({ page }, testInfo) => {
+test("room fills the viewport and keeps the HTML path keyboard accessible", async ({ page }, testInfo) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => {
@@ -48,6 +48,7 @@ test("room renders a fixed overview and keeps the HTML path keyboard accessible"
   await page.goto("/");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
+  await expect.poll(() => canvas.evaluate((element) => Math.round(element.getBoundingClientRect().height))).toBe(900);
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
   await page.getByRole("link", { name: "Read portfolio" }).focus();
   await page.keyboard.press("Enter");
@@ -60,18 +61,11 @@ test("room renders a fixed overview and keeps the HTML path keyboard accessible"
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await expect(canvas).toBeVisible();
+    await expect.poll(() => canvas.evaluate((element) => Math.round(element.getBoundingClientRect().height))).toBe(900);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.waitForTimeout(350);
     await page.screenshot({ path: testInfo.outputPath(`room-${width}.png`) });
   }
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  // The B03 overview is static, including during pointer drags.
-  const before = await canvas.screenshot();
-  const bounds = (await canvas.boundingBox())!;
-  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(bounds.x + bounds.width / 2 + 100, bounds.y + bounds.height / 2 + 50);
-  await page.mouse.up();
-  expect(await canvas.screenshot()).toEqual(before);
   expect(browserErrors).toEqual([]);
 });
 

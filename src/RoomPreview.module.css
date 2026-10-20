@@ -1,7 +1,7 @@
 .preview {
   position: relative;
+  height: 100svh;
   background: #151718;
-  border-bottom: 1px solid rgb(241 239 232 / 16%);
 }
 
 .header {
@@ -60,8 +60,7 @@
 .scene {
   position: relative;
   width: 100%;
-  height: max(240px, 56.25vw);
-  max-height: 90svh;
+  height: 100%;
 }
 
 .arcade {
@@ -163,14 +162,6 @@
 }
 
 @media (max-width: 480px) {
-  .preview:has(.arcade) .header {
-    position: relative;
-  }
-
-  .preview:has(.arcade) .scene {
-    height: max(360px, 56.25vw);
-  }
-
   .arcade {
     width: min(65vw, 68vh);
   }
@@ -209,6 +200,10 @@
 }
 
 .caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
   margin: 0;
   padding: 0.75rem 1.5rem;
   color: var(--color-muted);
