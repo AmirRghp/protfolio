@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { CanvasTexture, SRGBColorSpace, DoubleSide, Mesh, Raycaster, Vector2, Vector3 } from "three";
+import { CanvasTexture, SRGBColorSpace, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector2, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { portfolioContent } from "./content";
 import { boardCardLayout } from "./boardLayout";
@@ -43,10 +43,18 @@ function ArcadeCabinet() {
   return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
 }
 
-function MonitorText() {
-  const material = useRef<import("three").MeshBasicMaterial>(null);
+function CurvedMonitor() {
+  const { scene } = useLoader(GLTFLoader, "/assets/models/curved-monitor.glb");
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
+    const screen = scene.getObjectByName("MonitorScreen");
+    if (!(screen instanceof Mesh)) throw new Error("Curved monitor is missing MonitorScreen");
+    scene.traverse((object) => {
+      if (object instanceof Mesh) {
+        object.castShadow = object !== screen;
+        object.receiveShadow = object !== screen;
+      }
+    });
     const canvas = document.createElement("canvas");
     canvas.width = 1024;
     canvas.height = 512;
@@ -62,16 +70,13 @@ function MonitorText() {
     context.fillText(portfolioContent.owner.role, 64, 290, 896);
     const texture = new CanvasTexture(canvas);
     texture.colorSpace = SRGBColorSpace;
-    const target = material.current!;
-    target.map = texture;
-    target.needsUpdate = true;
+    const original = screen.material;
+    const material = new MeshBasicMaterial({ map: texture, toneMapped: false });
+    screen.material = material;
     invalidate();
-    return () => { target.map = null; texture.dispose(); };
-  }, [invalidate]);
-  return <mesh position={[-0.25, 3.25, -0.22]}>
-    <planeGeometry args={[4.8, 2.6]} />
-    <meshBasicMaterial ref={material} toneMapped={false} />
-  </mesh>;
+    return () => { screen.material = original; material.dispose(); texture.dispose(); };
+  }, [scene, invalidate]);
+  return <primitive object={scene} />;
 }
 
 const overviewTarget = new Vector3(0, 3.45, 0);
@@ -82,7 +87,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
   }
 
   const targets = {
-    monitor: { target: new Vector3(-0.25, 3.25, -0.25), width: 5, height: 3.1 },
+    monitor: { target: new Vector3(-0.25, 3.62, -0.25), width: 5, height: 3.1 },
     board: { target: new Vector3(-3.5, 3.65, -1.08), width: 6.525, height: 3.05 },
     arcade: { target: new Vector3(4.35, 3.55, -0.38), width: 2.6, height: 3.5 },
   }[destination];
@@ -288,11 +293,11 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
       </group>
       <FocusHotspot destination="board" position={[-3.5, 3.65, -1.06]} size={[6.525, 3.05]} onNavigate={onNavigate} />
 
-      <MonitorText />
-      <FocusHotspot destination="monitor" position={[-0.25, 3.25, -0.19]} size={[4.8, 2.6]} onNavigate={onNavigate} />
+      <FocusHotspot destination="monitor" position={[-0.25, 3.62, 0.1]} size={[5.06, 2.5]} onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <RoomFurnishings />
+        <CurvedMonitor />
         <ArcadeCabinet />
       </Suspense>
       <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} onNavigate={onNavigate} />

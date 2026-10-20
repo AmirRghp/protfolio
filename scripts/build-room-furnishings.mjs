@@ -18,9 +18,6 @@ globalThis.FileReader ??= class {
 const wood = new THREE.MeshStandardMaterial({ color: "#89552e", roughness: 0.68 });
 const boardEdge = new THREE.MeshStandardMaterial({ color: "#51321d", roughness: 0.82 });
 const boardFace = new THREE.MeshStandardMaterial({ color: "#91603b", roughness: 0.9 });
-const casing = new THREE.MeshStandardMaterial({ color: "#263136", roughness: 0.5, metalness: 0.28 });
-const screenSeat = new THREE.MeshStandardMaterial({ color: "#17303b", roughness: 0.55 });
-const stand = new THREE.MeshStandardMaterial({ color: "#272c2d", roughness: 0.62, metalness: 0.3 });
 
 function panel(name, width, height, depth, radius, material) {
   const bevel = 0.02;
@@ -81,23 +78,6 @@ frontEdge.position.set(0, 1.72, 1.29);
 desk.add(frontEdge);
 root.add(desk);
 
-const monitor = new THREE.Group();
-monitor.name = "Monitor";
-const body = panel("MonitorBody", 5.1, 2.9, 0.16, 0.075, casing);
-body.position.set(-0.25, 3.25, -0.35);
-monitor.add(body);
-const seat = panel("ScreenSeat", 4.8, 2.6, 0.02, 0.018, screenSeat);
-seat.position.set(-0.25, 3.25, -0.25);
-monitor.add(seat);
-const neck = panel("MonitorNeck", 0.15, 0.4, 0.16, 0.03, stand);
-neck.position.set(-0.25, 2.15, -0.35);
-monitor.add(neck);
-const foot = panel("MonitorFoot", 0.8, 0.45, 0.06, 0.06, stand);
-foot.rotation.x = -Math.PI / 2;
-foot.position.set(-0.25, 1.92, -0.25);
-monitor.add(foot);
-root.add(monitor);
-
 const result = await new GLTFExporter().parseAsync(root, { binary: true, trs: false });
 const glb = Buffer.from(result);
 assert.equal(glb.toString("ascii", 0, 4), "glTF");
@@ -105,16 +85,13 @@ assert.equal(glb.readUInt32LE(4), 2);
 assert.equal(glb.readUInt32LE(8), glb.length);
 
 const loaded = await new GLTFLoader().parseAsync(result, "");
-for (const name of ["DeskTop", "BoardFrame", "BoardFace", "Shelf1", "Shelf2", "MonitorBody", "ScreenSeat", "MonitorFoot"]) {
+for (const name of ["DeskTop", "BoardFrame", "BoardFace", "Shelf1", "Shelf2"]) {
   assert.ok(loaded.scene.getObjectByName(name), `Missing ${name} in exported GLB`);
 }
 const bounds = new THREE.Box3().setFromObject(loaded.scene);
 const size = bounds.getSize(new THREE.Vector3());
 assert.ok(size.x > 12 && size.x < 13 && size.y > 3.7 && size.y < 4 && size.z > 2.5 && size.z < 3);
-const loadedScreen = loaded.scene.getObjectByName("ScreenSeat");
-const screenBounds = new THREE.Box3().setFromObject(loadedScreen);
-assert.ok(Math.abs(screenBounds.getCenter(new THREE.Vector3()).x + 0.25) < 0.01);
-assert.ok(Math.abs(screenBounds.getCenter(new THREE.Vector3()).y - 3.25) < 0.01);
+assert.equal(loaded.scene.getObjectByName("Monitor"), undefined);
 
 const output = resolve(dirname(fileURLToPath(import.meta.url)), "../public/assets/models/room-furnishings.glb");
 await mkdir(dirname(output), { recursive: true });

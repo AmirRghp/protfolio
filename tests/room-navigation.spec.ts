@@ -8,7 +8,7 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   page.on("console", (message) => {
     if (message.type() === "error") browserErrors.push(message.text());
   });
-  const assets = ["room-furnishings.glb", "arcade-cabinet.glb"].map((name) =>
+  const assets = ["room-furnishings.glb", "curved-monitor.glb", "arcade-cabinet.glb"].map((name) =>
     page.waitForResponse((response) => new URL(response.url()).pathname === `/assets/models/${name}`),
   );
   await page.goto("/");
@@ -24,29 +24,32 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   expect(browserErrors).toEqual([]);
 });
 
-test("a failed furnishings GLB load preserves the HTML destinations and portfolio", async ({ page }) => {
-  await page.route("**/assets/models/room-furnishings.glb", (route) => route.abort());
-  await page.goto("/");
+for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
+  test(`a failed ${model} load preserves the HTML destinations and portfolio`, async ({ page }) => {
+    await page.route(`**/assets/models/${model}`, (route) => route.abort());
+    await page.goto("/");
 
-  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
-  await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
-});
+    await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+    await page.getByRole("button", { name: "Monitor", exact: true }).click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  });
 
-test("a corrupt furnishings GLB falls back without losing portfolio links", async ({ page }) => {
-  await page.route("**/assets/models/room-furnishings.glb", (route) =>
-    route.fulfill({ contentType: "model/gltf-binary", body: "invalid GLB" }),
-  );
-  await page.goto("/");
+  test(`a corrupt ${model} falls back without losing portfolio links`, async ({ page }) => {
+    await page.route(`**/assets/models/${model}`, (route) =>
+      route.fulfill({ contentType: "model/gltf-binary", body: "invalid GLB" }),
+    );
+    await page.goto("/");
 
-  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
-});
+    await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
+    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
+  });
+
+}
 
 test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async ({ page }) => {
   await page.route("**/assets/models/arcade-cabinet.glb", (route) => route.abort());
@@ -144,7 +147,7 @@ test("HTML destination controls focus each room and return to the overview", asy
   await page.goto("/");
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
-  await page.waitForTimeout(120);
+  await page.waitForLoadState("networkidle");
   const overview = await canvas.screenshot();
 
   for (const destination of ["Monitor", "Project board", "Arcade"]) {
@@ -154,7 +157,7 @@ test("HTML destination controls focus each room and return to the overview", asy
     await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
     await expect(page.getByText(`Focused on ${destination}.`)).toBeVisible();
     await page.waitForTimeout(350);
-    expect(await canvas.screenshot()).not.toEqual(overview);
+    expect(changedBytes(overview, await canvas.screenshot())).toBeGreaterThan(0);
 
     if (destination === "Project board") {
       await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
@@ -166,7 +169,7 @@ test("HTML destination controls focus each room and return to the overview", asy
     await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
     await expect(button).toHaveAttribute("aria-pressed", "false");
     await page.waitForTimeout(350);
-    expect(await canvas.screenshot()).toEqual(overview);
+    expect(changedBytes(overview, await canvas.screenshot())).toBe(0);
   }
 });
 
@@ -192,7 +195,8 @@ test("room hotspots use the same destination state as the HTML menu", async ({ p
   await page.goto("/");
   const canvas = page.locator("canvas");
   const hotspots = [
-    { destination: "Project board", x: 490, y: 328 },
+    // The curved monitor covers the old sample point; select the exposed board face.
+    { destination: "Project board", x: 300, y: 430 },
     { destination: "Monitor", x: 700, y: 395 },
     { destination: "Arcade", x: 1077, y: 362 },
   ];

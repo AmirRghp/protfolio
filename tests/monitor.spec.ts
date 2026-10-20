@@ -1,5 +1,31 @@
 import { expect, test } from "@playwright/test";
 
+test("a pending curved monitor asset does not block HTML content or returning to the room", async ({ page }) => {
+  let release = () => {};
+  const pending = new Promise<void>((resolve) => { release = resolve; });
+  let requested = false;
+  await page.route("**/assets/models/curved-monitor.glb", async (route) => {
+    requested = true;
+    await pending;
+    await route.continue();
+  });
+  try {
+    await page.goto("/", { waitUntil: "domcontentloaded" });
+    await expect.poll(() => requested).toBe(true);
+    await page.getByRole("button", { name: "Monitor", exact: true }).click();
+    await expect(page.getByRole("dialog", { name: "About Amirreza" })).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+    const response = page.waitForResponse("**/assets/models/curved-monitor.glb");
+    release();
+    expect((await response).status()).toBe(200);
+    await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
+  } finally {
+    release();
+  }
+});
+
 test("monitor opens a modal with section navigation, work and focus return", async ({ page }) => {
   await page.goto("/");
   const monitor = page.getByRole("button", { name: "Monitor", exact: true });
