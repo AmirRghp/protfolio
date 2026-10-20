@@ -260,10 +260,12 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
   return (
     <>
       <color attach="background" args={["#151718"]} />
-      <ambientLight intensity={0.5} color="#d6cfbf" />
-      <directionalLight position={[1, 7, 6]} intensity={1.15} color="#e6d9bf" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={6} shadow-camera-bottom={-4} />
-      <pointLight position={[1.5, 3.2, 0.7]} color="#ffb45d" intensity={12} distance={7} decay={2} />
-      <pointLight position={[3, 1.6, 0.7]} color="#467dff" intensity={2.5} distance={5} decay={2} />
+      <ambientLight intensity={0.8} color="#d6cfbf" />
+      <directionalLight position={[1, 7, 6]} intensity={1.6} color="#e6d9bf" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={6} shadow-camera-bottom={-4} />
+      <pointLight position={[1.5, 3.2, 0.7]} color="#ffb45d" intensity={10} distance={7} decay={2} />
+      <pointLight position={[3, 1.6, 0.7]} color="#467dff" intensity={3} distance={5} decay={2} />
+      <pointLight position={[-2, 4.5, 1.6]} color="#f4b56a" intensity={4} distance={5} decay={2} />
+      <pointLight position={[5.8, 6.5, -0.8]} color="#ef9a47" intensity={3} distance={5.5} decay={2} />
 
       <mesh position={[0, 3.2, -1.4]}>
         <planeGeometry args={[30, 24]} />
