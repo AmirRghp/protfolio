@@ -1,3 +1,4 @@
+// Project-authored geometry, without third-party meshes or textures. Rebuild with: node scripts/build-arcade-cabinet.mjs
 import { mkdir, writeFile } from "node:fs/promises";
 import { Buffer } from "node:buffer";
 import process from "node:process";

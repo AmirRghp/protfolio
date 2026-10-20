@@ -2,26 +2,50 @@ import { expect, test } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
-test("arcade cabinet GLB loads in the room scene", async ({ page }, testInfo) => {
+test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
   page.on("console", (message) => {
     if (message.type() === "error") browserErrors.push(message.text());
   });
-  const assetResponse = page.waitForResponse((response) =>
-    new URL(response.url()).pathname === "/assets/models/arcade-cabinet.glb",
+  const assets = ["room-furnishings.glb", "arcade-cabinet.glb"].map((name) =>
+    page.waitForResponse((response) => new URL(response.url()).pathname === `/assets/models/${name}`),
   );
   await page.goto("/");
   await expect(page.locator("canvas")).toBeVisible();
-  expect((await assetResponse).status()).toBe(200);
+  for (const asset of assets) expect((await asset).status()).toBe(200);
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
-  await page.locator("canvas").screenshot({ path: testInfo.outputPath("arcade-cabinet-overview.png") });
+  await page.locator("canvas").screenshot({ path: testInfo.outputPath("room-models-overview.png") });
 
   await page.getByRole("button", { name: "Arcade", exact: true }).click();
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath("arcade-cabinet-focused.png"), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath("arcade-model-focused.png"), fullPage: true });
   expect(browserErrors).toEqual([]);
+});
+
+test("a failed furnishings GLB load preserves the HTML destinations and portfolio", async ({ page }) => {
+  await page.route("**/assets/models/room-furnishings.glb", (route) => route.abort());
+  await page.goto("/");
+
+  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+});
+
+test("a corrupt furnishings GLB falls back without losing portfolio links", async ({ page }) => {
+  await page.route("**/assets/models/room-furnishings.glb", (route) =>
+    route.fulfill({ contentType: "model/gltf-binary", body: "invalid GLB" }),
+  );
+  await page.goto("/");
+
+  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
 });
 
 test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async ({ page }) => {
