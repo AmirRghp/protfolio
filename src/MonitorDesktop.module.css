@@ -84,12 +84,26 @@
   position: absolute;
   z-index: 1;
   top: calc(var(--ui-bar) + var(--ui-sag-top) + var(--ui-pad));
+  bottom: var(--ui-pad);
   left: var(--ui-pad);
-  display: grid;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-content: flex-start;
   gap: var(--ui-gap);
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+.iconItem {
+  position: relative;
+  flex: none;
+  touch-action: none;
+}
+
+.iconItem[data-dragging="true"] {
+  z-index: 3;
 }
 
 .icon {
@@ -104,8 +118,12 @@
   color: inherit;
   background: none;
   font: inherit;
-  touch-action: manipulation;
-  cursor: pointer;
+  touch-action: none;
+  cursor: grab;
+}
+
+.icon:active {
+  cursor: grabbing;
 }
 
 .iconTile {

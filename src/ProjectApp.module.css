@@ -1,0 +1,176 @@
+.app {
+  display: flex;
+  flex: 1 0 auto;
+  flex-direction: column;
+  min-height: 0;
+  color: #22303f;
+  background: #f7f8fa;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: calc(var(--ui-text) * 1.15);
+}
+
+.addressBar {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  padding: 0.5em 0.75em;
+  border-bottom: 1px solid rgb(34 48 63 / 12%);
+  background: #e7ecf1;
+}
+
+.lock {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  color: #5b6b7c;
+}
+
+.address {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  padding: 0.4em 0.8em;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgb(34 48 63 / 10%);
+  font-size: 0.92em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.openLink {
+  flex: none;
+  color: #1b4fd8;
+  font-size: 0.9em;
+  text-underline-offset: 0.2em;
+}
+
+.preview {
+  display: grid;
+  align-content: start;
+  gap: 0.9em;
+  padding: 1.1em 1.2em 1.3em;
+}
+
+.appIcon {
+  display: grid;
+  place-items: center;
+  width: 3.6em;
+  height: 3.6em;
+  border-radius: 22%;
+  color: #9fd8e8;
+  background: linear-gradient(155deg, #24485e, #0d2230 70%);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 18%);
+}
+
+.appIcon svg {
+  width: 66%;
+  height: 66%;
+}
+
+.summary {
+  display: grid;
+  gap: 0.4em;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.6em;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.brief {
+  margin: 0;
+  color: #4c5d6e;
+  line-height: 1.55;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  padding: 0.4em 0.85em;
+  border-radius: 0.7em;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px rgb(34 48 63 / 8%);
+  font-size: 0.92em;
+}
+
+.actions,
+.errorActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6em;
+}
+
+.primaryLink {
+  display: inline-block;
+  padding: 0.6em 1.1em;
+  border-radius: 0.5em;
+  color: #fff;
+  background: #1b4fd8;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.secondaryButton {
+  padding: 0.6em 1.1em;
+  border: 1px solid rgb(34 48 63 / 18%);
+  border-radius: 0.5em;
+  color: #22303f;
+  background: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.embed {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.frame {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  border: 0;
+  background: #fff;
+}
+
+.embedHint {
+  margin: 0;
+  padding: 0.5em 0.9em;
+  border-top: 1px solid rgb(34 48 63 / 10%);
+  color: #5b6b7c;
+  background: #eef1f4;
+  font-size: 0.85em;
+}
+
+.error {
+  display: grid;
+  align-content: start;
+  gap: 0.5em;
+  padding: 1.1em 1.2em 1.3em;
+}
+
+.errorTitle {
+  margin: 0;
+  font-weight: 700;
+}
+
+.errorText {
+  margin: 0 0 0.4em;
+  color: #4c5d6e;
+  line-height: 1.55;
+}

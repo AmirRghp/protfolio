@@ -8,6 +8,7 @@ const project = (id: number) => ({
   title: `Project ${id}`,
   brief: `Brief ${id}`,
   githubUrl: `https://github.com/example/project-${id}` as const,
+  icon: "layers" as const,
 });
 
 describe("project board", () => {
