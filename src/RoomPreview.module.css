@@ -192,6 +192,15 @@
   }
 }
 
+/* The desktop is projected on the physical screen in every camera pose, so the wallpaper never swaps. */
+.desktopLayer {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
 .message {
   display: grid;
   place-content: center;

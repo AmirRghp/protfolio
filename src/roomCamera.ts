@@ -1,5 +1,11 @@
 export const ROOM_FOV = 40;
 
+/**
+ * How long the camera takes to travel between two room destinations. The close monitor view and
+ * the room overview are far apart, and a short travel reads as a jump instead of a camera move.
+ */
+export const ROOM_TRANSITION_SECONDS = 0.7;
+
 export function roomCameraDistance(aspect: number) {
   // Fit the 11.6-unit desk width with 8% breathing room at its front edge.
   const halfFov = (ROOM_FOV * Math.PI) / 360;

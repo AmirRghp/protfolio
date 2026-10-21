@@ -10,8 +10,8 @@ test("project board supports selection, hierarchical return and keyboard focus",
   const panel = page.getByRole("dialog", { name: "Project board" });
   await expect(panel.getByRole("heading", { name: "Selected projects" })).toBeFocused();
   await expect(page.getByText("Focused on Project board.")).toBeVisible();
-  await expect.poll(() => page.locator("canvas").evaluate((canvas) => (canvas as HTMLCanvasElement).width)).toBeGreaterThan(300);
-  await page.locator("canvas").screenshot({ path: testInfo.outputPath("project-board-scene.png") });
+  await expect.poll(() => page.locator('canvas[data-engine]').evaluate((canvas) => (canvas as HTMLCanvasElement).width)).toBeGreaterThan(300);
+  await page.locator('canvas[data-engine]').screenshot({ path: testInfo.outputPath("project-board-scene.png") });
   const project = panel.getByRole("button", { name: "Open Enterprise Knowledge Copilot" });
   await project.click();
   await expect(panel.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toBeFocused();

@@ -1,6 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { portfolioContent } from "./content";
-import MonitorPanel from "./MonitorPanel";
+import MonitorDesktop from "./MonitorDesktop";
 import ProjectBoard from "./ProjectBoard";
 import RoomUnavailable from "./RoomUnavailable";
 import styles from "./RoomPreview.module.css";
@@ -8,11 +8,15 @@ import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
 
 const RoomScene = lazy(() => import("./RoomScene"));
 
-class SceneBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
   state = { failed: false };
 
   static getDerivedStateFromError() {
     return { failed: true };
+  }
+
+  componentDidCatch() {
+    this.props.onFailure();
   }
 
   render() {
@@ -72,6 +76,18 @@ function ArcadePanel() {
 }
 
 export default function RoomPreview({ navigation, onNavigate, onSelectProject }: RoomPreviewProps) {
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const [sceneFailed, setSceneFailed] = useState(false);
+
+  useEffect(() => {
+    if (navigation.destination === "monitor") desktopRef.current?.focus({ preventScroll: true });
+  }, [navigation.destination]);
+
+  const exitMonitor = () => {
+    document.getElementById("destination-monitor")?.focus({ preventScroll: true });
+    onNavigate("room");
+  };
+
   return (
     <section className={styles.preview} aria-label="Study room overview">
       <div className={styles.header}>
@@ -96,9 +112,9 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
         </nav>
       </div>
       <div className={styles.scene}>
-        <SceneBoundary>
+        <SceneBoundary onFailure={() => setSceneFailed(true)}>
           <Suspense fallback={<p className={styles.message} role="status">Loading study…</p>}>
-            <RoomScene destination={navigation.destination} onNavigate={(destination) => {
+            <RoomScene destination={navigation.destination} desktopRef={desktopRef} onNavigate={(destination) => {
               if (destination === "monitor" || destination === "board") {
                 document.getElementById(`destination-${destination}`)?.focus({ preventScroll: true });
               }
@@ -107,8 +123,14 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
           </Suspense>
         </SceneBoundary>
         {navigation.destination === "arcade" && <ArcadePanel />}
+        <div
+          className={styles.desktopLayer}
+          data-active={navigation.destination === "monitor" && !sceneFailed}
+          inert={navigation.destination !== "monitor" || sceneFailed}
+        >
+          <MonitorDesktop ref={desktopRef} active={navigation.destination === "monitor" && !sceneFailed} onExit={exitMonitor} />
+        </div>
       </div>
-      {navigation.destination === "monitor" && <MonitorPanel onNavigate={onNavigate} />}
       {navigation.destination === "board" && <ProjectBoard
         projects={portfolioContent.projects}
         selectedProjectId={navigation.selectedProjectId}

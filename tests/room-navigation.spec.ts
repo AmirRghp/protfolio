@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
@@ -12,10 +12,10 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
     page.waitForResponse((response) => new URL(response.url()).pathname === `/assets/models/${name}`),
   );
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator('canvas[data-engine]')).toBeVisible();
   for (const asset of assets) expect((await asset).status()).toBe(200);
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
-  await page.locator("canvas").screenshot({ path: testInfo.outputPath("room-models-overview.png") });
+  await page.locator('canvas[data-engine]').screenshot({ path: testInfo.outputPath("room-models-overview.png") });
 
   await page.getByRole("button", { name: "Arcade", exact: true }).click();
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
@@ -33,8 +33,8 @@ for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
     await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
     await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
     await page.getByRole("button", { name: "Monitor", exact: true }).click();
-    await expect(page.getByRole("dialog")).toBeVisible();
-    await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Back to room", exact: true }).click();
     await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
   });
 
@@ -70,11 +70,27 @@ function changedBytes(first: Buffer, second: Buffer) {
   return changed;
 }
 
+/**
+ * A band of the room below the page header and above the monitor screen, so camera moves stay
+ * comparable while the animated wallpaper on the screen is not part of the frame.
+ */
+async function roomFrame(page: Page) {
+  const clip = await page.evaluate(() => {
+    const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-engine]')!;
+    const box = canvas.getBoundingClientRect();
+    const screen = document.querySelector<HTMLElement>('[role="region"]')?.getBoundingClientRect();
+    const top = box.y + 120;
+    const bottom = screen && screen.top > top + 60 ? screen.top - 20 : box.y + box.height - 60;
+    return { x: box.x, y: top, width: box.width, height: Math.max(60, bottom - top) };
+  });
+  return page.screenshot({ clip });
+}
+
 test("idle parallax stays inside the room and returns to center around controls", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const canvas = page.locator("canvas");
-  const sceneFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 1440, height: 550 } });
+  const canvas = page.locator('canvas[data-engine]');
+  const sceneFrame = () => roomFrame(page);
   await expect(canvas).toBeVisible();
   await page.waitForLoadState("networkidle");
   await page.getByRole("link", { name: "Read portfolio" }).hover();
@@ -107,8 +123,8 @@ test("idle parallax stays inside the room and returns to center around controls"
 test("live reduced motion removes idle movement and a resize retargets the return", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const canvas = page.locator("canvas");
-  const sceneFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 1440, height: 550 } });
+  const canvas = page.locator('canvas[data-engine]');
+  const sceneFrame = () => roomFrame(page);
   await expect(canvas).toBeVisible();
   await page.waitForLoadState("networkidle");
   const initial = await sceneFrame();
@@ -129,26 +145,26 @@ test("live reduced motion removes idle movement and a resize retargets the retur
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.getByRole("link", { name: "Read portfolio" }).hover();
   await page.waitForTimeout(350);
-  const overviewAt1024 = await page.screenshot({ clip: { x: 0, y: 180, width: 1024, height: 550 } });
+  const overviewAt1024 = await roomFrame(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(350);
   await page.getByRole("button", { name: "Arcade", exact: true }).click();
   await page.waitForTimeout(60);
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.getByRole("button", { name: "Back to room", exact: true }).click();
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(900);
   await expect(page.getByRole("button", { name: "Arcade", exact: true })).toHaveAttribute("aria-pressed", "false");
-  expect(changedBytes(overviewAt1024, await page.screenshot({ clip: { x: 0, y: 180, width: 1024, height: 550 } }))).toBe(0);
+  expect(changedBytes(overviewAt1024, await roomFrame(page))).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1024);
 });
 
 test("HTML destination controls focus each room and return to the overview", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const canvas = page.locator("canvas");
+  const canvas = page.locator('canvas[data-engine]');
   await expect(canvas).toBeVisible();
   await page.waitForLoadState("networkidle");
-  const overview = await canvas.screenshot();
+  const overview = await roomFrame(page);
 
   for (const destination of ["Monitor", "Project board", "Arcade"]) {
     const button = page.getByRole("button", { name: destination, exact: true });
@@ -157,19 +173,17 @@ test("HTML destination controls focus each room and return to the overview", asy
     await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
     await expect(page.getByText(`Focused on ${destination}.`)).toBeVisible();
     await page.waitForTimeout(350);
-    expect(changedBytes(overview, await canvas.screenshot())).toBeGreaterThan(0);
+    expect(changedBytes(overview, await roomFrame(page))).toBeGreaterThan(0);
 
     if (destination === "Project board") {
       await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
-    } else if (destination === "Monitor") {
-      await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
     } else {
       await page.getByRole("button", { name: "Back to room", exact: true }).click();
     }
     await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
     await expect(button).toHaveAttribute("aria-pressed", "false");
-    await page.waitForTimeout(350);
-    expect(changedBytes(overview, await canvas.screenshot())).toBe(0);
+    await page.waitForTimeout(900);
+    expect(changedBytes(overview, await roomFrame(page))).toBe(0);
   }
 });
 
@@ -184,7 +198,7 @@ test("quick destination changes and a mid-transition return restore overview con
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
   await page.waitForTimeout(60);
   await page.getByRole("button", { name: "Back to room", exact: true }).click();
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(900);
 
   await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Project board" })).toHaveAttribute("aria-pressed", "false");
@@ -193,11 +207,11 @@ test("quick destination changes and a mid-transition return restore overview con
 test("room hotspots use the same destination state as the HTML menu", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const canvas = page.locator("canvas");
+  const canvas = page.locator('canvas[data-engine]');
   const hotspots = [
     // The curved monitor covers the old sample point; select the exposed board face.
     { destination: "Project board", x: 300, y: 430 },
-    { destination: "Monitor", x: 700, y: 395 },
+    { destination: "Monitor", x: 611, y: 334 },
     { destination: "Arcade", x: 1077, y: 362 },
   ];
 
@@ -207,8 +221,6 @@ test("room hotspots use the same destination state as the HTML menu", async ({ p
     await expect(page.getByText(`Focused on ${hotspot.destination}.`)).toBeVisible();
     if (hotspot.destination === "Project board") {
       await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
-    } else if (hotspot.destination === "Monitor") {
-      await page.getByRole("button", { name: "Close · Back to room", exact: true }).click();
     } else {
       await page.getByRole("button", { name: "Back to room", exact: true }).click();
     }
@@ -224,15 +236,14 @@ test("reduced motion snaps to a destination without a camera transition", async 
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
   await page.waitForLoadState("networkidle");
-  const canvas = page.locator("canvas");
 
   await page.getByRole("button", { name: "Arcade" }).click();
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Arcade" })).toHaveAttribute("aria-pressed", "true");
   await page.waitForTimeout(120);
-  const focused = await canvas.screenshot();
+  const focused = await roomFrame(page);
   await page.waitForTimeout(350);
-  expect(changedBytes(focused, await canvas.screenshot())).toBe(0);
+  expect(changedBytes(focused, await roomFrame(page))).toBe(0);
 });
 
 test("destination controls and the return button work from the keyboard", async ({ page }) => {
@@ -336,7 +347,7 @@ test("touch-emulated visitors can use the project board and arcade controls", as
   });
 
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator('canvas[data-engine]')).toBeVisible();
   await page.waitForTimeout(350);
   const touchFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 375, height: 450 } });
   const beforeTouch = await touchFrame();

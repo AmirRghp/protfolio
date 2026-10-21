@@ -1,10 +1,11 @@
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { CanvasTexture, SRGBColorSpace, DoubleSide, Mesh, MeshBasicMaterial, Raycaster, Vector2, Vector3 } from "three";
+import { DoubleSide, Mesh, PerspectiveCamera, Raycaster, Vector2, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { portfolioContent } from "./content";
 import { boardCardLayout } from "./boardLayout";
-import { ROOM_FOV, roomCameraDistance, roomParallaxOffset } from "./roomCamera";
+import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
+import { ROOM_FOV, ROOM_TRANSITION_SECONDS, roomCameraDistance, roomParallaxOffset } from "./roomCamera";
 import type { RoomDestination } from "./roomNavigation";
 import RoomUnavailable from "./RoomUnavailable";
 
@@ -43,43 +44,95 @@ function ArcadeCabinet() {
   return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
 }
 
-function CurvedMonitor() {
+function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> }) {
   const { scene } = useLoader(GLTFLoader, "/assets/models/curved-monitor.glb");
   const invalidate = useThree((state) => state.invalidate);
-  useEffect(() => {
+  const surface = useMemo(() => {
     const screen = scene.getObjectByName("MonitorScreen");
-    if (!(screen instanceof Mesh)) throw new Error("Curved monitor is missing MonitorScreen");
+    if (!(screen instanceof Mesh)) throw new Error("The monitor model is missing MonitorScreen");
+    scene.updateMatrixWorld(true);
+    return readMonitorSurface(screen.geometry, screen.matrixWorld);
+  }, [scene]);
+  useEffect(() => {
     scene.traverse((object) => {
       if (object instanceof Mesh) {
-        object.castShadow = object !== screen;
-        object.receiveShadow = object !== screen;
+        object.castShadow = object.name !== "MonitorScreen";
+        object.receiveShadow = true;
       }
     });
-    const canvas = document.createElement("canvas");
-    canvas.width = 1024;
-    canvas.height = 512;
-    const context = canvas.getContext("2d");
-    if (!context) return;
-    context.fillStyle = "#17303b";
-    context.fillRect(0, 0, 1024, 512);
-    context.fillStyle = "#f1efe8";
-    context.font = "48px system-ui";
-    context.fillText(portfolioContent.owner.name, 64, 220, 896);
-    context.fillStyle = "#d6bc87";
-    context.font = "32px system-ui";
-    context.fillText(portfolioContent.owner.role, 64, 290, 896);
-    const texture = new CanvasTexture(canvas);
-    texture.colorSpace = SRGBColorSpace;
-    const original = screen.material;
-    const material = new MeshBasicMaterial({ map: texture, toneMapped: false });
-    screen.material = material;
     invalidate();
-    return () => { screen.material = original; material.dispose(); texture.dispose(); };
   }, [scene, invalidate]);
-  return <primitive object={scene} />;
+  return (
+    <>
+      <primitive object={scene} />
+      <MonitorOverlay surface={surface} desktopRef={desktopRef} />
+    </>
+  );
+}
+
+/**
+ * Keeps the HTML desktop glued to the physical screen of the monitor: the live camera pose is
+ * projected into the canvas, a homography maps the overlay onto that quad and the outline of the
+ * screen clips it so it never paints over the bezel.
+ */
+function MonitorOverlay({ surface, desktopRef }: {
+  surface: MonitorSurface;
+  desktopRef: RefObject<HTMLDivElement | null>;
+}) {
+  const { camera, size } = useThree();
+  const applied = useRef({ transform: "", clipPath: "", sagTop: -1, sagBottom: -1 });
+
+  const resting = useMemo(() => {
+    const pose = destinationPose("monitor", size.width / size.height);
+    const restCamera = new PerspectiveCamera(ROOM_FOV, size.width / size.height, 0.1, 100);
+    restCamera.position.copy(pose.position);
+    restCamera.lookAt(pose.target);
+    restCamera.updateMatrixWorld(true);
+    restCamera.updateProjectionMatrix();
+    return projectedScreenSize(restCamera, size, surface);
+  }, [size, surface]);
+
+  useEffect(() => () => {
+    if (desktopRef.current) desktopRef.current.dataset.projected = "false";
+  }, [desktopRef]);
+
+  useFrame(() => {
+    const element = desktopRef.current;
+    if (!element) return;
+    const layout = monitorOverlayLayout(camera, size, surface, resting);
+    if (layout.transform !== applied.current.transform) {
+      element.style.transform = layout.transform;
+      applied.current.transform = layout.transform;
+    }
+    if (layout.clipPath !== applied.current.clipPath) {
+      element.style.clipPath = layout.clipPath;
+      applied.current.clipPath = layout.clipPath;
+    }
+    if (element.style.width !== `${resting.width}px`) element.style.width = `${resting.width}px`;
+    if (element.style.height !== `${resting.height}px`) element.style.height = `${resting.height}px`;
+    // The curved edge of the screen dips into the flat overlay, so the desktop keeps its content clear of it.
+    if (applied.current.sagTop !== layout.sagTop) {
+      element.style.setProperty("--ui-sag-top", `${layout.sagTop}px`);
+      applied.current.sagTop = layout.sagTop;
+    }
+    if (applied.current.sagBottom !== layout.sagBottom) {
+      element.style.setProperty("--ui-sag-bottom", `${layout.sagBottom}px`);
+      applied.current.sagBottom = layout.sagBottom;
+    }
+    if (element.dataset.projected !== "true") element.dataset.projected = "true";
+  });
+
+  return null;
 }
 
 const overviewTarget = new Vector3(0, 3.45, 0);
+
+// Measured from the prepared monitor asset: the display surface is centred at (-0.25, 3.754, -0.25).
+const monitorSurface = {
+  target: new Vector3(-0.25, 3.754, -0.25),
+  width: 4.231,
+  height: 2.136,
+};
 
 function destinationPose(destination: RoomDestination, aspect: number) {
   if (destination === "room") {
@@ -87,7 +140,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
   }
 
   const targets = {
-    monitor: { target: new Vector3(-0.25, 3.62, -0.25), width: 5, height: 3.1 },
+    monitor: { target: monitorSurface.target, width: 4.6, height: 2.6 },
     board: { target: new Vector3(-3.5, 3.65, -1.08), width: 6.525, height: 3.05 },
     arcade: { target: new Vector3(4.35, 3.55, -0.38), width: 2.6, height: 3.5 },
   }[destination];
@@ -111,7 +164,7 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
   const endPosition = useRef(new Vector3());
   const startTarget = useRef(new Vector3());
   const endTarget = useRef(new Vector3());
-  const elapsed = useRef(0);
+  const transitionStart = useRef(0);
   const active = useRef(false);
   const initialized = useRef(false);
 
@@ -144,12 +197,13 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
       active.current = false;
       invalidate();
     } else {
+      // A new destination continues from wherever the camera currently is.
       startPosition.current.copy(camera.position);
       startTarget.current.copy(lookAt.current);
       endPosition.current.copy(pose.position);
       endTarget.current.copy(pose.target);
       idleOffset.current.set(0, 0, 0);
-      elapsed.current = 0;
+      transitionStart.current = performance.now();
       active.current = true;
       invalidate();
     }
@@ -207,8 +261,8 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
 
   useFrame((_, delta) => {
     if (active.current) {
-      elapsed.current = Math.min(elapsed.current + delta, 0.28);
-      const progress = elapsed.current / 0.28;
+      // The travel is measured on the wall clock, so an idle frame cannot skip the whole move.
+      const progress = Math.min((performance.now() - transitionStart.current) / (ROOM_TRANSITION_SECONDS * 1000), 1);
       const eased = progress * progress * (3 - 2 * progress);
       camera.position.lerpVectors(startPosition.current, endPosition.current, eased);
       lookAt.current.lerpVectors(startTarget.current, endTarget.current, eased);
@@ -259,7 +313,10 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
   return null;
 }
 
-function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => void }) {
+function Study({ onNavigate, desktopRef }: {
+  onNavigate: (destination: RoomDestination) => void;
+  desktopRef: RefObject<HTMLDivElement | null>;
+}) {
   const boardCards = boardCardLayout(portfolioContent.projects.length);
 
   return (
@@ -293,11 +350,11 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
       </group>
       <FocusHotspot destination="board" position={[-3.5, 3.65, -1.06]} size={[6.525, 3.05]} onNavigate={onNavigate} />
 
-      <FocusHotspot destination="monitor" position={[-0.25, 3.62, 0.1]} size={[5.06, 2.5]} onNavigate={onNavigate} />
+      <FocusHotspot destination="monitor" position={[-0.25, 3.754, -0.1]} size={[4.231, 2.136]} onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <RoomFurnishings />
-        <CurvedMonitor />
+        <Monitor desktopRef={desktopRef} />
         <ArcadeCabinet />
       </Suspense>
       <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} onNavigate={onNavigate} />
@@ -305,9 +362,10 @@ function Study({ onNavigate }: { onNavigate: (destination: RoomDestination) => v
   );
 }
 
-export default function RoomScene({ destination, onNavigate }: {
+export default function RoomScene({ destination, onNavigate, desktopRef }: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
+  desktopRef: RefObject<HTMLDivElement | null>;
 }) {
   const [contextLost, setContextLost] = useState(false);
   if (contextLost) return <RoomUnavailable />;
@@ -315,7 +373,7 @@ export default function RoomScene({ destination, onNavigate }: {
     <Canvas shadows="percentage" frameloop="demand" dpr={[1, 1.5]} camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }} fallback={<RoomUnavailable />} aria-label="Frontal study with project board, workstation and arcade">
       <CameraFocus destination={destination} />
       <ContextGuard onLost={() => setContextLost(true)} />
-      <Study onNavigate={onNavigate} />
+      <Study onNavigate={onNavigate} desktopRef={desktopRef} />
     </Canvas>
   );
 }

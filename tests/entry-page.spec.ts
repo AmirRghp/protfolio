@@ -46,7 +46,7 @@ test("room fills the viewport and keeps the HTML path keyboard accessible", asyn
   });
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const canvas = page.locator("canvas");
+  const canvas = page.locator('canvas[data-engine]');
   await expect(canvas).toBeVisible();
   await expect.poll(() => canvas.evaluate((element) => Math.round(element.getBoundingClientRect().height))).toBe(900);
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
@@ -83,9 +83,9 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
   await page.getByRole("button", { name: "Monitor", exact: true }).click();
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
   await page.getByRole("link", { name: "Read portfolio" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
 });
@@ -93,13 +93,13 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
 
 test("a lost GPU context falls back without removing the HTML portfolio", async ({ page }) => {
   await page.goto("/");
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator('canvas[data-engine]')).toBeVisible();
   await expect.poll(() => page.evaluate(() => {
-    const canvas = document.querySelector("canvas");
+    const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-engine]');
     return !!canvas?.getContext("webgl2")?.getExtension("WEBGL_lose_context");
   })).toBe(true);
   await page.evaluate(() => {
-    document.querySelector("canvas")!.getContext("webgl2")!.getExtension("WEBGL_lose_context")!.loseContext();
+    document.querySelector<HTMLCanvasElement>('canvas[data-engine]')!.getContext("webgl2")!.getExtension("WEBGL_lose_context")!.loseContext();
   });
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();

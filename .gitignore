@@ -16,3 +16,4 @@ __pycache__/
 
 # Local-only documentation
 docs/
+/review.md
