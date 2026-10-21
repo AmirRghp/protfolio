@@ -1,5 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
 import { portfolioContent } from "./content";
+import { desktopApps } from "./desktopApps";
 import MonitorDesktop from "./MonitorDesktop";
 import ProjectBoard from "./ProjectBoard";
 import RoomUnavailable from "./RoomUnavailable";
@@ -128,7 +129,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
           data-active={navigation.destination === "monitor" && !sceneFailed}
           inert={navigation.destination !== "monitor" || sceneFailed}
         >
-          <MonitorDesktop ref={desktopRef} active={navigation.destination === "monitor" && !sceneFailed} onExit={exitMonitor} />
+          <MonitorDesktop ref={desktopRef} apps={desktopApps} active={navigation.destination === "monitor" && !sceneFailed} onExit={exitMonitor} />
         </div>
       </div>
       {navigation.destination === "board" && <ProjectBoard

@@ -9,6 +9,8 @@ export type DesktopApp = {
   title: string;
   icon: ReactNode;
   content: ReactNode;
+  /** How the icon opens its window. Defaults to a single click. */
+  activation?: "click" | "double-click";
 };
 
 type MonitorDesktopProps = {
@@ -56,6 +58,21 @@ function StatusBar() {
   );
 }
 
+/** A file opens on a double activation; the same threshold covers a mouse double click and a touch double tap. */
+const DOUBLE_ACTIVATION_MS = 500;
+
+/** The ways a file can be opened, spelled out for the accessible description of its icon. */
+const ACTIVATION_HINT = "Double-click, double tap, or press Enter to open";
+
+type Activation = { id: string; at: number };
+
+/** Counts an activation on an icon and reports whether it completes a double activation. */
+function registerActivation(previous: Activation | null, id: string): { state: Activation | null; doubled: boolean } {
+  const now = Date.now();
+  const doubled = previous !== null && previous.id === id && now - previous.at <= DOUBLE_ACTIVATION_MS;
+  return { state: doubled ? null : { id, at: now }, doubled };
+}
+
 export function DesktopWindow({ title, onClose, children }: {
   title: string;
   onClose: () => void;
@@ -79,7 +96,7 @@ export function DesktopWindow({ title, onClose, children }: {
         <span className={styles.windowTitle} id="monitor-window-title">{title}</span>
         <button ref={closeButton} type="button" className={styles.windowClose} onClick={onClose}>Close</button>
       </header>
-      <div className={styles.windowBody}>{children}</div>
+      <div className={styles.windowBody} role="group" aria-label={`${title} content`} tabIndex={0}>{children}</div>
     </section>
   );
 }
@@ -87,12 +104,61 @@ export function DesktopWindow({ title, onClose, children }: {
 export default function MonitorDesktop({ apps = [], active = true, onExit, ref }: MonitorDesktopProps) {
   const [openAppId, setOpenAppId] = useState<string | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
+  const lastActivation = useRef<Activation | null>(null);
   const openApp = apps.find((app) => app.id === openAppId) ?? null;
 
+  /** Drops a pending activation, so only a real second activation of the same icon opens a file. */
+  const clearActivation = () => {
+    lastActivation.current = null;
+  };
+
   const closeWindow = () => {
+    clearActivation();
     setOpenAppId(null);
     opener.current?.focus();
   };
+
+  const showApp = (app: DesktopApp, trigger: HTMLButtonElement) => {
+    clearActivation();
+    opener.current = trigger;
+    setOpenAppId(app.id);
+  };
+
+  /** Counts a double activation on the same icon, so a single click or tap only selects the file. */
+  const countDoubleActivation = (app: DesktopApp, trigger: HTMLButtonElement) => {
+    const { state, doubled } = registerActivation(lastActivation.current, app.id);
+    lastActivation.current = state;
+    if (!doubled) return;
+    showApp(app, trigger);
+  };
+
+  // A pending activation only survives while the same icon is activated again, so every other
+  // interaction in the whole interface drops it: pointers, focus moves and key presses, inside the
+  // desktop and outside of it.
+  useEffect(() => {
+    if (!active) {
+      lastActivation.current = null;
+      return;
+    }
+
+    const dropActivationOnOtherInteraction = (event: Event) => {
+      const pending = lastActivation.current;
+      if (!pending) return;
+      const target = event.target;
+      const icon = target instanceof Element ? target.closest<HTMLElement>("[data-app-id]") : null;
+      if (icon?.dataset.appId === pending.id) return;
+      lastActivation.current = null;
+    };
+
+    document.addEventListener("pointerdown", dropActivationOnOtherInteraction, true);
+    document.addEventListener("focusin", dropActivationOnOtherInteraction, true);
+    document.addEventListener("keydown", dropActivationOnOtherInteraction, true);
+    return () => {
+      document.removeEventListener("pointerdown", dropActivationOnOtherInteraction, true);
+      document.removeEventListener("focusin", dropActivationOnOtherInteraction, true);
+      document.removeEventListener("keydown", dropActivationOnOtherInteraction, true);
+    };
+  }, [active]);
 
   return (
     <div
@@ -128,21 +194,37 @@ export default function MonitorDesktop({ apps = [], active = true, onExit, ref }
       </div>
       <StatusBar />
       <ul className={styles.icons}>
-        {apps.map((app) => (
-          <li key={app.id}>
-            <button
-              type="button"
-              className={styles.icon}
-              onClick={(event) => {
-                opener.current = event.currentTarget;
-                setOpenAppId(app.id);
-              }}
-            >
-              <span className={styles.iconTile} aria-hidden="true">{app.icon}</span>
-              <span className={styles.iconLabel}>{app.label}</span>
-            </button>
-          </li>
-        ))}
+        {apps.map((app) => {
+          const needsDoubleClick = app.activation === "double-click";
+          const hintId = `${app.id}-activation-hint`;
+          return (
+            <li key={app.id}>
+              <button
+                type="button"
+                className={styles.icon}
+                data-app-id={app.id}
+                title={needsDoubleClick ? ACTIVATION_HINT : undefined}
+                aria-describedby={needsDoubleClick ? hintId : undefined}
+                onClick={(event) => {
+                  if (!needsDoubleClick) {
+                    showApp(app, event.currentTarget);
+                    return;
+                  }
+                  countDoubleActivation(app, event.currentTarget);
+                }}
+                onKeyDown={(event) => {
+                  if (!needsDoubleClick || event.key !== "Enter") return;
+                  event.preventDefault();
+                  showApp(app, event.currentTarget);
+                }}
+              >
+                <span className={styles.iconTile} aria-hidden="true">{app.icon}</span>
+                <span className={styles.iconLabel}>{app.label}</span>
+              </button>
+              {needsDoubleClick && <span id={hintId} className={styles.visuallyHidden}>{ACTIVATION_HINT}</span>}
+            </li>
+          );
+        })}
       </ul>
       {openApp && (
         <DesktopWindow title={openApp.title} onClose={closeWindow}>

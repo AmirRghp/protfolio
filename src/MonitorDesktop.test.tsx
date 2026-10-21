@@ -38,4 +38,31 @@ describe("monitor desktop", () => {
     expect(html).toContain("Close");
     expect(html).toContain("Amirreza Gholipour");
   });
+
+  it("keeps a single click as the default activation of a desktop app", () => {
+    const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} />);
+
+    expect(html).not.toContain("aria-describedby");
+    expect(html).not.toContain("Double-click");
+  });
+
+  it("describes every way a file that needs a double click can be opened", () => {
+    const html = renderToStaticMarkup(
+      <MonitorDesktop apps={[{ ...aboutMe, activation: "double-click" }]} />,
+    );
+
+    expect(html).toContain('aria-describedby="about-me-activation-hint"');
+    expect(html).toContain("Double-click, double tap, or press Enter to open");
+  });
+
+  it("keeps the window content reachable with the keyboard", () => {
+    const html = renderToStaticMarkup(
+      <DesktopWindow title="about-me.txt" onClose={() => {}}>
+        <p>Amirreza Gholipour</p>
+      </DesktopWindow>,
+    );
+
+    expect(html).toContain('tabindex="0"');
+    expect(html).toContain('role="group"');
+  });
 });
