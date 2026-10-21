@@ -225,8 +225,12 @@ test("room hotspots use the same destination state as the HTML menu", async ({ p
       await page.getByRole("button", { name: "Back to room", exact: true }).click();
     }
     await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
-    if (hotspot.destination === "Monitor") {
+    if (hotspot.destination === "Project board") {
+      await expect(page.getByRole("button", { name: "Project board", exact: true })).toBeFocused();
+    } else if (hotspot.destination === "Monitor") {
       await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+    } else {
+      await expect(page.getByRole("button", { name: "Arcade", exact: true })).toBeFocused();
     }
   }
 });
@@ -292,6 +296,8 @@ test("arcade loads only on request, keeps an external exit, and restores focus",
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 
   await page.getByRole("button", { name: "Play game" }).click();
+  await expect(page.getByRole("button", { name: "Exit game" })).toBeFocused();
+  await expect(page.getByText("If the game does not appear, open it directly on PS1FUN.")).toBeVisible();
   const game = page.getByTitle("Crash Bandicoot on PS1FUN");
   await expect(game).toBeVisible();
   await expect(page.locator("[class*=arcadeViewport]")).toHaveCSS("overflow", "hidden");
@@ -322,14 +328,24 @@ test("arcade loads only on request, keeps an external exit, and restores focus",
   await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toHaveCount(0);
 });
 
-test("arcade keeps the direct link available when the embed is offline", async ({ page }) => {
+test("an aborted game request still leaves usable guidance and the direct link", async ({ page }, testInfo) => {
+  // A cross-origin iframe can fire load for the browser's error page, so the parent cannot call
+  // this a confirmed failure. The outside guidance must remain usable regardless.
   await page.route("https://www.ps1fun.com/play/crash-bandicoot/1212", (route) => route.abort());
   await page.goto("/");
   await page.getByRole("button", { name: "Arcade", exact: true }).click();
   await page.getByRole("button", { name: "Play game" }).click();
+
+  const exit = page.getByRole("button", { name: "Exit game" });
+  await expect(exit).toBeFocused();
   await expect(page.getByTitle("Crash Bandicoot on PS1FUN")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Exit game" })).toBeVisible();
+  await expect(page.getByText("If the game does not appear, open it directly on PS1FUN.")).toBeVisible();
+  const direct = page.getByRole("link", { name: "Open game on PS1FUN" });
+  await expect(direct).toBeVisible();
+  await expect(direct).toHaveAttribute("href", "https://www.ps1fun.com/play/crash-bandicoot/1212");
+  await expect(direct).toHaveAttribute("target", "_blank");
+  await expect(exit).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("arcade-abort-guidance.png") });
 });
 
 test("touch-emulated visitors can use the project board and arcade controls", async ({ browser }, testInfo) => {

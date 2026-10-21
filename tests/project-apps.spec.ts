@@ -189,8 +189,7 @@ test("a cancelled pointer does not swallow the next keyboard activation", async 
   await focusMonitor(page);
 
   const icon = page.getByRole("button", { name: "Freelance Project Radar" });
-  const box = await icon.boundingBox();
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await icon.hover();
   await page.mouse.down();
 
   // The browser takes the gesture over, so the pointer is cancelled and no click follows.
@@ -208,8 +207,7 @@ test("a cancelled pointer does not break the about-me file", async ({ page }) =>
   await focusMonitor(page);
 
   const file = page.getByRole("button", { name: "about-me.txt" });
-  const box = await file.boundingBox();
-  await page.mouse.move(box!.x + box!.width / 2, box!.y + box!.height / 2);
+  await file.hover();
   await page.mouse.down();
   await file.dispatchEvent("pointercancel", { pointerId: 1, pointerType: "mouse", isPrimary: true });
 

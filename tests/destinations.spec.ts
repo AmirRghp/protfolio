@@ -1,0 +1,198 @@
+import { expect, test, type Page } from "@playwright/test";
+
+const desktop = '[role="region"][aria-label="Amirreza workspace"]';
+const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
+const layer = '[class*="desktopLayer"]';
+const gameUrl = "https://www.ps1fun.com/play/crash-bandicoot/1212";
+
+// The desktop is projected on a software rendered 3D scene, so these checks need more time on slow machines.
+test.describe.configure({ timeout: 90_000 });
+
+async function focusMonitor(page: Page) {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await page.goto("/", { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await expect(page.locator(desktop)).toBeVisible();
+}
+
+async function expectLayerInert(page: Page, expected: boolean) {
+  expect(await page.locator(layer).evaluate((element) => element.hasAttribute("inert"))).toBe(expected);
+}
+
+test("an open window survives the overview with the same desktop and wallpaper", async ({ page }, testInfo) => {
+  await focusMonitor(page);
+  const file = page.getByRole("button", { name: "about-me.txt" });
+  const openWindow = page.locator(monitorWindow);
+
+  await file.dblclick();
+  await expect(openWindow).toBeVisible();
+  await expect(page.getByRole("button", { name: "Close", exact: true })).toBeFocused();
+
+  await page.evaluate(({ desktopSelector, windowSelector }) => {
+    document.querySelector<HTMLElement>(desktopSelector)!.dataset.instance = "kept";
+    document.querySelector<HTMLElement>(windowSelector)!.dataset.instance = "kept";
+    document.querySelector<HTMLElement>(`${desktopSelector} canvas`)!.dataset.instance = "kept";
+  }, { desktopSelector: desktop, windowSelector: monitorWindow });
+
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+  await expectLayerInert(page, true);
+  await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
+  await expect(openWindow).toBeVisible();
+  await expect(page.locator(`${desktop}[data-instance="kept"]`)).toHaveCount(1);
+  await expect(page.locator(`${monitorWindow}[data-instance="kept"]`)).toHaveCount(1);
+  await expect(page.locator(`${desktop} canvas[data-instance="kept"]`)).toHaveCount(1);
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await page.screenshot({ path: testInfo.outputPath("window-preserved-in-overview.png") });
+
+  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await expect(page.locator(desktop)).toBeFocused();
+  await expect(openWindow).toBeVisible();
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
+  await expectLayerInert(page, false);
+  await page.screenshot({ path: testInfo.outputPath("window-restored-on-monitor.png") });
+
+  // The first Escape closes the restored window; the next one returns to the overview.
+  await page.keyboard.press("Escape");
+  await expect(openWindow).toHaveCount(0);
+  await expect(file).toBeFocused();
+  await expect(page.getByText("Focused on Monitor.")).toBeVisible();
+
+  await page.keyboard.press("Escape");
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expectLayerInert(page, true);
+  await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
+});
+
+test("board and arcade discard a window that survived the overview", async ({ page }) => {
+  await focusMonitor(page);
+  const file = page.getByRole("button", { name: "about-me.txt" });
+  const openWindow = page.locator(monitorWindow);
+  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
+
+  // The board takes over from the overview, so the preserved monitor window must not remain.
+  await file.dblclick();
+  await expect(openWindow).toBeVisible();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(openWindow).toBeVisible();
+  await page.getByRole("button", { name: "Project board", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Project board" });
+  await expect(dialog).toBeVisible();
+  await expect(openWindow).toHaveCount(0);
+  await expectLayerInert(page, true);
+  await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Project board", exact: true })).toBeFocused();
+  await monitor.click();
+  await expect(page.locator(desktop)).toBeFocused();
+  await expect(openWindow).toHaveCount(0);
+
+  // The arcade has the same ownership rule when the window is preserved in the overview.
+  await file.dblclick();
+  await expect(openWindow).toBeVisible();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(openWindow).toBeVisible();
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+  await expect(openWindow).toHaveCount(0);
+  await expectLayerInert(page, true);
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Arcade", exact: true })).toBeFocused();
+  await monitor.click();
+  await expect(page.locator(desktop)).toBeFocused();
+  await expect(openWindow).toHaveCount(0);
+});
+
+test("leaving the arcade for the board stops the game and requires Play again", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  let gameRequests = 0;
+  await page.route(gameUrl, async (route) => {
+    gameRequests++;
+    await route.fulfill({ contentType: "text/html", body: "<title>Game</title>" });
+  });
+  await page.goto("/", { waitUntil: "networkidle" });
+
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await page.getByRole("button", { name: "Play game" }).click();
+  const game = page.getByTitle("Crash Bandicoot on PS1FUN");
+  await expect(game).toBeVisible();
+  await expect(page.getByRole("button", { name: "Exit game" })).toBeFocused();
+  await expect.poll(() => gameRequests).toBe(1);
+
+  await page.getByRole("button", { name: "Project board", exact: true }).click();
+  await expect(page.getByRole("dialog", { name: "Project board" })).toBeVisible();
+  await expect(game).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Exit game" })).toHaveCount(0);
+  await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
+  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+
+  await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+  await expect(page.getByRole("button", { name: "Exit game" })).toHaveCount(0);
+  expect(gameRequests).toBe(1);
+});
+
+test("a game frame that never loads falls back to the direct link and an outside exit", async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
+  let release = () => {};
+  const pending = new Promise<void>((resolve) => { release = resolve; });
+  await page.route(gameUrl, async (route) => {
+    await pending;
+    await route.abort();
+  });
+
+  try {
+    await page.setViewportSize({ width: 1440, height: 800 });
+    await page.goto("/", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "Arcade", exact: true }).click();
+    await page.getByRole("button", { name: "Play game" }).click();
+
+    const exit = page.getByRole("button", { name: "Exit game" });
+    await expect(exit).toBeFocused();
+    await expect(page.getByRole("status")).toContainText("did not appear in the arcade within 8 seconds", { timeout: 15_000 });
+    await expect(page.getByText("If the game does not appear, open it directly on PS1FUN.")).toHaveCount(0);
+
+    const direct = page.getByRole("link", { name: "Open game on PS1FUN" });
+    await expect(page.getByTitle("Crash Bandicoot on PS1FUN")).toHaveCount(0);
+    await expect(direct).toBeVisible();
+    await expect(direct).toHaveAttribute("href", gameUrl);
+    await expect(direct).toHaveAttribute("target", "_blank");
+    await expect(exit).toBeVisible();
+    await expect(exit).toBeFocused();
+    await page.screenshot({ path: testInfo.outputPath("arcade-iframe-fallback.png") });
+
+    await exit.click();
+    await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+    await expect(page.getByRole("status")).toHaveCount(0);
+  } finally {
+    release();
+  }
+});
+
+test("reduced motion keeps the preserved window and every return control usable", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await focusMonitor(page);
+  const file = page.getByRole("button", { name: "about-me.txt" });
+  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
+  const openWindow = page.locator(monitorWindow);
+
+  await file.dblclick();
+  await expect(openWindow).toBeVisible();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(openWindow).toBeVisible();
+  await expect(monitor).toBeFocused();
+  await monitor.click();
+  await expect(page.locator(desktop)).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(openWindow).toHaveCount(0);
+  await expect(file).toBeFocused();
+  await page.keyboard.press("Escape");
+  await expect(monitor).toBeFocused();
+  await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
+
+  const arcade = page.getByRole("button", { name: "Arcade", exact: true });
+  await arcade.click();
+  await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(arcade).toBeFocused();
+});

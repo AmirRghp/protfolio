@@ -362,17 +362,21 @@ function Study({ onNavigate, desktopRef }: {
   );
 }
 
-export default function RoomScene({ destination, onNavigate, desktopRef }: {
+export default function RoomScene({ destination, onNavigate, desktopRef, onUnavailable }: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
+  onUnavailable?: () => void;
 }) {
   const [contextLost, setContextLost] = useState(false);
   if (contextLost) return <RoomUnavailable />;
   return (
     <Canvas shadows="percentage" frameloop="demand" dpr={[1, 1.5]} camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }} fallback={<RoomUnavailable />} aria-label="Frontal study with project board, workstation and arcade">
       <CameraFocus destination={destination} />
-      <ContextGuard onLost={() => setContextLost(true)} />
+      <ContextGuard onLost={() => {
+        setContextLost(true);
+        onUnavailable?.();
+      }} />
       <Study onNavigate={onNavigate} desktopRef={desktopRef} />
     </Canvas>
   );

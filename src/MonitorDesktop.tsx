@@ -18,6 +18,9 @@ type MonitorDesktopProps = {
   apps?: DesktopApp[];
   /** The desktop is only interactive while the monitor is focused. */
   active?: boolean;
+  /** The window owned by the room state; it survives the overview but not the other destinations. */
+  openAppId?: string | null;
+  onOpenAppChange?: (appId: string | null) => void;
   onExit?: () => void;
   ref?: Ref<HTMLDivElement>;
 };
@@ -116,8 +119,14 @@ export function DesktopWindow({ title, onClose, children }: {
   );
 }
 
-export default function MonitorDesktop({ apps = [], active = true, onExit, ref }: MonitorDesktopProps) {
-  const [openAppId, setOpenAppId] = useState<string | null>(null);
+export default function MonitorDesktop({
+  apps = [],
+  active = true,
+  openAppId = null,
+  onOpenAppChange,
+  onExit,
+  ref,
+}: MonitorDesktopProps) {
   const [offsets, setOffsets] = useState<Record<string, IconOffset>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const opener = useRef<HTMLButtonElement | null>(null);
@@ -136,14 +145,14 @@ export default function MonitorDesktop({ apps = [], active = true, onExit, ref }
 
   const closeWindow = () => {
     clearActivation();
-    setOpenAppId(null);
+    onOpenAppChange?.(null);
     opener.current?.focus();
   };
 
   const showApp = (app: DesktopApp, trigger: HTMLButtonElement) => {
     clearActivation();
     opener.current = trigger;
-    setOpenAppId(app.id);
+    onOpenAppChange?.(app.id);
   };
 
   /** Counts a double activation on the same icon, so a single click or tap only selects the file. */
@@ -284,8 +293,13 @@ export default function MonitorDesktop({ apps = [], active = true, onExit, ref }
       role="region"
       aria-label="Amirreza workspace"
       onKeyDown={(event) => {
-        if (event.key !== "Escape" || openApp) return;
+        if (event.key !== "Escape") return;
         event.stopPropagation();
+        // Escape closes the open window first, even when the focus sits on the desktop itself.
+        if (openApp) {
+          closeWindow();
+          return;
+        }
         onExit?.();
       }}
     >

@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const layer = '[class*="desktopLayer"]';
+const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
 
 type Placement = {
   canvas: { x: number; y: number; width: number; height: number };
@@ -265,20 +266,28 @@ test("the desktop stays hidden when the 3D view is unavailable", async ({ page }
   await page.getByRole("button", { name: "Monitor", exact: true }).click();
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
+  await expect(page.locator(layer)).toHaveAttribute("inert", "");
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
 });
 
-test("the desktop disappears when the graphics context is lost", async ({ page }) => {
+test("the desktop disappears and releases focus when the graphics context is lost", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
 
   await page.getByRole("button", { name: "Monitor", exact: true }).click();
   await expect(page.locator(desktop)).toBeVisible();
+  await page.getByRole("button", { name: "about-me.txt" }).dblclick();
+  await expect(page.locator(monitorWindow)).toBeVisible();
   await expect.poll(() => page.evaluate(() => !!document.querySelector<HTMLCanvasElement>('canvas[data-engine]')?.getContext("webgl2")?.getExtension("WEBGL_lose_context"))).toBe(true);
   await page.evaluate(() => document.querySelector<HTMLCanvasElement>('canvas[data-engine]')!.getContext("webgl2")!.getExtension("WEBGL_lose_context")!.loseContext());
 
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.locator(desktop)).toBeHidden();
+  await expect(page.locator(monitorWindow)).toHaveCount(0);
+  await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
+  await expect(page.locator(layer)).toHaveAttribute("inert", "");
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
 });

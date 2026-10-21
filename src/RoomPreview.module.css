@@ -159,6 +159,15 @@
   text-underline-offset: 0.25em;
 }
 
+.arcadeHint {
+  flex-basis: 100%;
+  margin: 0;
+  color: #b6c2c4;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  text-align: center;
+}
+
 .arcadeControls button:active,
 .arcadePrompt button:active {
   transform: scale(0.98);
@@ -188,6 +197,10 @@
 
   .arcadeControls a {
     min-height: 2.25rem;
+    font-size: 0.6875rem;
+  }
+
+  .arcadeHint {
     font-size: 0.6875rem;
   }
 }

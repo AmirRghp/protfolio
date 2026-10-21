@@ -39,6 +39,19 @@ describe("monitor desktop", () => {
     expect(html).toContain("Amirreza Gholipour");
   });
 
+  it("renders the window owned by the room state", () => {
+    const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} openAppId="about-me" />);
+
+    expect(html).toContain("monitor-window-title");
+    expect(html).toContain("Amirreza Gholipour");
+  });
+
+  it("does not render a window for an app that is not on the desktop", () => {
+    const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} openAppId="missing" />);
+
+    expect(html).not.toContain("monitor-window-title");
+  });
+
   it("keeps a single click as the default activation of a desktop app", () => {
     const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} />);
 
