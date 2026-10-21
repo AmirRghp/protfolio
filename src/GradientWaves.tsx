@@ -480,9 +480,19 @@ export default function GradientWaves({
       swells: [] as { x: number; y: number; at: number }[],
       quiet: 0,
       seen: null as Settings | null,
+      lost: false,
+    };
+
+    const onContextLost = () => {
+      // The CSS wallpaper is the fallback; a dead context cannot render another frame.
+      state.lost = true;
+      cancelAnimationFrame(state.raf);
+      state.raf = 0;
+      canvas.remove();
     };
 
     const fit = () => {
+      if (state.lost) return;
       const s = settingsRef.current;
       const ratio = Math.min(window.devicePixelRatio || 1, s.dpr);
       const width = Math.max(1, Math.round(state.cssWidth * ratio));
@@ -574,7 +584,7 @@ export default function GradientWaves({
 
     const tick = (now: number) => {
       state.raf = 0;
-      if (!state.visible || document.hidden) return;
+      if (state.lost || !state.visible || document.hidden) return;
       const s = settingsRef.current;
       const dt = state.last ? Math.min((now - state.last) / 1000, 0.1) : 0;
       state.last = now;
@@ -613,7 +623,7 @@ export default function GradientWaves({
     };
 
     const wake = () => {
-      if (state.raf || !state.visible || document.hidden) return;
+      if (state.lost || state.raf || !state.visible || document.hidden) return;
       state.last = 0;
       state.raf = requestAnimationFrame(tick);
     };
@@ -667,6 +677,7 @@ export default function GradientWaves({
       state.visible = entries.some((entry) => entry.isIntersecting);
       wake();
     });
+    canvas.addEventListener("webglcontextlost", onContextLost);
     visibility.observe(container);
     const sizes = new ResizeObserver(measure);
     sizes.observe(container);
@@ -680,6 +691,7 @@ export default function GradientWaves({
     return () => {
       cancelAnimationFrame(state.raf);
       wakeRef.current = null;
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       document.removeEventListener("visibilitychange", wake);
       visibility.disconnect();
       sizes.disconnect();

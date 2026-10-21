@@ -91,6 +91,67 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
 });
 
 
+test("a lost wallpaper context leaves the room usable and stops its frame loop", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  await expect(page.locator("canvas[data-engine]")).toBeVisible();
+  const wallpaper = page.locator('[aria-label="Amirreza workspace"] canvas');
+  await expect(wallpaper).toHaveCount(1);
+
+  await page.evaluate(() => {
+    type Stats = { wallpaperDraws: number };
+    const stats: Stats = { wallpaperDraws: 0 };
+    (window as unknown as { __r09WallpaperStats: Stats }).__r09WallpaperStats = stats;
+    (window as unknown as { __r09WallpaperLost: boolean }).__r09WallpaperLost = false;
+    const wallpaper = document.querySelector('[aria-label="Amirreza workspace"] canvas');
+    wallpaper?.addEventListener("webglcontextlost", () => {
+      (window as unknown as { __r09WallpaperLost: boolean }).__r09WallpaperLost = true;
+    }, { once: true });
+    const prototypes = [window.WebGLRenderingContext?.prototype, window.WebGL2RenderingContext?.prototype];
+    for (const proto of prototypes) {
+      if (!proto) continue;
+      const record = proto as unknown as Record<string, unknown>;
+      for (const name of ["drawArrays", "drawElements", "drawArraysInstanced", "drawElementsInstanced"]) {
+        const original = record[name];
+        if (typeof original !== "function") continue;
+        record[name] = function (this: WebGLRenderingContext, ...args: unknown[]) {
+          const canvas = this.canvas;
+          if (!(canvas instanceof HTMLCanvasElement) || !canvas.dataset.engine) stats.wallpaperDraws += 1;
+          return (original as (...params: unknown[]) => unknown).apply(this, args);
+        };
+      }
+    }
+  });
+
+  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await expect(page.getByRole("region", { name: "Amirreza workspace" })).toBeVisible();
+  await expect.poll(() => page.evaluate(() => (
+    window as unknown as { __r09WallpaperStats: { wallpaperDraws: number } }
+  ).__r09WallpaperStats.wallpaperDraws)).toBeGreaterThan(3);
+
+  await wallpaper.evaluate((canvas) => {
+    (canvas as HTMLCanvasElement).getContext("webgl2")?.getExtension("WEBGL_lose_context")?.loseContext();
+  });
+  await expect.poll(() => page.evaluate(() => (
+    window as unknown as { __r09WallpaperLost: boolean }
+  ).__r09WallpaperLost)).toBe(true);
+  // Let the lost-context task finish before measuring the animation loop that follows it.
+  await page.waitForTimeout(100);
+  const afterLossStart = await page.evaluate(() => (
+    window as unknown as { __r09WallpaperStats: { wallpaperDraws: number } }
+  ).__r09WallpaperStats.wallpaperDraws);
+  await page.waitForTimeout(1000);
+  const afterLossEnd = await page.evaluate(() => (
+    window as unknown as { __r09WallpaperStats: { wallpaperDraws: number } }
+  ).__r09WallpaperStats.wallpaperDraws);
+
+  expect(afterLossEnd - afterLossStart).toBeLessThan(5);
+  await expect(page.locator("canvas[data-engine]")).toBeVisible();
+  await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
+});
+
 test("a lost GPU context falls back without removing the HTML portfolio", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('canvas[data-engine]')).toBeVisible();
