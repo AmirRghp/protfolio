@@ -1,6 +1,19 @@
-import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
+import { useEffect, useRef, useState, type KeyboardEventHandler, type PointerEventHandler, type ReactNode, type Ref } from "react";
 import { formatStatusTimestamp, useLiveClock } from "./desktopStatus";
-import { clampIconOffset, desktopScale, iconBaseRects, localRect, type IconOffset, type LocalRect } from "./desktopDrag";
+import {
+  clampIconOffset,
+  clampWindowRect,
+  desktopPoint,
+  desktopScale,
+  iconBaseRects,
+  localRect,
+  maximizedWindowRect,
+  moveWindowRect,
+  type DesktopBounds,
+  type IconOffset,
+  type LocalRect,
+  type WindowRect,
+} from "./desktopDrag";
 import GradientWaves from "./GradientWaves";
 import styles from "./MonitorDesktop.module.css";
 
@@ -84,6 +97,33 @@ type DragState = {
   moved: boolean;
 };
 
+type WindowFrame = {
+  appId: string;
+  rect: WindowRect;
+  maximized: boolean;
+  restoreRect: WindowRect | null;
+};
+
+type WindowDragState = {
+  appId: string;
+  pointerId: number;
+  startX: number;
+  startY: number;
+  origin: WindowRect;
+  scale: number;
+  bounds: DesktopBounds;
+  moved: boolean;
+};
+
+type WindowDragHandlers = {
+  onPointerDown?: PointerEventHandler<HTMLElement>;
+  onPointerMove?: PointerEventHandler<HTMLElement>;
+  onPointerUp?: PointerEventHandler<HTMLElement>;
+  onPointerCancel?: PointerEventHandler<HTMLElement>;
+  onLostPointerCapture?: PointerEventHandler<HTMLElement>;
+  onKeyDown?: KeyboardEventHandler<HTMLElement>;
+};
+
 /** Counts an activation on an icon and reports whether it completes a double activation. */
 function registerActivation(previous: Activation | null, id: string): { state: Activation | null; doubled: boolean } {
   const now = Date.now();
@@ -91,10 +131,33 @@ function registerActivation(previous: Activation | null, id: string): { state: A
   return { state: doubled ? null : { id, at: now }, doubled };
 }
 
-export function DesktopWindow({ title, onClose, children }: {
+export function DesktopWindow({
+  title,
+  onClose,
+  children,
+  geometry = null,
+  maximized = false,
+  moving = false,
+  dragging = false,
+  onToggleMaximize,
+  onToggleMove,
+  dragHandle,
+  windowRef,
+  moveButtonRef,
+}: {
   title: string;
   onClose: () => void;
   children?: ReactNode;
+  /** The local rectangle of the window; without it the CSS default placement is used. */
+  geometry?: WindowRect | null;
+  maximized?: boolean;
+  moving?: boolean;
+  dragging?: boolean;
+  onToggleMaximize?: () => void;
+  onToggleMove?: () => void;
+  dragHandle?: WindowDragHandlers;
+  windowRef?: Ref<HTMLElement>;
+  moveButtonRef?: Ref<HTMLButtonElement>;
 }) {
   const closeButton = useRef<HTMLButtonElement>(null);
 
@@ -102,19 +165,72 @@ export function DesktopWindow({ title, onClose, children }: {
 
   return (
     <section
+      ref={windowRef}
       className={styles.window}
       aria-labelledby="monitor-window-title"
+      data-maximized={maximized ? "true" : undefined}
+      data-moving={moving ? "true" : undefined}
+      style={geometry ? {
+        left: geometry.x,
+        top: geometry.y,
+        width: geometry.width,
+        height: geometry.height,
+        right: "auto",
+        bottom: "auto",
+      } : undefined}
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
         event.stopPropagation();
         onClose();
       }}
     >
-      <header className={styles.windowBar}>
+      <header
+        className={styles.windowBar}
+        role="group"
+        tabIndex={0}
+        aria-label={`${title} window title bar`}
+        aria-describedby="monitor-window-move-hint"
+        data-dragging={dragging ? "true" : undefined}
+        {...dragHandle}
+      >
         <span className={styles.windowTitle} id="monitor-window-title">{title}</span>
-        <button ref={closeButton} type="button" className={styles.windowClose} onClick={onClose}>Close</button>
+        <div className={styles.windowActions}>
+          <button
+            ref={moveButtonRef}
+            type="button"
+            className={styles.windowControl}
+            onClick={onToggleMove}
+            disabled={maximized || !onToggleMove}
+            aria-label="Move window"
+            aria-pressed={moving}
+          >Move</button>
+          <button
+            type="button"
+            className={styles.windowControl}
+            onClick={onToggleMaximize}
+            disabled={!onToggleMaximize}
+            aria-label={maximized ? "Restore window" : "Maximize window"}
+          >{maximized ? "Restore" : "Maximize"}</button>
+          <button ref={closeButton} type="button" className={styles.windowControl} onClick={onClose}>Close</button>
+        </div>
       </header>
-      <div className={styles.windowBody} role="group" aria-label={`${title} content`} tabIndex={0}>{children}</div>
+      <p id="monitor-window-move-hint" className={styles.visuallyHidden}>
+        {maximized
+          ? "This window is maximized. Choose Restore window to move or place it."
+          : "Use the arrow keys to move this window. Choose Move window to place it with the pointer."}
+      </p>
+      {moving && (
+        <p className={styles.visuallyHidden} role="status">
+          Move the {title} window. Click or tap where it should go. Press Escape to cancel.
+        </p>
+      )}
+      <div
+        className={styles.windowBody}
+        role="group"
+        aria-label={`${title} content`}
+        tabIndex={0}
+        inert={moving}
+      >{children}</div>
     </section>
   );
 }
@@ -129,6 +245,10 @@ export default function MonitorDesktop({
 }: MonitorDesktopProps) {
   const [offsets, setOffsets] = useState<Record<string, IconOffset>>({});
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [windowFrame, setWindowFrame] = useState<WindowFrame | null>(null);
+  const [windowBounds, setWindowBounds] = useState<DesktopBounds>({ width: 0, height: 0, top: 0 });
+  const [movingAppId, setMovingAppId] = useState<string | null>(null);
+  const [draggingWindow, setDraggingWindow] = useState(false);
   const opener = useRef<HTMLButtonElement | null>(null);
   const lastActivation = useRef<Activation | null>(null);
   const drag = useRef<DragState | null>(null);
@@ -136,21 +256,59 @@ export default function MonitorDesktop({
   const desktopElement = useRef<HTMLDivElement | null>(null);
   const iconList = useRef<HTMLUListElement | null>(null);
   const statusBar = useRef<HTMLElement | null>(null);
+  const windowElement = useRef<HTMLElement | null>(null);
+  const moveButton = useRef<HTMLButtonElement | null>(null);
+  const windowDrag = useRef<WindowDragState | null>(null);
   const openApp = apps.find((app) => app.id === openAppId) ?? null;
+  // An owning app id makes the transient mode self-cancel if the room closes or replaces its
+  // window, without leaving the icons inert and the placement layer unreachable.
+  const moving = openApp !== null && movingAppId === openApp.id;
+  const activeFrame = openApp && windowFrame?.appId === openApp.id ? windowFrame : null;
+  const maximized = activeFrame?.maximized ?? false;
+  const displayRect = activeFrame
+    ? activeFrame.maximized
+      ? maximizedWindowRect(windowBounds)
+      : clampWindowRect(activeFrame.rect, windowBounds)
+    : null;
+
+  /** The space a window may use, read from the same projected desktop that contains it. */
+  const readBounds = (): DesktopBounds => ({
+    width: desktopElement.current?.offsetWidth ?? 0,
+    height: desktopElement.current?.offsetHeight ?? 0,
+    top: statusBar.current?.offsetHeight ?? 0,
+  });
+
+  const readWindowRect = (desktop: HTMLElement, element: HTMLElement, bounds: DesktopBounds) =>
+    clampWindowRect(localRect(desktop, element), bounds);
 
   /** Drops a pending activation, so only a real second activation of the same icon opens a file. */
   const clearActivation = () => {
     lastActivation.current = null;
   };
 
+  /** Ends any pointer gesture and closes the transient move mode of the shared window. */
+  const clearWindowInteraction = () => {
+    windowDrag.current = null;
+    setDraggingWindow(false);
+    setMovingAppId(null);
+  };
+
   const closeWindow = () => {
     clearActivation();
+    clearWindowInteraction();
+    setWindowFrame(null);
     onOpenAppChange?.(null);
     opener.current?.focus();
   };
 
   const showApp = (app: DesktopApp, trigger: HTMLButtonElement) => {
     clearActivation();
+    clearWindowInteraction();
+    // A different app starts at the default place. Reactivating the app that already owns the
+    // window keeps the user's geometry, including its maximized state.
+    setWindowFrame((current) => (
+      openAppId === app.id && current?.appId === app.id ? current : null
+    ));
     opener.current = trigger;
     onOpenAppChange?.(app.id);
   };
@@ -218,6 +376,145 @@ export default function MonitorDesktop({
     }
   };
 
+  /** Starts a window drag only from the free part of its title bar. */
+  const startWindowDrag = (event: React.PointerEvent<HTMLElement>) => {
+    if (!openApp || maximized || moving) return;
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const target = event.target;
+    if (target instanceof Element && target.closest("button, a, input, textarea, select, iframe, [contenteditable='true']")) return;
+    const desktop = desktopElement.current;
+    const element = windowElement.current;
+    if (!desktop || !element) return;
+
+    const bounds = readBounds();
+    windowDrag.current = {
+      appId: openApp.id,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      origin: readWindowRect(desktop, element, bounds),
+      scale: desktopScale(desktop),
+      bounds,
+      moved: false,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.currentTarget.focus({ preventScroll: true });
+  };
+
+  /** Moves the window by the pointer delta and clamps it to the projected workspace. */
+  const moveWindowDrag = (event: React.PointerEvent<HTMLElement>) => {
+    const state = windowDrag.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+
+    const dx = (event.clientX - state.startX) / state.scale;
+    const dy = (event.clientY - state.startY) / state.scale;
+    if (!state.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD_PX) return;
+    state.moved = true;
+    setDraggingWindow(true);
+    setWindowFrame({
+      appId: state.appId,
+      rect: moveWindowRect(state.origin, dx, dy, state.bounds),
+      maximized: false,
+      restoreRect: null,
+    });
+  };
+
+  /** Ends a title-bar drag, including a pointer released outside the title bar. */
+  const endWindowDrag = (event: React.PointerEvent<HTMLElement>) => {
+    const state = windowDrag.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+    windowDrag.current = null;
+    setDraggingWindow(false);
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
+
+  const loseWindowDrag = () => {
+    if (!windowDrag.current) return;
+    windowDrag.current = null;
+    setDraggingWindow(false);
+  };
+
+  /** Arrow keys move a normal window only while the title bar itself has focus. */
+  const moveWindowWithKeyboard = (event: React.KeyboardEvent<HTMLElement>) => {
+    if (event.target !== event.currentTarget) return;
+    const step = 8;
+    let dx = 0;
+    let dy = 0;
+    if (event.key === "ArrowLeft") dx = -step;
+    else if (event.key === "ArrowRight") dx = step;
+    else if (event.key === "ArrowUp") dy = -step;
+    else if (event.key === "ArrowDown") dy = step;
+    else return;
+
+    event.preventDefault();
+    if (!openApp || maximized) return;
+    const desktop = desktopElement.current;
+    const element = windowElement.current;
+    if (!desktop || !element) return;
+
+    const bounds = readBounds();
+    setWindowBounds(bounds);
+    setWindowFrame({
+      appId: openApp.id,
+      rect: moveWindowRect(readWindowRect(desktop, element, bounds), dx, dy, bounds),
+      maximized: false,
+      restoreRect: null,
+    });
+  };
+
+  /** Maximizes the current window below the status bar, or restores its previous geometry. */
+  const toggleMaximize = () => {
+    if (!openApp) return;
+    const bounds = readBounds();
+    setWindowBounds(bounds);
+    windowDrag.current = null;
+    setDraggingWindow(false);
+    setMovingAppId(null);
+
+    if (activeFrame?.maximized) {
+      const rect = clampWindowRect(activeFrame.restoreRect ?? activeFrame.rect, bounds);
+      setWindowFrame({ appId: openApp.id, rect, maximized: false, restoreRect: null });
+      return;
+    }
+
+    const desktop = desktopElement.current;
+    const element = windowElement.current;
+    if (!desktop || !element) return;
+    const rect = readWindowRect(desktop, element, bounds);
+    setWindowFrame({ appId: openApp.id, rect, maximized: true, restoreRect: rect });
+  };
+
+  /** Toggles the pointer placement mode without moving the window yet. */
+  const toggleMove = () => {
+    if (!openApp || maximized) return;
+    windowDrag.current = null;
+    setDraggingWindow(false);
+    setMovingAppId((current) => (current === openApp.id ? null : openApp.id));
+  };
+
+  /** Places the window's top-left corner at the tapped point, then clamps it to the workspace. */
+  const placeWindow = (event: React.MouseEvent<HTMLDivElement>) => {
+    if (!openApp) return;
+    const desktop = desktopElement.current;
+    const element = windowElement.current;
+    if (!desktop || !element) return;
+
+    const bounds = readBounds();
+    const point = desktopPoint(desktop, event.clientX, event.clientY);
+    const rect = readWindowRect(desktop, element, bounds);
+    setWindowBounds(bounds);
+    setWindowFrame({
+      appId: openApp.id,
+      rect: clampWindowRect({ ...rect, x: point.x, y: point.y }, bounds),
+      maximized: false,
+      restoreRect: null,
+    });
+    setMovingAppId(null);
+    moveButton.current?.focus({ preventScroll: true });
+  };
+
   // The projected size of the desktop follows the viewport, so an offset that was valid before a
   // resize can leave the screen. Every stored offset is clamped again whenever the desktop is
   // laid out anew.
@@ -226,13 +523,19 @@ export default function MonitorDesktop({
     const list = iconList.current;
     if (!desktop || !list) return;
 
-    const observer = new ResizeObserver(() => {
+    const applyBounds = () => {
+      const bounds = {
+        width: desktop.offsetWidth,
+        height: desktop.offsetHeight,
+        top: statusBar.current?.offsetHeight ?? 0,
+      };
+
+      setWindowBounds((current) => (
+        current.width === bounds.width && current.height === bounds.height && current.top === bounds.top
+          ? current
+          : bounds
+      ));
       setOffsets((current) => {
-        const bounds = {
-          width: desktop.offsetWidth,
-          height: desktop.offsetHeight,
-          top: statusBar.current?.offsetHeight ?? 0,
-        };
         const bases = iconBaseRects(desktop, list);
         const next = { ...current };
         let changed = false;
@@ -247,11 +550,54 @@ export default function MonitorDesktop({
         }
         return changed ? next : current;
       });
-    });
+      // The stored rectangle is the user's intended geometry; the render clamps it to the current
+      // desktop. Keeping the intended size lets the window recover after a temporary small viewport.
+    };
 
+    const observer = new ResizeObserver(applyBounds);
     observer.observe(desktop);
+    if (statusBar.current) observer.observe(statusBar.current);
+    applyBounds();
     return () => observer.disconnect();
   }, []);
+
+  // Move mode is a transient pointer mode. Catch Escape before the window's own close handler so
+  // cancelling the move cannot accidentally close the app.
+  useEffect(() => {
+    if (!moving) return;
+
+    const cancel = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      event.stopPropagation();
+      setMovingAppId(null);
+      moveButton.current?.focus({ preventScroll: true });
+    };
+    const leaveDesktopOnPointer = (event: PointerEvent) => {
+      const desktop = desktopElement.current;
+      if (desktop && event.target instanceof Node && desktop.contains(event.target)) return;
+      setMovingAppId(null);
+    };
+    // A delayed focus event from a tap can land on the document body; only an outside focusable
+    // target (the keyboard path out of the desktop) should cancel placement.
+    const leaveDesktopOnFocus = (event: FocusEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const desktop = desktopElement.current;
+      if (desktop?.contains(target)) return;
+      if (!target.closest("a[href], button, input, select, textarea, iframe, summary, [tabindex]")) return;
+      setMovingAppId(null);
+    };
+
+    document.addEventListener("keydown", cancel, true);
+    document.addEventListener("pointerdown", leaveDesktopOnPointer, true);
+    document.addEventListener("focusin", leaveDesktopOnFocus, true);
+    return () => {
+      document.removeEventListener("keydown", cancel, true);
+      document.removeEventListener("pointerdown", leaveDesktopOnPointer, true);
+      document.removeEventListener("focusin", leaveDesktopOnFocus, true);
+    };
+  }, [moving]);
 
   // A pending activation only survives while the same icon is activated again, so every other
   // interaction in the whole interface drops it: pointers, focus moves and key presses, inside the
@@ -295,6 +641,13 @@ export default function MonitorDesktop({
       onKeyDown={(event) => {
         if (event.key !== "Escape") return;
         event.stopPropagation();
+        // Move mode consumes Escape; closing the window would discard the geometry the user is
+        // still placing.
+        if (moving) {
+          setMovingAppId(null);
+          moveButton.current?.focus({ preventScroll: true });
+          return;
+        }
         // Escape closes the open window first, even when the focus sits on the desktop itself.
         if (openApp) {
           closeWindow();
@@ -323,7 +676,7 @@ export default function MonitorDesktop({
         />
       </div>
       <StatusBar ref={statusBar} />
-      <ul className={styles.icons} ref={iconList}>
+      <ul className={styles.icons} ref={iconList} inert={moving}>
         {apps.map((app) => {
           const needsDoubleClick = app.activation === "double-click";
           const hintId = `${app.id}-activation-hint`;
@@ -372,9 +725,36 @@ export default function MonitorDesktop({
         })}
       </ul>
       {openApp && (
-        <DesktopWindow title={openApp.title} onClose={closeWindow}>
+        <DesktopWindow
+          key={openApp.id}
+          title={openApp.title}
+          onClose={closeWindow}
+          geometry={displayRect}
+          maximized={maximized}
+          moving={moving}
+          dragging={draggingWindow}
+          onToggleMaximize={toggleMaximize}
+          onToggleMove={toggleMove}
+          windowRef={windowElement}
+          moveButtonRef={moveButton}
+          dragHandle={{
+            onPointerDown: startWindowDrag,
+            onPointerMove: moveWindowDrag,
+            onPointerUp: endWindowDrag,
+            onPointerCancel: endWindowDrag,
+            onLostPointerCapture: loseWindowDrag,
+            onKeyDown: moveWindowWithKeyboard,
+          }}
+        >
           {openApp.content}
         </DesktopWindow>
+      )}
+      {moving && (
+        <div
+          className={styles.moveLayer}
+          aria-hidden="true"
+          onClick={placeWindow}
+        />
       )}
     </div>
   );

@@ -146,7 +146,7 @@
 
 .window {
   position: absolute;
-  z-index: 1;
+  z-index: 2;
   top: 17%;
   right: 7%;
   bottom: 9%;
@@ -160,6 +160,15 @@
   box-shadow: 0 16px 36px rgb(0 0 0 / 45%);
 }
 
+.window[data-maximized="true"] {
+  border-radius: 0;
+}
+
+.window[data-moving="true"] {
+  outline: 1px dashed rgb(214 188 135 / 85%);
+  outline-offset: -3px;
+}
+
 .windowBar {
   display: flex;
   align-items: center;
@@ -169,9 +178,27 @@
   border-bottom: 1px solid rgb(160 214 226 / 14%);
   background: #16293a;
   font-size: var(--ui-text);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.windowBar:focus-visible {
+  outline-offset: -3px;
+}
+
+.windowBar[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+.window[data-maximized="true"] .windowBar,
+.window[data-moving="true"] .windowBar {
+  cursor: default;
 }
 
 .windowTitle {
+  flex: 1 1 auto;
+  min-width: 0;
   overflow: hidden;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -179,10 +206,17 @@
   white-space: nowrap;
 }
 
-.windowClose {
+.windowActions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: calc(var(--ui-gap) * 0.35);
+}
+
+.windowControl {
   flex: none;
   min-height: 1.9em;
-  padding: 0 0.7em;
+  padding: 0 0.55em;
   border: 1px solid rgb(160 214 226 / 30%);
   border-radius: 0.3rem;
   color: #dbeaf0;
@@ -192,6 +226,43 @@
   cursor: pointer;
 }
 
+.windowControl:hover:not(:disabled) {
+  border-color: rgb(160 214 226 / 55%);
+  background: rgb(20 44 61 / 92%);
+}
+
+.windowControl:focus-visible {
+  outline-offset: 1px;
+}
+
+.windowControl:disabled {
+  color: rgb(219 234 240 / 48%);
+  cursor: default;
+}
+
+@container (max-width: 440px) {
+  /* At the smallest smoke widths the scene keeps one composition; let the default window use
+     the little horizontal room instead of squeezing its title between the controls. */
+  .window {
+    left: var(--ui-pad);
+    right: var(--ui-pad);
+  }
+}
+
+@container (max-width: 360px) {
+  .windowBar {
+    gap: calc(var(--ui-gap) * 0.5);
+  }
+
+  .windowActions {
+    gap: calc(var(--ui-gap) * 0.2);
+  }
+
+  .windowControl {
+    padding: 0 0.4em;
+  }
+}
+
 .windowBody {
   display: flex;
   flex: 1 1 auto;
@@ -199,6 +270,17 @@
   min-height: 0;
   overflow: auto;
   font-size: var(--ui-text);
+}
+
+/* A pointer destination layer, above the window and every icon, so a placement tap cannot
+   activate the content underneath it. Keyboard users move the window with the title bar instead. */
+.moveLayer {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
 }
 
 .visuallyHidden {
