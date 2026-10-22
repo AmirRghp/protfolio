@@ -1,4 +1,4 @@
-import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import { DoubleSide, Mesh, PerspectiveCamera, Raycaster, Vector2, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
@@ -7,6 +7,7 @@ import { boardCardLayout } from "./boardLayout";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import { ROOM_FOV, ROOM_TRANSITION_SECONDS, roomCameraDistance, roomParallaxOffset } from "./roomCamera";
 import type { RoomDestination } from "./roomNavigation";
+import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
 import RoomUnavailable from "./RoomUnavailable";
 
 type Triple = [number, number, number];
@@ -152,7 +153,14 @@ function destinationPose(destination: RoomDestination, aspect: number) {
   };
 }
 
-function CameraFocus({ destination }: { destination: RoomDestination }) {
+function isRoomHotspot(value: unknown): value is RoomHotspot {
+  return value === "monitor" || value === "board" || value === "arcade";
+}
+
+function CameraFocus({ destination, onHotspotHover }: {
+  destination: RoomDestination;
+  onHotspotHover: (hover: RoomHotspotHover | null) => void;
+}) {
   const { camera, size, invalidate, gl, scene } = useThree();
   const lookAt = useRef(overviewTarget.clone());
   const hotspotRaycaster = useRef(new Raycaster());
@@ -179,6 +187,11 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
       idleTarget.current.x = 0;
       idleTarget.current.y = 0;
       invalidate();
+    };
+    const clearHover = () => onHotspotHover(null);
+    const clearPointerState = () => {
+      clearHover();
+      resetIdle();
     };
 
     basePosition.current.copy(pose.position);
@@ -209,25 +222,44 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
     }
 
     const onPointerMove = (event: PointerEvent) => {
+      if (destination !== "room" || active.current ||
+        event.pointerType !== "mouse" || !finePointer.matches) {
+        clearPointerState();
+        return;
+      }
+
+      const bounds = canvas.getBoundingClientRect();
+      if (!bounds.width || !bounds.height) {
+        clearHover();
+        return;
+      }
+
+      const x = (event.clientX - bounds.left - bounds.width / 2) / (bounds.width / 2);
+      const y = (bounds.top + bounds.height / 2 - event.clientY) / (bounds.height / 2);
+      hotspotRaycaster.current.setFromCamera(pointerPosition.current.set(x, y), camera);
+      const intersection = hotspotRaycaster.current.intersectObjects(hotspots)[0];
+      const hovered = intersection && isRoomHotspot(intersection.object.userData.destination)
+        ? intersection.object.userData.destination
+        : null;
+
+      onHotspotHover(hovered ? {
+        destination: hovered,
+        clientX: event.clientX,
+        clientY: event.clientY,
+      } : null);
+
       const focused = document.activeElement;
-      if (destination !== "room" || active.current || motionPreference.matches ||
-        event.pointerType !== "mouse" || !finePointer.matches ||
+      if (motionPreference.matches ||
         (focused instanceof HTMLElement && preview?.contains(focused) && focused !== canvas)) {
         resetIdle();
         return;
       }
-      const bounds = canvas.getBoundingClientRect();
-      if (!bounds.width || !bounds.height) return;
-      const x = (event.clientX - bounds.left - bounds.width / 2) / (bounds.width / 2);
-      const y = (bounds.top + bounds.height / 2 - event.clientY) / (bounds.height / 2);
-      hotspotRaycaster.current.setFromCamera(pointerPosition.current.set(x, y), camera);
-      idleTarget.current = hotspotRaycaster.current.intersectObjects(hotspots).length
-        ? { x: 0, y: 0 }
-        : roomParallaxOffset(x, y);
+
+      idleTarget.current = hovered ? { x: 0, y: 0 } : roomParallaxOffset(x, y);
       invalidate();
     };
     const onPointerDown = (event: PointerEvent) => {
-      if (event.pointerType !== "mouse") resetIdle();
+      if (event.pointerType !== "mouse") clearPointerState();
     };
     const onMotionChange = () => {
       if (!motionPreference.matches) return;
@@ -239,25 +271,35 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
       camera.lookAt(lookAt.current);
       invalidate();
     };
-    const onVisibilityChange = () => { if (document.hidden) resetIdle(); };
+    const onVisibilityChange = () => {
+      if (document.hidden) clearPointerState();
+    };
+    const onPointerCapabilityChange = () => {
+      if (!finePointer.matches) clearHover();
+    };
 
     canvas.addEventListener("pointermove", onPointerMove);
-    canvas.addEventListener("pointerleave", resetIdle);
+    canvas.addEventListener("pointerleave", clearPointerState);
     canvas.addEventListener("pointerdown", onPointerDown);
-    window.addEventListener("blur", resetIdle);
-    window.addEventListener("focusin", resetIdle);
+    canvas.addEventListener("pointercancel", clearPointerState);
+    window.addEventListener("blur", clearPointerState);
+    window.addEventListener("focusin", clearPointerState);
     document.addEventListener("visibilitychange", onVisibilityChange);
     motionPreference.addEventListener("change", onMotionChange);
+    finePointer.addEventListener("change", onPointerCapabilityChange);
     return () => {
       canvas.removeEventListener("pointermove", onPointerMove);
-      canvas.removeEventListener("pointerleave", resetIdle);
+      canvas.removeEventListener("pointerleave", clearPointerState);
       canvas.removeEventListener("pointerdown", onPointerDown);
-      window.removeEventListener("blur", resetIdle);
-      window.removeEventListener("focusin", resetIdle);
+      canvas.removeEventListener("pointercancel", clearPointerState);
+      window.removeEventListener("blur", clearPointerState);
+      window.removeEventListener("focusin", clearPointerState);
       document.removeEventListener("visibilitychange", onVisibilityChange);
       motionPreference.removeEventListener("change", onMotionChange);
+      finePointer.removeEventListener("change", onPointerCapabilityChange);
+      onHotspotHover(null);
     };
-  }, [camera, destination, size.width, size.height, gl, scene, invalidate]);
+  }, [camera, destination, size.width, size.height, gl, scene, invalidate, onHotspotHover]);
 
   useFrame((_, delta) => {
     if (active.current) {
@@ -286,21 +328,57 @@ function CameraFocus({ destination }: { destination: RoomDestination }) {
   return null;
 }
 
-function FocusHotspot({ destination, position, size, onNavigate }: {
-  destination: Exclude<RoomDestination, "room">;
+const HIGHLIGHT_STROKE = 0.035;
+
+function HotspotHighlight({ size }: { size: [number, number] }) {
+  const [width, height] = size;
+  const borders: { position: Triple; size: Triple }[] = [
+    { position: [0, height / 2, 0.004], size: [width, HIGHLIGHT_STROKE, 0.008] },
+    { position: [0, -height / 2, 0.004], size: [width, HIGHLIGHT_STROKE, 0.008] },
+    { position: [width / 2, 0, 0.004], size: [HIGHLIGHT_STROKE, height, 0.008] },
+    { position: [-width / 2, 0, 0.004], size: [HIGHLIGHT_STROKE, height, 0.008] },
+  ];
+
+  return (
+    <>
+      <mesh raycast={() => {}} renderOrder={2}>
+        <planeGeometry args={size} />
+        <meshBasicMaterial color="#d6bc87" transparent opacity={0.07} depthWrite={false} toneMapped={false} />
+      </mesh>
+      {borders.map((border, index) => (
+        <mesh key={index} position={border.position} raycast={() => {}} renderOrder={3}>
+          <boxGeometry args={border.size} />
+          <meshBasicMaterial color="#d6bc87" transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+        </mesh>
+      ))}
+    </>
+  );
+}
+
+function FocusHotspot({ destination, position, size, highlighted, onNavigate }: {
+  destination: RoomHotspot;
   position: Triple;
   size: [number, number];
+  highlighted: boolean;
   onNavigate: (destination: RoomDestination) => void;
 }) {
   return (
-    <mesh
-      name="focus-hotspot"
-      position={position}
-      onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
-    >
-      <planeGeometry args={size} />
-      <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
-    </mesh>
+    <>
+      <mesh
+        name="focus-hotspot"
+        position={position}
+        userData={{ destination }}
+        onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
+      >
+        <planeGeometry args={size} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
+      </mesh>
+      {highlighted && (
+        <group position={[position[0], position[1], position[2] + 0.02]}>
+          <HotspotHighlight size={size} />
+        </group>
+      )}
+    </>
   );
 }
 
@@ -313,9 +391,10 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
   return null;
 }
 
-function Study({ onNavigate, desktopRef }: {
+function Study({ onNavigate, desktopRef, highlightedHotspot }: {
   onNavigate: (destination: RoomDestination) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
+  highlightedHotspot: RoomHotspot | null;
 }) {
   const boardCards = boardCardLayout(portfolioContent.projects.length);
 
@@ -348,36 +427,52 @@ function Study({ onNavigate, desktopRef }: {
           );
         })}
       </group>
-      <FocusHotspot destination="board" position={[-3.5, 3.65, -1.06]} size={[6.525, 3.05]} onNavigate={onNavigate} />
+      <FocusHotspot destination="board" position={[-3.5, 3.65, -1.06]} size={[6.525, 3.05]} highlighted={highlightedHotspot === "board"} onNavigate={onNavigate} />
 
-      <FocusHotspot destination="monitor" position={[-0.25, 3.754, -0.1]} size={[4.231, 2.136]} onNavigate={onNavigate} />
+      <FocusHotspot destination="monitor" position={[-0.25, 3.754, -0.1]} size={[4.231, 2.136]} highlighted={highlightedHotspot === "monitor"} onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <RoomFurnishings />
         <Monitor desktopRef={desktopRef} />
         <ArcadeCabinet />
       </Suspense>
-      <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} onNavigate={onNavigate} />
+      <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
     </>
   );
 }
 
-export default function RoomScene({ destination, onNavigate, desktopRef, onUnavailable }: {
+export default function RoomScene({ destination, onNavigate, onHotspotHover, desktopRef, onUnavailable }: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
+  onHotspotHover: (hover: RoomHotspotHover | null) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
   onUnavailable?: () => void;
 }) {
   const [contextLost, setContextLost] = useState(false);
+  const [highlightedHotspot, setHighlightedHotspot] = useState<RoomHotspot | null>(null);
+  const highlightedHotspotRef = useRef<RoomHotspot | null>(null);
+  const reportHotspotHover = useCallback((hover: RoomHotspotHover | null) => {
+    const next = hover?.destination ?? null;
+    if (highlightedHotspotRef.current !== next) {
+      highlightedHotspotRef.current = next;
+      setHighlightedHotspot(next);
+    }
+    onHotspotHover(hover);
+  }, [onHotspotHover]);
+
+  useEffect(() => {
+    if (destination !== "room") reportHotspotHover(null);
+  }, [destination, reportHotspotHover]);
+
   if (contextLost) return <RoomUnavailable />;
   return (
     <Canvas shadows="percentage" frameloop="demand" dpr={[1, 1.5]} camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }} fallback={<RoomUnavailable />} aria-label="Frontal study with project board, workstation and arcade">
-      <CameraFocus destination={destination} />
+      <CameraFocus destination={destination} onHotspotHover={reportHotspotHover} />
       <ContextGuard onLost={() => {
         setContextLost(true);
         onUnavailable?.();
       }} />
-      <Study onNavigate={onNavigate} desktopRef={desktopRef} />
+      <Study onNavigate={onNavigate} desktopRef={desktopRef} highlightedHotspot={destination === "room" ? highlightedHotspot : null} />
     </Canvas>
   );
 }

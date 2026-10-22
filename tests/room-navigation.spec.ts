@@ -2,6 +2,25 @@ import { expect, test, type Page } from "@playwright/test";
 
 test.describe.configure({ mode: "serial" });
 
+type OverviewHotspot = {
+  destination: "Project board" | "Monitor" | "Arcade";
+  id: "board" | "monitor" | "arcade";
+  x: number;
+  y: number;
+};
+
+// Shared by click and hover checks so a future camera change only updates one place.
+const overviewHotspots: OverviewHotspot[] = [
+  // The curved monitor covers the old sample point; select the exposed board face.
+  { destination: "Project board", id: "board", x: 300, y: 430 },
+  { destination: "Monitor", id: "monitor", x: 611, y: 334 },
+  { destination: "Arcade", id: "arcade", x: 1077, y: 362 },
+];
+
+function hotspot(id: OverviewHotspot["id"]) {
+  return overviewHotspots.find((candidate) => candidate.id === id)!;
+}
+
 test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));
@@ -97,9 +116,12 @@ test("idle parallax stays inside the room and returns to center around controls"
   await page.waitForTimeout(350);
   const centered = await sceneFrame();
 
-  await page.mouse.move(700, 395);
+  await page.mouse.move(hotspot("board").x, hotspot("board").y);
   await page.waitForTimeout(350);
-  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+  const boardHover = await sceneFrame();
+  await page.mouse.move(hotspot("board").x + 24, hotspot("board").y + 12);
+  await page.waitForTimeout(350);
+  expect(changedBytes(boardHover, await sceneFrame())).toBe(0);
 
   await page.mouse.move(125, 690);
   await page.waitForTimeout(350);
@@ -208,14 +230,8 @@ test("room hotspots use the same destination state as the HTML menu", async ({ p
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const canvas = page.locator('canvas[data-engine]');
-  const hotspots = [
-    // The curved monitor covers the old sample point; select the exposed board face.
-    { destination: "Project board", x: 300, y: 430 },
-    { destination: "Monitor", x: 611, y: 334 },
-    { destination: "Arcade", x: 1077, y: 362 },
-  ];
 
-  for (const hotspot of hotspots) {
+  for (const hotspot of overviewHotspots) {
     await canvas.click({ position: { x: hotspot.x, y: hotspot.y } });
     await expect(page.getByRole("button", { name: hotspot.destination, exact: true })).toHaveAttribute("aria-pressed", "true");
     await expect(page.getByText(`Focused on ${hotspot.destination}.`)).toBeVisible();
@@ -232,6 +248,173 @@ test("room hotspots use the same destination state as the HTML menu", async ({ p
     } else {
       await expect(page.getByRole("button", { name: "Arcade", exact: true })).toBeFocused();
     }
+  }
+});
+
+test("room hotspots highlight under real pointer hover and only the monitor shows USE COMPUTER", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const canvas = page.locator('canvas[data-engine]');
+  const room = page.locator('section[aria-label="Study room overview"]');
+  const hint = page.getByText("USE COMPUTER", { exact: true });
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  await expect(hint).toBeHidden();
+
+  const box = (await canvas.boundingBox())!;
+  const hover = async (id: OverviewHotspot["id"]) => {
+    const point = hotspot(id);
+    await page.mouse.move(box.x + point.x, box.y + point.y);
+    return { x: box.x + point.x, y: box.y + point.y };
+  };
+
+  await hover("board");
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "board");
+  await expect(hint).toBeHidden();
+
+  const position = await hover("monitor");
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "monitor");
+  await expect(hint).toBeVisible();
+  await expect(hint).toHaveCSS("pointer-events", "none");
+  const firstHint = (await hint.boundingBox())!;
+  expect(firstHint.x).toBeGreaterThanOrEqual(0);
+  expect(firstHint.y).toBeGreaterThan(position.y);
+  expect(firstHint.x + firstHint.width).toBeLessThanOrEqual(1440);
+  expect(firstHint.y + firstHint.height).toBeLessThanOrEqual(900);
+
+  await page.mouse.move(position.x + 30, position.y + 20);
+  await page.waitForTimeout(100);
+  const movedHint = (await hint.boundingBox())!;
+  expect(movedHint.x).toBeGreaterThan(firstHint.x);
+
+  await hover("arcade");
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "arcade");
+  await expect(hint).toBeHidden();
+
+  await page.mouse.move(box.x + 40, box.y + 720);
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+  await expect(hint).toBeHidden();
+
+  await hover("monitor");
+  await expect(hint).toBeVisible();
+  await canvas.click({ position: { x: hotspot("monitor").x, y: hotspot("monitor").y } });
+  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+});
+
+test("hover feedback clears on exit, keyboard focus, blur, destination changes, and context loss", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const canvas = page.locator('canvas[data-engine]');
+  const room = page.locator('section[aria-label="Study room overview"]');
+  const hint = page.getByText("USE COMPUTER", { exact: true });
+  const monitor = hotspot("monitor");
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  const hoverMonitor = async () => page.mouse.move(monitor.x, monitor.y);
+
+  await hoverMonitor();
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "monitor");
+  await expect(hint).toBeVisible();
+  await page.mouse.move(80, 700);
+  await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+
+  await hoverMonitor();
+  await expect(hint).toBeVisible();
+  await page.keyboard.press("Tab");
+  await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+
+  // Hover remains a pointer affordance after keyboard focus moves to a control.
+  await hoverMonitor();
+  await expect(hint).toBeVisible();
+
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+
+  await hoverMonitor();
+  await expect(hint).toBeVisible();
+  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.waitForTimeout(900);
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+
+  await hoverMonitor();
+  await expect(hint).toBeVisible();
+  const lost = await page.evaluate(() => {
+    const context = document.querySelector<HTMLCanvasElement>('canvas[data-engine]')?.getContext("webgl2");
+    const extension = context?.getExtension("WEBGL_lose_context");
+    extension?.loseContext();
+    return Boolean(extension);
+  });
+  expect(lost).toBe(true);
+  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible({ timeout: 15_000 });
+  await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+});
+
+test("reduced motion keeps the hotspot highlight but hides the monitor hint", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+  const canvas = page.locator('canvas[data-engine]');
+  const room = page.locator('section[aria-label="Study room overview"]');
+  const hint = page.getByText("USE COMPUTER", { exact: true });
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+
+  await page.mouse.move(hotspot("monitor").x, hotspot("monitor").y);
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "monitor");
+  await expect(hint).toBeHidden();
+
+  await page.mouse.move(60, 700);
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+});
+
+test("a scene failure during hover clears the monitor hint", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  let release = () => {};
+  const pending = new Promise<void>((resolve) => { release = resolve; });
+  await page.route("**/assets/models/room-furnishings.glb", async (route) => {
+    await pending;
+    await route.abort();
+  });
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const canvas = page.locator('canvas[data-engine]');
+  const hint = page.getByText("USE COMPUTER", { exact: true });
+  await expect(canvas).toBeVisible();
+  await page.mouse.move(hotspot("monitor").x, hotspot("monitor").y);
+  await expect(hint).toBeVisible();
+
+  release();
+  await expect(page.getByText("The 3D view is unavailable.")).toBeVisible({ timeout: 15_000 });
+  await expect(hint).toBeHidden();
+});
+
+test("the monitor hint stays inside narrow viewports", async ({ page }) => {
+  for (const width of [320, 375]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/");
+    const canvas = page.locator('canvas[data-engine]');
+    const room = page.locator('section[aria-label="Study room overview"]');
+    const hint = page.getByText("USE COMPUTER", { exact: true });
+    await expect(canvas).toBeVisible();
+    await page.waitForLoadState("networkidle");
+
+    await page.mouse.move(width / 2, 400);
+    await expect(room).toHaveAttribute("data-hovered-hotspot", "monitor");
+    await expect(hint).toBeVisible();
+    const tooltip = (await hint.boundingBox())!;
+    expect(tooltip.x).toBeGreaterThanOrEqual(0);
+    expect(tooltip.y).toBeGreaterThanOrEqual(0);
+    expect(tooltip.x + tooltip.width).toBeLessThanOrEqual(width);
+    expect(tooltip.y + tooltip.height).toBeLessThanOrEqual(800);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
   }
 });
 

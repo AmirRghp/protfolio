@@ -1,9 +1,10 @@
-import { Component, lazy, Suspense, useEffect, useRef, useState, type ReactNode } from "react";
+import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { portfolioContent } from "./content";
 import { desktopApps } from "./desktopApps";
 import MonitorDesktop from "./MonitorDesktop";
 import ProjectBoard from "./ProjectBoard";
 import RoomUnavailable from "./RoomUnavailable";
+import { hotspotHintPosition, type RoomHotspot, type RoomHotspotHover } from "./roomHover";
 import styles from "./RoomPreview.module.css";
 import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
 
@@ -137,6 +138,9 @@ function ArcadePanel() {
 
 export default function RoomPreview({ navigation, onNavigate, onSelectProject }: RoomPreviewProps) {
   const desktopRef = useRef<HTMLDivElement>(null);
+  const previewRef = useRef<HTMLElement>(null);
+  const hintRef = useRef<HTMLDivElement>(null);
+  const hoveredHotspot = useRef<RoomHotspot | null>(null);
   const returnFocusDestination = useRef<Exclude<RoomDestination, "room"> | null>(null);
   const [sceneFailed, setSceneFailed] = useState(false);
   const [openAppId, setOpenAppId] = useState<string | null>(null);
@@ -144,16 +148,63 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     ? null
     : navigation.destination;
 
+  const hideHotspotHint = useCallback(() => {
+    hoveredHotspot.current = null;
+    if (hintRef.current) hintRef.current.dataset.visible = "false";
+    if (previewRef.current) delete previewRef.current.dataset.hoveredHotspot;
+  }, []);
+
+  const handleHotspotHover = useCallback((hover: RoomHotspotHover | null) => {
+    if (!hover) {
+      hideHotspotHint();
+      return;
+    }
+
+    const hint = hintRef.current;
+    const next = hover.destination;
+    if (hoveredHotspot.current !== next) {
+      hoveredHotspot.current = next;
+      if (previewRef.current) previewRef.current.dataset.hoveredHotspot = next;
+      if (hint) hint.dataset.visible = next === "monitor" ? "true" : "false";
+    }
+    if (next !== "monitor" || !hint) return;
+
+    const bounds = hint.getBoundingClientRect();
+    const position = hotspotHintPosition(hover, { width: bounds.width, height: bounds.height }, {
+      width: document.documentElement.clientWidth || window.innerWidth,
+      height: document.documentElement.clientHeight || window.innerHeight,
+    });
+    hint.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
+  }, [hideHotspotHint]);
+
   /** Selecting another room destination also discards the monitor window it does not own. */
   const navigate = (destination: RoomDestination) => {
+    hideHotspotHint();
     if (destination === "board" || destination === "arcade") setOpenAppId(null);
     onNavigate(destination);
   };
 
   const failScene = () => {
+    hideHotspotHint();
     setSceneFailed(true);
     setOpenAppId(null);
   };
+
+  useEffect(() => {
+    hideHotspotHint();
+  }, [navigation.destination, hideHotspotHint]);
+
+  useEffect(() => {
+    const hide = () => hideHotspotHint();
+    const onVisibilityChange = () => { if (document.hidden) hide(); };
+    window.addEventListener("blur", hide);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("blur", hide);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      hideHotspotHint();
+    };
+  }, [hideHotspotHint]);
 
   // A destination close returns the keyboard to the control that opened it, not to the document.
   useEffect(() => {
@@ -184,7 +235,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
   };
 
   return (
-    <section className={styles.preview} aria-label="Study room overview">
+    <section ref={previewRef} className={styles.preview} aria-label="Study room overview">
       <div className={styles.header}>
         <div className={styles.headerTop}>
           <span>AG / {portfolioContent.owner.role}</span>
@@ -206,7 +257,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
       <div className={styles.scene}>
         <SceneBoundary onFailure={failScene}>
           <Suspense fallback={<p className={styles.message} role="status">Loading study…</p>}>
-            <RoomScene destination={navigation.destination} desktopRef={desktopRef} onUnavailable={failScene} onNavigate={(destination) => {
+            <RoomScene destination={navigation.destination} desktopRef={desktopRef} onUnavailable={failScene} onHotspotHover={handleHotspotHover} onNavigate={(destination) => {
               if (destination === "monitor" || destination === "board") {
                 document.getElementById(`destination-${destination}`)?.focus({ preventScroll: true });
               }
@@ -228,6 +279,9 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
             onOpenAppChange={setOpenAppId}
             onExit={() => returnToRoom("monitor")}
           />
+        </div>
+        <div ref={hintRef} className={styles.hotspotHint} data-visible="false" aria-hidden="true">
+          USE COMPUTER
         </div>
       </div>
       {navigation.destination === "board" && <ProjectBoard
