@@ -17,6 +17,7 @@ globalThis.FileReader ??= class {
 
 const wood = new THREE.MeshStandardMaterial({ color: "#89552e", roughness: 0.68 });
 const boardEdge = new THREE.MeshStandardMaterial({ color: "#51321d", roughness: 0.82 });
+const deskSurface = new THREE.MeshStandardMaterial({ color: "#513a2c", roughness: 0.76 });
 const boardFace = new THREE.MeshStandardMaterial({ color: "#91603b", roughness: 0.9 });
 
 function panel(name, width, height, depth, radius, material) {
@@ -71,12 +72,12 @@ const desk = new THREE.Group();
 desk.name = "Desk";
 // The back edge stays at z=-0.9; the extra depth grows toward the viewer so the empty tabletop
 // in front of the monitor reads as a real surface.
-const top = panel("DeskTop", 11.6, 4.6, 0.18, 0.08, wood);
+const top = panel("DeskTop", 11.6, 4.6, 0.18, 0.08, deskSurface);
 top.rotation.x = -Math.PI / 2;
 top.position.set(0, 1.8, 1.4);
 desk.add(top);
-const frontEdge = panel("DeskFrontEdge", 11.48, 0.11, 0.08, 0.025, boardEdge);
-frontEdge.position.set(0, 1.72, 3.69);
+const frontEdge = panel("DeskFrontEdge", 11.48, 0.18, 0.1, 0.025, boardEdge);
+frontEdge.position.set(0, 1.8, 3.75);
 desk.add(frontEdge);
 root.add(desk);
 
@@ -90,6 +91,18 @@ const loaded = await new GLTFLoader().parseAsync(result, "");
 for (const name of ["DeskTop", "BoardFrame", "BoardFace", "Shelf1", "Shelf2"]) {
   assert.ok(loaded.scene.getObjectByName(name), `Missing ${name} in exported GLB`);
 }
+const loadedTop = loaded.scene.getObjectByName("DeskTop");
+const loadedEdge = loaded.scene.getObjectByName("DeskFrontEdge");
+assert.ok(loadedTop instanceof THREE.Mesh, "Missing DeskTop mesh");
+assert.ok(loadedEdge instanceof THREE.Mesh, "Missing DeskFrontEdge mesh");
+const deskBounds = new THREE.Box3().setFromObject(loadedTop);
+const deskSize = deskBounds.getSize(new THREE.Vector3());
+assert.ok(Math.abs(deskSize.x - 11.6) < 0.01 && Math.abs(deskSize.y - 0.18) < 0.01 && Math.abs(deskSize.z - 4.6) < 0.01);
+assert.ok(Math.abs(deskBounds.min.z + 0.9) < 0.01 && Math.abs(deskBounds.max.z - 3.7) < 0.01);
+assert.equal(loadedTop.material.color.getHexString(), "513a2c");
+const edgeBounds = new THREE.Box3().setFromObject(loadedEdge);
+assert.ok(Math.abs(edgeBounds.max.z - 3.8) < 0.02 && Math.abs(edgeBounds.max.y - deskBounds.max.y) < 0.02);
+assert.ok(edgeBounds.min.y > deskBounds.min.y - 0.02);
 const bounds = new THREE.Box3().setFromObject(loaded.scene);
 const size = bounds.getSize(new THREE.Vector3());
 assert.ok(size.x > 12 && size.x < 13 && size.y > 3.7 && size.y < 4 && size.z > 5 && size.z < 5.3);

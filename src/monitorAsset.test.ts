@@ -66,7 +66,7 @@ test("furnishings keep the room furniture without a second monitor", async () =>
   }
 });
 
-test("the desk keeps its back edge and grows one continuous top toward the viewer", async () => {
+test("the finished desk keeps its R13 surface bounds and readable front edge", async () => {
   const { scene } = await loadAsset("room-furnishings.glb");
   const top = scene.getObjectByName("DeskTop");
   const edge = scene.getObjectByName("DeskFrontEdge");
@@ -79,13 +79,17 @@ test("the desk keeps its back edge and grows one continuous top toward the viewe
   expect(topBounds.min.z).toBeCloseTo(-0.9, 3);
   expect(topBounds.max.z).toBeCloseTo(3.7, 3);
   expect(topSize.x).toBeCloseTo(11.6, 3);
+  expect(topSize.y).toBeCloseTo(0.18, 3);
   expect(topBounds.max.y).toBeCloseTo(1.89, 3);
+  expect(top.material).toHaveProperty("color");
+  expect((top.material as { color: { getHexString(): string } }).color.getHexString()).toBe("513a2c");
 
-  // The front lip follows the real front boundary instead of floating behind it.
+  // The fascia covers the tabletop's full thickness at its front boundary.
   const edgeBounds = new Box3().setFromObject(edge);
-  expect(edgeBounds.max.z).toBeGreaterThan(topBounds.max.z - 0.1);
-  expect(edgeBounds.max.z).toBeLessThan(topBounds.max.z + 0.1);
-  expect(edgeBounds.max.y).toBeLessThan(topBounds.max.y);
+  expect(edgeBounds.min.z).toBeCloseTo(topBounds.max.z, 2);
+  expect(edgeBounds.max.z).toBeCloseTo(3.8, 2);
+  expect(edgeBounds.min.y).toBeCloseTo(topBounds.min.y, 2);
+  expect(edgeBounds.max.y).toBeCloseTo(topBounds.max.y, 2);
 
   for (const name of ["Floor", "DeskFloor", "DeskLeg", "DeskLegs", "DeskSupport", "DeskSupports"]) {
     expect(scene.getObjectByName(name)).toBeUndefined();
