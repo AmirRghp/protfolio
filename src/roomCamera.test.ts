@@ -79,7 +79,7 @@ describe("fixed room framing", () => {
 
   it("limits idle pointer movement and keeps its center neutral", () => {
     expect(roomParallaxOffset(0, 0)).toEqual({ x: 0, y: 0 });
-    expect(roomParallaxOffset(1, 1)).toEqual({ x: 0.12, y: 0.06 });
-    expect(roomParallaxOffset(-2, -3)).toEqual({ x: -0.12, y: -0.06 });
+    expect(roomParallaxOffset(1, 1)).toEqual({ x: 0.24, y: 0.12 });
+    expect(roomParallaxOffset(-2, -3)).toEqual({ x: -0.24, y: -0.12 });
   });
 });

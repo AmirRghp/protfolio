@@ -105,41 +105,105 @@ async function roomFrame(page: Page) {
   return page.screenshot({ clip });
 }
 
-test("idle parallax stays inside the room and returns to center around controls", async ({ page }) => {
+test("idle parallax stays inside the room at every corner and returns to center around controls", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const canvas = page.locator('canvas[data-engine]');
   const sceneFrame = () => roomFrame(page);
+  const foregroundFrame = async () => {
+    const clip = await page.evaluate(() => {
+      const canvas = document.querySelector<HTMLCanvasElement>('canvas[data-engine]')!;
+      const box = canvas.getBoundingClientRect();
+      const screen = document.querySelector<HTMLElement>('[role="region"]')?.getBoundingClientRect();
+      const caption = [...document.querySelectorAll<HTMLElement>("p")]
+        .find((element) => element.textContent?.startsWith("Study overview"))
+        ?.getBoundingClientRect();
+      const top = screen && screen.bottom > box.y ? Math.min(screen.bottom + 16, box.bottom - 120) : box.y + box.height * 0.55;
+      const bottom = caption && caption.top > top + 80 ? caption.top - 8 : box.bottom - 40;
+      return { x: box.x, y: top, width: box.width, height: Math.max(80, bottom - top) };
+    });
+    return page.screenshot({ clip });
+  };
+  const controlBoxes = () => page.evaluate(() =>
+    [...document.querySelectorAll<HTMLElement>('nav[aria-label="Study destinations"] button')].map((button) => {
+      const box = button.getBoundingClientRect();
+      return { text: button.textContent, x: box.x, y: box.y, width: box.width, height: box.height };
+    }),
+  );
   await expect(canvas).toBeVisible();
   await page.waitForLoadState("networkidle");
   await page.getByRole("link", { name: "Read portfolio" }).hover();
-  await page.waitForTimeout(350);
-  const centered = await sceneFrame();
+  await page.waitForTimeout(700);
+  const centered = await foregroundFrame();
+  const controlsBefore = await controlBoxes();
+
+  const corners = [
+    { name: "top-left", x: 12, y: 120 },
+    { name: "top-right", x: 1428, y: 120 },
+    { name: "bottom-left", x: 12, y: 880 },
+    { name: "bottom-right", x: 1428, y: 880 },
+  ] as const;
+  const cornersSeen: Buffer[] = [];
+  for (const corner of corners) {
+    await page.mouse.move(corner.x, corner.y);
+    await page.waitForTimeout(700);
+    const frame = await foregroundFrame();
+    expect(changedBytes(centered, frame), `${corner.name} should move the room`).toBeGreaterThan(0);
+    cornersSeen.push(frame);
+  }
+  // Moving on both axes must be visible, not just a uniform camera pan.
+  expect(changedBytes(cornersSeen[0], cornersSeen[1])).toBeGreaterThan(0);
+  expect(changedBytes(cornersSeen[0], cornersSeen[2])).toBeGreaterThan(0);
+  expect(await controlBoxes()).toEqual(controlsBefore);
 
   await page.mouse.move(hotspot("board").x, hotspot("board").y);
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(700);
   const boardHover = await sceneFrame();
   await page.mouse.move(hotspot("board").x + 24, hotspot("board").y + 12);
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(700);
   expect(changedBytes(boardHover, await sceneFrame())).toBe(0);
-
-  await page.mouse.move(125, 690);
-  await page.waitForTimeout(350);
-  const shifted = await sceneFrame();
-  const shift = changedBytes(centered, shifted);
-  expect(shift).toBeGreaterThan(0);
 
   const monitor = page.getByRole("button", { name: "Monitor", exact: true });
   await monitor.hover();
   await page.waitForTimeout(700);
-  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+  expect(changedBytes(centered, await foregroundFrame())).toBe(0);
 
   await page.mouse.move(125, 690);
-  await page.waitForTimeout(350);
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBeGreaterThan(0);
   await monitor.focus();
   await expect(monitor).toHaveCSS("outline-style", "solid");
   await page.waitForTimeout(700);
-  expect(changedBytes(centered, await sceneFrame())).toBe(0);
+  expect(changedBytes(centered, await foregroundFrame())).toBe(0);
+  await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
+
+  await page.mouse.move(12, 700);
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBeGreaterThan(0);
+  await page.evaluate(() => {
+    document.querySelector<HTMLCanvasElement>('canvas[data-engine]')!
+      .dispatchEvent(new PointerEvent("pointercancel", { bubbles: true, pointerType: "mouse" }));
+  });
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBe(0);
+
+  await page.mouse.move(1428, 700);
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBeGreaterThan(0);
+  await page.evaluate(() => window.dispatchEvent(new Event("blur")));
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBe(0);
+
+  await page.mouse.move(12, 700);
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBeGreaterThan(0);
+  await page.evaluate(() => {
+    Object.defineProperty(document, "hidden", { configurable: true, get: () => true });
+    document.dispatchEvent(new Event("visibilitychange"));
+    Reflect.deleteProperty(document, "hidden");
+  });
+  await page.waitForTimeout(700);
+  expect(changedBytes(centered, await foregroundFrame())).toBe(0);
 });
 
 test("live reduced motion removes idle movement and a resize retargets the return", async ({ page }) => {

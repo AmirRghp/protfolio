@@ -276,4 +276,6 @@
   font-size: 0.8125rem;
   line-height: 1.5;
   text-align: center;
+  /* The status line is not interactive; let the room keep the pointer at the bottom of the Hero. */
+  pointer-events: none;
 }

@@ -27,9 +27,14 @@ export function roomOverviewPose(aspect: number) {
   };
 }
 
+/**
+ * The room overview is pitched down over a deep desk, so the old shallow-frame amount read as
+ * almost flat. These limits put roughly a percent of foreground travel at the frame corners while
+ * keeping the destinations and the scene edges inside the approved R13 frame.
+ */
 export function roomParallaxOffset(x: number, y: number) {
   return {
-    x: Math.max(-1, Math.min(1, x)) * 0.12,
-    y: Math.max(-1, Math.min(1, y)) * 0.06,
+    x: Math.max(-1, Math.min(1, x)) * 0.24,
+    y: Math.max(-1, Math.min(1, y)) * 0.12,
   };
 }

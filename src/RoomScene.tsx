@@ -280,7 +280,7 @@ function CameraFocus({ destination, onHotspotHover }: {
       if (document.hidden) clearPointerState();
     };
     const onPointerCapabilityChange = () => {
-      if (!finePointer.matches) clearHover();
+      clearPointerState();
     };
 
     canvas.addEventListener("pointermove", onPointerMove);
