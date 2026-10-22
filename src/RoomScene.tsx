@@ -5,7 +5,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { portfolioContent } from "./content";
 import { boardCardLayout } from "./boardLayout";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
-import { ROOM_FOV, ROOM_TRANSITION_SECONDS, roomCameraDistance, roomParallaxOffset } from "./roomCamera";
+import { ROOM_FOV, ROOM_OVERVIEW_TARGET_Y, ROOM_TRANSITION_SECONDS, roomOverviewPose, roomParallaxOffset } from "./roomCamera";
 import type { RoomDestination } from "./roomNavigation";
 import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
 import RoomUnavailable from "./RoomUnavailable";
@@ -100,6 +100,10 @@ function MonitorOverlay({ surface, desktopRef }: {
   useFrame(() => {
     const element = desktopRef.current;
     if (!element) return;
+    // The camera pose may have changed earlier in this frame; its world matrix is otherwise
+    // only refreshed by the renderer after these callbacks, which would leave the overlay a
+    // frame behind at the end of a camera move.
+    camera.updateMatrixWorld();
     const layout = monitorOverlayLayout(camera, size, surface, resting);
     if (layout.transform !== applied.current.transform) {
       element.style.transform = layout.transform;
@@ -126,7 +130,7 @@ function MonitorOverlay({ surface, desktopRef }: {
   return null;
 }
 
-const overviewTarget = new Vector3(0, 3.45, 0);
+const overviewTarget = new Vector3(0, ROOM_OVERVIEW_TARGET_Y, 0);
 
 // Measured from the prepared monitor asset: the display surface is centred at (-0.25, 3.754, -0.25).
 const monitorSurface = {
@@ -137,7 +141,8 @@ const monitorSurface = {
 
 function destinationPose(destination: RoomDestination, aspect: number) {
   if (destination === "room") {
-    return { position: new Vector3(0, 3.45, roomCameraDistance(aspect)), target: overviewTarget.clone() };
+    const pose = roomOverviewPose(aspect);
+    return { position: new Vector3(...pose.position), target: new Vector3(...pose.target) };
   }
 
   const targets = {
@@ -310,7 +315,9 @@ function CameraFocus({ destination, onHotspotHover }: {
       lookAt.current.lerpVectors(startTarget.current, endTarget.current, eased);
       camera.lookAt(lookAt.current);
       if (progress === 1) active.current = false;
-      else invalidate();
+      // Keep rendering one more frame after the last step so the projected HTML overlay is
+      // recomputed from the parked camera instead of the previous frame's pose.
+      invalidate();
       return;
     }
 

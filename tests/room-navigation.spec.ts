@@ -13,7 +13,7 @@ type OverviewHotspot = {
 const overviewHotspots: OverviewHotspot[] = [
   // The curved monitor covers the old sample point; select the exposed board face.
   { destination: "Project board", id: "board", x: 300, y: 430 },
-  { destination: "Monitor", id: "monitor", x: 611, y: 334 },
+  { destination: "Monitor", id: "monitor", x: 640, y: 390 },
   { destination: "Arcade", id: "arcade", x: 1077, y: 362 },
 ];
 
@@ -166,7 +166,9 @@ test("live reduced motion removes idle movement and a resize retargets the retur
   await page.emulateMedia({ reducedMotion: "no-preference" });
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.getByRole("link", { name: "Read portfolio" }).hover();
-  await page.waitForTimeout(350);
+  // The aspect-dependent camera travel takes 0.7s; capture only after it has settled so the
+  // comparison measures the posed room rather than a mid-transition frame.
+  await page.waitForTimeout(900);
   const overviewAt1024 = await roomFrame(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(350);
@@ -175,6 +177,9 @@ test("live reduced motion removes idle movement and a resize retargets the retur
   await page.setViewportSize({ width: 1024, height: 900 });
   await page.getByRole("button", { name: "Back to room", exact: true }).click();
   await page.waitForTimeout(900);
+  // Normalize idle parallax to the same neutral pointer state as the first capture.
+  await page.getByRole("link", { name: "Read portfolio" }).hover();
+  await page.waitForTimeout(350);
   await expect(page.getByRole("button", { name: "Arcade", exact: true })).toHaveAttribute("aria-pressed", "false");
   expect(changedBytes(overviewAt1024, await roomFrame(page))).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1024);

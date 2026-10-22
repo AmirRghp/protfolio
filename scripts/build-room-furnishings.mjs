@@ -69,12 +69,14 @@ root.add(board);
 
 const desk = new THREE.Group();
 desk.name = "Desk";
-const top = panel("DeskTop", 11.6, 2.2, 0.18, 0.08, wood);
+// The back edge stays at z=-0.9; the extra depth grows toward the viewer so the empty tabletop
+// in front of the monitor reads as a real surface.
+const top = panel("DeskTop", 11.6, 4.6, 0.18, 0.08, wood);
 top.rotation.x = -Math.PI / 2;
-top.position.set(0, 1.8, 0.2);
+top.position.set(0, 1.8, 1.4);
 desk.add(top);
 const frontEdge = panel("DeskFrontEdge", 11.48, 0.11, 0.08, 0.025, boardEdge);
-frontEdge.position.set(0, 1.72, 1.29);
+frontEdge.position.set(0, 1.72, 3.69);
 desk.add(frontEdge);
 root.add(desk);
 
@@ -90,7 +92,7 @@ for (const name of ["DeskTop", "BoardFrame", "BoardFace", "Shelf1", "Shelf2"]) {
 }
 const bounds = new THREE.Box3().setFromObject(loaded.scene);
 const size = bounds.getSize(new THREE.Vector3());
-assert.ok(size.x > 12 && size.x < 13 && size.y > 3.7 && size.y < 4 && size.z > 2.5 && size.z < 3);
+assert.ok(size.x > 12 && size.x < 13 && size.y > 3.7 && size.y < 4 && size.z > 5 && size.z < 5.3);
 assert.equal(loaded.scene.getObjectByName("Monitor"), undefined);
 
 const output = resolve(dirname(fileURLToPath(import.meta.url)), "../public/assets/models/room-furnishings.glb");

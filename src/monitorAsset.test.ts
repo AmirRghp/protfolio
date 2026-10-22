@@ -65,3 +65,29 @@ test("furnishings keep the room furniture without a second monitor", async () =>
     expect(!!scene.getObjectByName(name)).toBe(false);
   }
 });
+
+test("the desk keeps its back edge and grows one continuous top toward the viewer", async () => {
+  const { scene } = await loadAsset("room-furnishings.glb");
+  const top = scene.getObjectByName("DeskTop");
+  const edge = scene.getObjectByName("DeskFrontEdge");
+  expect(top).toBeInstanceOf(Mesh);
+  expect(edge).toBeInstanceOf(Mesh);
+  if (!(top instanceof Mesh) || !(edge instanceof Mesh)) throw new Error("Missing desk meshes");
+
+  const topBounds = new Box3().setFromObject(top);
+  const topSize = topBounds.getSize(new Vector3());
+  expect(topBounds.min.z).toBeCloseTo(-0.9, 3);
+  expect(topBounds.max.z).toBeCloseTo(3.7, 3);
+  expect(topSize.x).toBeCloseTo(11.6, 3);
+  expect(topBounds.max.y).toBeCloseTo(1.89, 3);
+
+  // The front lip follows the real front boundary instead of floating behind it.
+  const edgeBounds = new Box3().setFromObject(edge);
+  expect(edgeBounds.max.z).toBeGreaterThan(topBounds.max.z - 0.1);
+  expect(edgeBounds.max.z).toBeLessThan(topBounds.max.z + 0.1);
+  expect(edgeBounds.max.y).toBeLessThan(topBounds.max.y);
+
+  for (const name of ["Floor", "DeskFloor", "DeskLeg", "DeskLegs", "DeskSupport", "DeskSupports"]) {
+    expect(scene.getObjectByName(name)).toBeUndefined();
+  }
+});
