@@ -29,6 +29,7 @@ test("the about-me file opens on a double click and shows the owner details", as
   // A single click only focuses the file; the window opens on a double click.
   await file.click();
   await expect(page.locator(monitorWindow)).toHaveCount(0);
+  await expect(file).toHaveAttribute("data-selected", "true");
 
   // The double activation window has to pass before the next pair of clicks.
   await page.waitForTimeout(700);
@@ -57,6 +58,7 @@ test("the about-me window takes the focus and returns it to the file icon", asyn
   await page.keyboard.press("Escape");
   await expect(page.locator(monitorWindow)).toHaveCount(0);
   await expect(file).toBeFocused();
+  await expect(file).toHaveAttribute("data-selected", "true");
 
   // The focused file opens again with the keyboard.
   await page.keyboard.press("Enter");

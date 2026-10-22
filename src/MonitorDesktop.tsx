@@ -244,6 +244,8 @@ export default function MonitorDesktop({
   ref,
 }: MonitorDesktopProps) {
   const [offsets, setOffsets] = useState<Record<string, IconOffset>>({});
+  const [selectedAppId, setSelectedAppId] = useState<string | null>(openAppId);
+  const [previousOpenAppId, setPreviousOpenAppId] = useState(openAppId);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [windowFrame, setWindowFrame] = useState<WindowFrame | null>(null);
   const [windowBounds, setWindowBounds] = useState<DesktopBounds>({ width: 0, height: 0, top: 0 });
@@ -260,6 +262,10 @@ export default function MonitorDesktop({
   const moveButton = useRef<HTMLButtonElement | null>(null);
   const windowDrag = useRef<WindowDragState | null>(null);
   const openApp = apps.find((app) => app.id === openAppId) ?? null;
+  if (openAppId !== previousOpenAppId) {
+    setPreviousOpenAppId(openAppId);
+    if (openAppId) setSelectedAppId(openAppId);
+  }
   // An owning app id makes the transient mode self-cancel if the room closes or replaces its
   // window, without leaving the icons inert and the placement layer unreachable.
   const moving = openApp !== null && movingAppId === openApp.id;
@@ -303,6 +309,7 @@ export default function MonitorDesktop({
 
   const showApp = (app: DesktopApp, trigger: HTMLButtonElement) => {
     clearActivation();
+    setSelectedAppId(app.id);
     clearWindowInteraction();
     // A different app starts at the default place. Reactivating the app that already owns the
     // window keeps the user's geometry, including its maximized state.
@@ -315,6 +322,7 @@ export default function MonitorDesktop({
 
   /** Counts a double activation on the same icon, so a single click or tap only selects the file. */
   const countDoubleActivation = (app: DesktopApp, trigger: HTMLButtonElement) => {
+    setSelectedAppId(app.id);
     const { state, doubled } = registerActivation(lastActivation.current, app.id);
     lastActivation.current = state;
     if (!doubled) return;
@@ -692,6 +700,7 @@ export default function MonitorDesktop({
                 type="button"
                 className={styles.icon}
                 data-app-id={app.id}
+                data-selected={selectedAppId === app.id ? "true" : undefined}
                 title={needsDoubleClick ? ACTIVATION_HINT : undefined}
                 aria-describedby={needsDoubleClick ? hintId : undefined}
                 onPointerDown={(event) => startDrag(event, app)}

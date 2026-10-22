@@ -44,6 +44,13 @@ describe("monitor desktop", () => {
 
     expect(html).toContain("monitor-window-title");
     expect(html).toContain("Amirreza Gholipour");
+    expect(html).toContain('data-selected="true"');
+  });
+
+  it("renders desktop icons without a selected state before an app is opened", () => {
+    const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} />);
+
+    expect(html).not.toContain("data-selected");
   });
 
   it("does not render a window for an app that is not on the desktop", () => {

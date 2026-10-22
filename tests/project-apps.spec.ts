@@ -78,11 +78,13 @@ test("the project window takes the focus and returns it to its icon", async ({ p
   const close = page.getByRole("button", { name: "Close", exact: true });
 
   await icon.click();
+  await expect(icon).toHaveAttribute("data-selected", "true");
   await expect(close).toBeFocused();
 
   await page.keyboard.press("Escape");
   await expect(page.locator(monitorWindow)).toHaveCount(0);
   await expect(icon).toBeFocused();
+  await expect(icon).toHaveAttribute("data-selected", "true");
 
   await page.keyboard.press("Enter");
   await expect(page.locator(monitorWindow)).toBeVisible();
@@ -91,6 +93,27 @@ test("the project window takes the focus and returns it to its icon", async ({ p
   await close.click();
   await expect(page.locator(monitorWindow)).toHaveCount(0);
   await expect(icon).toBeFocused();
+});
+
+test("selection follows project activation while hover and focus do not select icons", async ({ page }) => {
+  await focusMonitor(page);
+
+  const project = page.getByRole("button", { name: "Enterprise Knowledge Copilot" });
+  const another = page.getByRole("button", { name: "Laya Fine-tuning Pipeline" });
+
+  await project.hover();
+  await expect(project).not.toHaveAttribute("data-selected", "true");
+  await project.focus();
+  await expect(project).not.toHaveAttribute("data-selected", "true");
+
+  await project.click();
+  await expect(project).toHaveAttribute("data-selected", "true");
+  await expect(another).not.toHaveAttribute("data-selected", "true");
+  await page.getByRole("button", { name: "Close", exact: true }).click();
+
+  await another.click();
+  await expect(another).toHaveAttribute("data-selected", "true");
+  await expect(project).not.toHaveAttribute("data-selected", "true");
 });
 
 test("an icon can be dragged without opening its app", async ({ page }) => {
