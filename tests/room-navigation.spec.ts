@@ -161,7 +161,7 @@ test("idle parallax stays inside the room at every corner and returns to center 
   const boardHover = await sceneFrame();
   await page.mouse.move(hotspot("board").x + 24, hotspot("board").y + 12);
   await page.waitForTimeout(700);
-  expect(changedBytes(boardHover, await sceneFrame())).toBe(0);
+  expect(changedBytes(boardHover, await sceneFrame())).toBeGreaterThan(0);
 
   const monitor = page.getByRole("button", { name: "Monitor", exact: true });
   await monitor.hover();

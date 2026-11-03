@@ -1,26 +1,50 @@
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
-import { DoubleSide, Mesh, PerspectiveCamera, Raycaster, Vector2, Vector3 } from "three";
+import {
+  ACESFilmicToneMapping,
+  DoubleSide,
+  Mesh,
+  MeshStandardMaterial,
+  PerspectiveCamera,
+  PMREMGenerator,
+  Raycaster,
+  SRGBColorSpace,
+  Vector2,
+  Vector3,
+} from "three";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { portfolioContent } from "./content";
 import { boardCardLayout } from "./boardLayout";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
-import { ROOM_FOV, ROOM_OVERVIEW_TARGET_Y, ROOM_TRANSITION_SECONDS, roomOverviewPose, roomParallaxOffset } from "./roomCamera";
+import {
+  ROOM_FOV,
+  ROOM_OVERVIEW_TARGET_Y,
+  ROOM_TRANSITION_SECONDS,
+  easeCameraTransition,
+  roomOverviewPose,
+  roomParallaxOffset,
+  roomParallaxTargetOffset,
+  stepIdleParallax,
+  type IdleParallaxState,
+} from "./roomCamera";
 import type { RoomDestination } from "./roomNavigation";
 import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
 import RoomUnavailable from "./RoomUnavailable";
 
 type Triple = [number, number, number];
 
-function Block({ position, size, color }: {
+function Block({ position, size, color, roughness = 0.72, metalness = 0.06 }: {
   position: Triple;
   size: Triple;
   color: string;
+  roughness?: number;
+  metalness?: number;
 }) {
   return (
     <mesh position={position} castShadow receiveShadow>
       <boxGeometry args={size} />
-      <meshStandardMaterial color={color} roughness={0.8} />
+      <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} />
     </mesh>
   );
 }
@@ -33,6 +57,20 @@ function RoomFurnishings() {
       if (object instanceof Mesh) {
         object.castShadow = object.name !== "DeskTop";
         object.receiveShadow = true;
+        if (object.material instanceof MeshStandardMaterial) {
+          if (object.name === "DeskTop") {
+            object.material.roughness = 0.62;
+            object.material.metalness = 0.06;
+            object.material.envMapIntensity = 0.85;
+          } else if (object.name === "DeskFrontEdge" || object.name === "BoardFrame") {
+            object.material.roughness = 0.56;
+            object.material.metalness = 0.08;
+            object.material.envMapIntensity = 0.9;
+          } else {
+            object.material.envMapIntensity = 0.75;
+          }
+          object.material.needsUpdate = true;
+        }
       }
     });
     invalidate();
@@ -42,6 +80,20 @@ function RoomFurnishings() {
 
 function ArcadeCabinet() {
   const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-cabinet.glb");
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    scene.traverse((object) => {
+      if (object instanceof Mesh) {
+        object.castShadow = true;
+        object.receiveShadow = true;
+        if (object.material instanceof MeshStandardMaterial) {
+          object.material.envMapIntensity = 0.95;
+          object.material.needsUpdate = true;
+        }
+      }
+    });
+    invalidate();
+  }, [scene, invalidate]);
   return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
 }
 
@@ -59,6 +111,12 @@ function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> 
       if (object instanceof Mesh) {
         object.castShadow = object.name !== "MonitorScreen";
         object.receiveShadow = true;
+        if (object.material instanceof MeshStandardMaterial && object.name !== "MonitorScreen") {
+          object.material.roughness = 0.38;
+          object.material.metalness = 0.28;
+          object.material.envMapIntensity = 1.05;
+          object.material.needsUpdate = true;
+        }
       }
     });
     invalidate();
@@ -168,10 +226,12 @@ function CameraFocus({ destination, onHotspotHover }: {
 }) {
   const { camera, size, invalidate, gl, scene } = useThree();
   const lookAt = useRef(overviewTarget.clone());
+  const baseTarget = useRef(overviewTarget.clone());
   const hotspotRaycaster = useRef(new Raycaster());
   const pointerPosition = useRef(new Vector2());
   const basePosition = useRef(new Vector3());
   const idleOffset = useRef(new Vector3());
+  const idleState = useRef<IdleParallaxState>({ x: 0, y: 0, vx: 0, vy: 0 });
   const idleTarget = useRef({ x: 0, y: 0 });
   const startPosition = useRef(new Vector3());
   const endPosition = useRef(new Vector3());
@@ -200,6 +260,7 @@ function CameraFocus({ destination, onHotspotHover }: {
     };
 
     basePosition.current.copy(pose.position);
+    baseTarget.current.copy(pose.target);
     resetIdle();
     if (!initialized.current) {
       camera.position.copy(pose.position);
@@ -212,15 +273,17 @@ function CameraFocus({ destination, onHotspotHover }: {
       lookAt.current.copy(pose.target);
       camera.lookAt(lookAt.current);
       idleOffset.current.set(0, 0, 0);
+      idleState.current = { x: 0, y: 0, vx: 0, vy: 0 };
       active.current = false;
       invalidate();
     } else {
-      // A new destination continues from wherever the camera currently is.
+      // A new destination continues smoothly from wherever the camera currently is.
       startPosition.current.copy(camera.position);
       startTarget.current.copy(lookAt.current);
       endPosition.current.copy(pose.position);
       endTarget.current.copy(pose.target);
       idleOffset.current.set(0, 0, 0);
+      idleState.current = { x: 0, y: 0, vx: 0, vy: 0 };
       transitionStart.current = performance.now();
       active.current = true;
       invalidate();
@@ -260,7 +323,8 @@ function CameraFocus({ destination, onHotspotHover }: {
         return;
       }
 
-      idleTarget.current = hovered ? { x: 0, y: 0 } : roomParallaxOffset(x, y);
+      // Smoothly track the cursor across the entire room overview, including across hotspots.
+      idleTarget.current = roomParallaxOffset(x, y);
       invalidate();
     };
     const onPointerDown = (event: PointerEvent) => {
@@ -271,6 +335,7 @@ function CameraFocus({ destination, onHotspotHover }: {
       resetIdle();
       active.current = false;
       idleOffset.current.set(0, 0, 0);
+      idleState.current = { x: 0, y: 0, vx: 0, vy: 0 };
       camera.position.copy(pose.position);
       lookAt.current.copy(pose.target);
       camera.lookAt(lookAt.current);
@@ -310,7 +375,7 @@ function CameraFocus({ destination, onHotspotHover }: {
     if (active.current) {
       // The travel is measured on the wall clock, so an idle frame cannot skip the whole move.
       const progress = Math.min((performance.now() - transitionStart.current) / (ROOM_TRANSITION_SECONDS * 1000), 1);
-      const eased = progress * progress * (3 - 2 * progress);
+      const eased = easeCameraTransition(progress);
       camera.position.lerpVectors(startPosition.current, endPosition.current, eased);
       lookAt.current.lerpVectors(startTarget.current, endTarget.current, eased);
       camera.lookAt(lookAt.current);
@@ -322,15 +387,18 @@ function CameraFocus({ destination, onHotspotHover }: {
     }
 
     if (destination !== "room") return;
-    const target = idleTarget.current;
-    const step = 1 - Math.exp(-delta / 0.12);
-    idleOffset.current.x += (target.x - idleOffset.current.x) * step;
-    idleOffset.current.y += (target.y - idleOffset.current.y) * step;
-    if (Math.abs(target.x - idleOffset.current.x) < 0.0005) idleOffset.current.x = target.x;
-    if (Math.abs(target.y - idleOffset.current.y) < 0.0005) idleOffset.current.y = target.y;
+    const nextState = stepIdleParallax(idleState.current, idleTarget.current, delta);
+    idleState.current = nextState;
+    idleOffset.current.set(nextState.x, nextState.y, 0);
+    const targetShift = roomParallaxTargetOffset(nextState);
     camera.position.copy(basePosition.current).add(idleOffset.current);
+    lookAt.current.set(
+      baseTarget.current.x + targetShift.x,
+      baseTarget.current.y + targetShift.y,
+      baseTarget.current.z,
+    );
     camera.lookAt(lookAt.current);
-    if (idleOffset.current.x !== target.x || idleOffset.current.y !== target.y) invalidate();
+    if (!nextState.settled) invalidate();
   });
   return null;
 }
@@ -350,12 +418,12 @@ function HotspotHighlight({ size }: { size: [number, number] }) {
     <>
       <mesh raycast={() => {}} renderOrder={2}>
         <planeGeometry args={size} />
-        <meshBasicMaterial color="#d6bc87" transparent opacity={0.07} depthWrite={false} toneMapped={false} />
+        <meshBasicMaterial color="#e3c992" transparent opacity={0.08} depthWrite={false} toneMapped={false} />
       </mesh>
       {borders.map((border, index) => (
         <mesh key={index} position={border.position} raycast={() => {}} renderOrder={3}>
           <boxGeometry args={border.size} />
-          <meshBasicMaterial color="#d6bc87" transparent opacity={0.9} depthWrite={false} toneMapped={false} />
+          <meshBasicMaterial color="#e3c992" transparent opacity={0.92} depthWrite={false} toneMapped={false} />
         </mesh>
       ))}
     </>
@@ -407,17 +475,28 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
 
   return (
     <>
-      <color attach="background" args={["#151718"]} />
-      <ambientLight intensity={0.8} color="#d6cfbf" />
-      <directionalLight position={[1, 7, 6]} intensity={1.6} color="#e6d9bf" castShadow shadow-mapSize={[1024, 1024]} shadow-camera-left={-7} shadow-camera-right={7} shadow-camera-top={6} shadow-camera-bottom={-4} />
-      <pointLight position={[1.5, 3.2, 0.7]} color="#ffb45d" intensity={10} distance={7} decay={2} />
-      <pointLight position={[3, 1.6, 0.7]} color="#467dff" intensity={3} distance={5} decay={2} />
-      <pointLight position={[-2, 4.5, 1.6]} color="#f4b56a" intensity={4} distance={5} decay={2} />
-      <pointLight position={[5.8, 6.5, -0.8]} color="#ef9a47" intensity={3} distance={5.5} decay={2} />
+      <color attach="background" args={["#0e1012"]} />
+      <ambientLight intensity={0.34} color="#dcd5c6" />
+      <hemisphereLight args={["#9bb2d0", "#2c231c", 0.58]} />
+      <directionalLight
+        position={[1.8, 7.5, 6.2]}
+        intensity={1.75}
+        color="#f3dfbe"
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.02}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={6}
+        shadow-camera-bottom={-4}
+      />
+      <pointLight position={[-2.4, 5.8, 3.2]} color="#f5c78e" intensity={6.5} distance={11} decay={2} />
+      <pointLight position={[2.4, 5.8, 3.2]} color="#8ec5ff" intensity={5.0} distance={11} decay={2} />
 
-      <mesh position={[0, 3.2, -1.4]}>
+      <mesh position={[0, 3.2, -1.4]} receiveShadow>
         <planeGeometry args={[30, 24]} />
-        <meshStandardMaterial color="#292a2b" roughness={0.9} />
+        <meshStandardMaterial color="#1e2022" roughness={0.92} metalness={0.02} />
       </mesh>
 
       <group name="board" position={[-3.5, 3.65, -1.18]} scale={[1.45, 1, 1]}>
@@ -426,10 +505,10 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
           const accents = ["#344a57", "#38413b", "#4a3e50"];
           return (
             <group key={project.id} position={pose.position} rotation={pose.rotation}>
-              <Block position={[0, 0, 0]} size={[0.76, 0.58, 0.035]} color="#d6c3a0" />
-              <Block position={[0, 0.035, 0.03]} size={[0.62, 0.27, 0.02]} color={accents[index % accents.length]} />
-              <Block position={[0, -0.2, 0.03]} size={[0.48, 0.035, 0.02]} color="#8b7557" />
-              <Block position={[0, 0.27, 0.04]} size={[0.1, 0.1, 0.06]} color="#22282a" />
+              <Block position={[0, 0, 0]} size={[0.76, 0.58, 0.035]} color="#d6c3a0" roughness={0.78} />
+              <Block position={[0, 0.035, 0.03]} size={[0.62, 0.27, 0.02]} color={accents[index % accents.length]} roughness={0.65} />
+              <Block position={[0, -0.2, 0.03]} size={[0.48, 0.035, 0.02]} color="#8b7557" roughness={0.75} />
+              <Block position={[0, 0.27, 0.04]} size={[0.1, 0.1, 0.06]} color="#22282a" roughness={0.35} metalness={0.3} />
             </group>
           );
         })}
@@ -473,7 +552,25 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
 
   if (contextLost) return <RoomUnavailable />;
   return (
-    <Canvas shadows="percentage" frameloop="demand" dpr={[1, 1.5]} camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }} fallback={<RoomUnavailable />} aria-label="Frontal study with project board, workstation and arcade">
+    <Canvas
+      shadows="percentage"
+      frameloop="demand"
+      dpr={[1, 1.5]}
+      camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }}
+      onCreated={({ gl, scene, invalidate }) => {
+        gl.outputColorSpace = SRGBColorSpace;
+        gl.toneMapping = ACESFilmicToneMapping;
+        gl.toneMappingExposure = 1.12;
+        const pmremGenerator = new PMREMGenerator(gl);
+        const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
+        pmremGenerator.dispose();
+        scene.environment = envTarget.texture;
+        scene.environmentIntensity = 0.45;
+        invalidate();
+      }}
+      fallback={<RoomUnavailable />}
+      aria-label="Frontal study with project board, workstation and arcade"
+    >
       <CameraFocus destination={destination} onHotspotHover={reportHotspotHover} />
       <ContextGuard onLost={() => {
         setContextLost(true);
@@ -483,3 +580,4 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
     </Canvas>
   );
 }
+
