@@ -14,3 +14,6 @@ __pycache__/
 
 .playwright-mcp/
 
+# Local-only documentation
+docs/
+/review.md
