@@ -68,6 +68,17 @@ Source: https://sketchfab.com/3d-models/low-poly-computer-mouse-free-download-c6
 Changes: scaled and placed on the desk to the right of the keyboard at an inward working angle,
 with body materials adjusted for dark studio lighting.
 
+## mouse-pad.glb
+
+“Mouse Pad / Keyboard Pad” by **mfk**
+([creator](https://sketchfab.com/mfk)), licensed under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+
+Source: https://sketchfab.com/3d-models/mouse-pad-keyboard-pad-7690f727d87847aaa737c8110c8e6531
+
+Changes: scaled and positioned on the desk surface beneath the compact keyboard and computer mouse,
+with dark cloth finish and accent stitching materials calibrated for studio lighting.
+
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright

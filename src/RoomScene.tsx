@@ -98,6 +98,51 @@ function ArcadeCabinet() {
   return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
 }
 
+function MousePad() {
+  const { scene } = useLoader(GLTFLoader, "/assets/models/mouse-pad.glb");
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    scene.traverse((object) => {
+      if (object instanceof Mesh) {
+        object.castShadow = false;
+        object.receiveShadow = true;
+        if (object.material instanceof MeshStandardMaterial) {
+          if (object.material.name === "Material.001") {
+            object.material.color.set("#15181b");
+            object.material.roughness = 0.78;
+            object.material.metalness = 0.04;
+            object.material.envMapIntensity = 0.85;
+          } else if (object.material.name === "Material.002") {
+            object.material.color.set("#a32828");
+            object.material.roughness = 0.65;
+            object.material.metalness = 0.05;
+            object.material.envMapIntensity = 0.9;
+          }
+          object.material.needsUpdate = true;
+        }
+      }
+    });
+    invalidate();
+  }, [scene, invalidate]);
+
+  const scaleY = 0.08;
+  const scaleXZ = 0.138;
+
+  return (
+    <group name="MousePad" position={[0.22, 1.89, 1.55]}>
+      <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[3.92, 1.92]} />
+        <meshBasicMaterial color="#090706" transparent opacity={0.35} depthWrite={false} />
+      </mesh>
+      <primitive
+        object={scene}
+        position={[0, -1.60794 * scaleY, 0]}
+        scale={[scaleXZ, scaleY, scaleXZ]}
+      />
+    </group>
+  );
+}
+
 function CompactKeyboard() {
   const { scene } = useLoader(GLTFLoader, "/assets/models/compact-keyboard.glb");
   const invalidate = useThree((state) => state.invalidate);
@@ -138,7 +183,7 @@ function CompactKeyboard() {
   }, [scene, invalidate]);
 
   return (
-    <group name="CompactKeyboard" position={[-0.62, 1.89, 1.68]} rotation={[0, 0.19, 0]}>
+    <group name="CompactKeyboard" position={[-0.62, 1.906, 1.68]} rotation={[0, 0.19, 0]}>
       <mesh position={[0.02, 0.003, 0.03]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.12, 0.86]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.42} depthWrite={false} />
@@ -185,7 +230,7 @@ function ComputerMouse() {
   }, [scene, invalidate]);
 
   return (
-    <group name="ComputerMouse" position={[1.12, 1.89, 1.36]} rotation={[0, 0.38, 0]}>
+    <group name="ComputerMouse" position={[1.12, 1.906, 1.36]} rotation={[0, 0.38, 0]}>
       <mesh position={[0, 0.003, 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.26, 24]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
@@ -618,6 +663,7 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
       <Suspense fallback={null}>
         <RoomFurnishings />
         <Monitor desktopRef={desktopRef} />
+        <MousePad />
         <CompactKeyboard />
         <ComputerMouse />
         <ArcadeCabinet />

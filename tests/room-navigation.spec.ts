@@ -30,6 +30,7 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   const assets = [
     "room-furnishings.glb",
     "curved-monitor.glb",
+    "mouse-pad.glb",
     "compact-keyboard.glb",
     "computer-mouse.glb",
     "arcade-cabinet.glb",
