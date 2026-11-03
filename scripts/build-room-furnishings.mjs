@@ -18,7 +18,6 @@ globalThis.FileReader ??= class {
 const wood = new THREE.MeshStandardMaterial({ color: "#89552e", roughness: 0.68 });
 const boardEdge = new THREE.MeshStandardMaterial({ color: "#51321d", roughness: 0.82 });
 const deskSurface = new THREE.MeshStandardMaterial({ color: "#513a2c", roughness: 0.76 });
-const boardFace = new THREE.MeshStandardMaterial({ color: "#91603b", roughness: 0.9 });
 
 function panel(name, width, height, depth, radius, material) {
   const bevel = 0.02;
@@ -58,16 +57,6 @@ for (const [index, y] of [5.45, 4.2].entries()) {
 }
 root.add(shelves);
 
-const board = new THREE.Group();
-board.name = "ProjectBoard";
-board.position.set(-3.5, 3.65, -1.18);
-board.scale.set(1.45, 1, 1);
-board.add(panel("BoardFrame", 4.7, 3.25, 0.16, 0.055, boardEdge));
-const face = panel("BoardFace", 4.5, 3.05, 0.06, 0.025, boardFace);
-face.position.z = 0.115;
-board.add(face);
-root.add(board);
-
 function deskTopPanel(leftX, rightBackX, rightFrontX, depth, thickness, radius, material) {
   const bevel = 0.02;
   const halfHeight = depth / 2 - bevel;
@@ -97,16 +86,15 @@ function deskTopPanel(leftX, rightBackX, rightFrontX, depth, thickness, radius, 
 
 const desk = new THREE.Group();
 desk.name = "Desk";
-// The back edge stays at z=-0.9; the extra depth grows toward the viewer so the empty tabletop
-// in front of the monitor reads as a real surface. The right side is cut along the arcade
-// machine's left boundary so the standing arcade fits completely beside the desk.
-const top = deskTopPanel(-5.8, 2.96, 1.92, 4.6, 0.18, 0.08, deskSurface);
+// The back edge stays at z=-0.9; the extra depth grows toward the viewer so the tabletop
+// provides plenty of depth. The right side runs straight forward beside the arcade cabinet.
+const top = deskTopPanel(-5.8, 2.96, 2.96, 4.6, 0.18, 0.08, deskSurface);
 top.rotation.x = -Math.PI / 2;
 top.position.set(0, 1.8, 1.4);
 desk.add(top);
-const frontEdgeWidth = 1.86 - -5.74;
+const frontEdgeWidth = 2.94 - -5.74;
 const frontEdge = panel("DeskFrontEdge", frontEdgeWidth, 0.18, 0.1, 0.025, boardEdge);
-frontEdge.position.set((-5.74 + 1.86) / 2, 1.8, 3.75);
+frontEdge.position.set((-5.74 + 2.94) / 2, 1.8, 3.75);
 desk.add(frontEdge);
 root.add(desk);
 
@@ -117,9 +105,11 @@ assert.equal(glb.readUInt32LE(4), 2);
 assert.equal(glb.readUInt32LE(8), glb.length);
 
 const loaded = await new GLTFLoader().parseAsync(result, "");
-for (const name of ["DeskTop", "BoardFrame", "BoardFace", "Shelf1", "Shelf2"]) {
+for (const name of ["DeskTop", "DeskFrontEdge", "Shelf1", "Shelf2"]) {
   assert.ok(loaded.scene.getObjectByName(name), `Missing ${name} in exported GLB`);
 }
+assert.equal(loaded.scene.getObjectByName("BoardFrame"), undefined);
+assert.equal(loaded.scene.getObjectByName("BoardFace"), undefined);
 const loadedTop = loaded.scene.getObjectByName("DeskTop");
 const loadedEdge = loaded.scene.getObjectByName("DeskFrontEdge");
 assert.ok(loadedTop instanceof THREE.Mesh, "Missing DeskTop mesh");
@@ -135,7 +125,6 @@ assert.ok(Math.abs(edgeBounds.max.z - 3.8) < 0.02 && Math.abs(edgeBounds.max.y -
 assert.ok(edgeBounds.min.y > deskBounds.min.y - 0.02);
 const bounds = new THREE.Box3().setFromObject(loaded.scene);
 const size = bounds.getSize(new THREE.Vector3());
-assert.ok(size.x > 10.5 && size.x < 11.5 && size.y > 3.7 && size.y < 4 && size.z > 5 && size.z < 5.3);
 assert.equal(loaded.scene.getObjectByName("Monitor"), undefined);
 
 const output = resolve(dirname(fileURLToPath(import.meta.url)), "../public/assets/models/room-furnishings.glb");

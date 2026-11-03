@@ -16,8 +16,6 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { portfolioContent } from "./content";
-import { boardCardLayout } from "./boardLayout";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import {
   ROOM_FOV,
@@ -36,21 +34,6 @@ import RoomUnavailable from "./RoomUnavailable";
 
 type Triple = [number, number, number];
 
-function Block({ position, size, color, roughness = 0.72, metalness = 0.06 }: {
-  position: Triple;
-  size: Triple;
-  color: string;
-  roughness?: number;
-  metalness?: number;
-}) {
-  return (
-    <mesh position={position} castShadow receiveShadow>
-      <boxGeometry args={size} />
-      <meshStandardMaterial color={color} roughness={roughness} metalness={metalness} />
-    </mesh>
-  );
-}
-
 function RoomFurnishings() {
   const { scene } = useLoader(GLTFLoader, "/assets/models/room-furnishings.glb");
   const invalidate = useThree((state) => state.invalidate);
@@ -64,7 +47,7 @@ function RoomFurnishings() {
             object.material.roughness = 0.62;
             object.material.metalness = 0.06;
             object.material.envMapIntensity = 0.85;
-          } else if (object.name === "DeskFrontEdge" || object.name === "BoardFrame") {
+          } else if (object.name === "DeskFrontEdge") {
             object.material.roughness = 0.56;
             object.material.metalness = 0.08;
             object.material.envMapIntensity = 0.9;
@@ -136,7 +119,7 @@ function MousePad() {
   const scaleXZ = 0.138;
 
   return (
-    <group name="MousePad" position={[-0.08, 1.89, 1.55]}>
+    <group name="MousePad" position={[-2.33, 1.89, 1.55]}>
       <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[3.92, 1.92]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.35} depthWrite={false} />
@@ -190,7 +173,7 @@ function CompactKeyboard() {
   }, [scene, invalidate]);
 
   return (
-    <group name="CompactKeyboard" position={[-0.92, 1.906, 1.68]} rotation={[0, 0.19, 0]}>
+    <group name="CompactKeyboard" position={[-3.17, 1.906, 1.68]} rotation={[0, 0.19, 0]}>
       <mesh position={[0.02, 0.003, 0.03]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.12, 0.86]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.42} depthWrite={false} />
@@ -237,7 +220,7 @@ function ComputerMouse() {
   }, [scene, invalidate]);
 
   return (
-    <group name="ComputerMouse" position={[0.82, 1.906, 1.36]} rotation={[0, 0.38, 0]}>
+    <group name="ComputerMouse" position={[-1.43, 1.906, 1.36]} rotation={[0, 0.38, 0]}>
       <mesh position={[0, 0.003, 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.26, 24]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
@@ -251,12 +234,14 @@ function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> 
   const { scene } = useLoader(GLTFLoader, "/assets/models/curved-monitor.glb");
   const invalidate = useThree((state) => state.invalidate);
   const surface = useMemo(() => {
+    scene.position.set(-2.25, 0, 0);
     const screen = scene.getObjectByName("MonitorScreen");
     if (!(screen instanceof Mesh)) throw new Error("The monitor model is missing MonitorScreen");
     scene.updateMatrixWorld(true);
     return readMonitorSurface(screen.geometry, screen.matrixWorld);
   }, [scene]);
   useEffect(() => {
+    scene.position.set(-2.25, 0, 0);
     scene.traverse((object) => {
       if (object instanceof Mesh) {
         object.castShadow = object.name !== "MonitorScreen";
@@ -340,9 +325,9 @@ function MonitorOverlay({ surface, desktopRef }: {
 
 const overviewTarget = new Vector3(0, ROOM_OVERVIEW_TARGET_Y, 0);
 
-// Measured from the prepared monitor asset: the display surface is centred at (-0.25, 3.754, -0.25).
+// Measured from the prepared monitor asset placed at x=-2.25: the display surface is centred at (-2.50, 3.754, -0.25).
 const monitorSurface = {
-  target: new Vector3(-0.25, 3.754, -0.25),
+  target: new Vector3(-2.50, 3.754, -0.25),
   width: 4.231,
   height: 2.136,
 };
@@ -367,7 +352,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
 }
 
 function isRoomHotspot(value: unknown): value is RoomHotspot {
-  return value === "monitor" || value === "board" || value === "arcade";
+  return value === "monitor" || value === "arcade";
 }
 
 function CameraFocus({ destination, onHotspotHover }: {
@@ -621,8 +606,6 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
   desktopRef: RefObject<HTMLDivElement | null>;
   highlightedHotspot: RoomHotspot | null;
 }) {
-  const boardCards = boardCardLayout(portfolioContent.projects.length);
-
   return (
     <>
       <color attach="background" args={["#0e1012"]} />
@@ -649,23 +632,7 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
         <meshStandardMaterial color="#1e2022" roughness={0.92} metalness={0.02} />
       </mesh>
 
-      <group name="board" position={[-3.5, 3.65, -1.18]} scale={[1.45, 1, 1]}>
-        {portfolioContent.projects.map((project, index) => {
-          const pose = boardCards[index];
-          const accents = ["#344a57", "#38413b", "#4a3e50"];
-          return (
-            <group key={project.id} position={pose.position} rotation={pose.rotation}>
-              <Block position={[0, 0, 0]} size={[0.76, 0.58, 0.035]} color="#d6c3a0" roughness={0.78} />
-              <Block position={[0, 0.035, 0.03]} size={[0.62, 0.27, 0.02]} color={accents[index % accents.length]} roughness={0.65} />
-              <Block position={[0, -0.2, 0.03]} size={[0.48, 0.035, 0.02]} color="#8b7557" roughness={0.75} />
-              <Block position={[0, 0.27, 0.04]} size={[0.1, 0.1, 0.06]} color="#22282a" roughness={0.35} metalness={0.3} />
-            </group>
-          );
-        })}
-      </group>
-      <FocusHotspot destination="board" position={[-3.5, 3.65, -1.06]} size={[6.525, 3.05]} highlighted={highlightedHotspot === "board"} onNavigate={onNavigate} />
-
-      <FocusHotspot destination="monitor" position={[-0.25, 3.754, -0.1]} size={[4.231, 2.136]} highlighted={highlightedHotspot === "monitor"} onNavigate={onNavigate} />
+      <FocusHotspot destination="monitor" position={[-2.50, 3.754, -0.1]} size={[4.231, 2.136]} highlighted={highlightedHotspot === "monitor"} onNavigate={onNavigate} />
 
       <Suspense fallback={null}>
         <RoomFurnishings />
@@ -722,7 +689,7 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
         invalidate();
       }}
       fallback={<RoomUnavailable />}
-      aria-label="Frontal study with project board, workstation and arcade"
+      aria-label="Frontal study with workstation and arcade"
     >
       <CameraFocus destination={destination} onHotspotHover={reportHotspotHover} />
       <ContextGuard onLost={() => {
@@ -733,4 +700,3 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
     </Canvas>
   );
 }
-

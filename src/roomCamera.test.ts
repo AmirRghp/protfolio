@@ -27,10 +27,11 @@ describe("fixed room framing", () => {
     }
   });
 
-  it("raises and pitches the overview down, keeping the tabletop and all three destinations in frame", () => {
+  it("raises and pitches the overview down, keeping the tabletop and destinations in frame", () => {
     const monitorY = 3.754;
     const monitorHalfHeight = 2.136 / 2;
     const monitorHalfWidth = 4.231 / 2;
+    const monitorX = -2.5;
 
     for (const [width, height] of [[768, 900], [1024, 768], [1440, 900], [1920, 905]]) {
       const aspect = width / height;
@@ -50,11 +51,10 @@ describe("fixed room framing", () => {
       expect(Math.abs(deskFront.x)).toBeLessThan(1);
       expect(Math.abs(deskFront.y)).toBeLessThan(1);
       // The free surface sits between the monitor base and the bottom of the frame.
-      expect(deskFront.y).toBeLessThan(project(-0.25, monitorY - monitorHalfHeight, -0.25).y);
+      expect(deskFront.y).toBeLessThan(project(monitorX, monitorY - monitorHalfHeight, -0.25).y);
 
       const anchors: [number, number, number][] = [
-        [-3.5, 3.65, -1.18],
-        [-0.25, monitorY, -0.25],
+        [monitorX, monitorY, -0.25],
         [4.35, 3.55, 0],
       ];
       for (const [x, y, z] of anchors) {
@@ -63,7 +63,7 @@ describe("fixed room framing", () => {
         expect(Math.abs(point.y)).toBeLessThan(1);
       }
 
-      for (const x of [-0.25 - monitorHalfWidth, -0.25 + monitorHalfWidth]) {
+      for (const x of [monitorX - monitorHalfWidth, monitorX + monitorHalfWidth]) {
         for (const y of [monitorY - monitorHalfHeight, monitorY + monitorHalfHeight]) {
           const corner = project(x, y, -0.25);
           expect(Math.abs(corner.x)).toBeLessThan(1);
@@ -169,5 +169,3 @@ describe("fixed room framing", () => {
     expect(mouseReturn.sway).toEqual({ dx: 0, dz: 0, dPitch: 0, dYaw: 0, dRoll: 0 });
   });
 });
-
-

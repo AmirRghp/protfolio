@@ -34,7 +34,6 @@ type RoomPreviewProps = {
 
 const destinations: { id: Exclude<RoomDestination, "room">; label: string }[] = [
   { id: "monitor", label: "Monitor" },
-  { id: "board", label: "Project board" },
   { id: "arcade", label: "Arcade" },
 ];
 
@@ -258,7 +257,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
         <SceneBoundary onFailure={failScene}>
           <Suspense fallback={<p className={styles.message} role="status">Loading study…</p>}>
             <RoomScene destination={navigation.destination} desktopRef={desktopRef} onUnavailable={failScene} onHotspotHover={handleHotspotHover} onNavigate={(destination) => {
-              if (destination === "monitor" || destination === "board") {
+              if (destination === "monitor") {
                 document.getElementById(`destination-${destination}`)?.focus({ preventScroll: true });
               }
               navigate(destination);
@@ -292,8 +291,8 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
       />}
       <p className={styles.caption} aria-live="polite">
         {navigation.destination === "room"
-          ? "Study overview · Choose a destination above or select the monitor, project board, or arcade in the room."
-          : `Focused on ${destinations.find(({ id }) => id === navigation.destination)?.label}.`}
+          ? "Study overview · Choose a destination above or select the monitor or arcade in the room."
+          : `Focused on ${destinations.find(({ id }) => id === navigation.destination)?.label ?? navigation.destination}.`}
       </p>
     </section>
   );

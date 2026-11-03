@@ -57,12 +57,12 @@ test("the monitor model keeps its own body, stand and base meshes", async () => 
   }
 });
 
-test("furnishings keep the room furniture without a second monitor", async () => {
+test("furnishings keep the room furniture without a second monitor or board", async () => {
   const { scene } = await loadAsset("room-furnishings.glb");
-  for (const name of ["DeskTop", "BoardFrame", "BoardFace", "Shelf1", "Shelf2"]) {
+  for (const name of ["DeskTop", "DeskFrontEdge", "Shelf1", "Shelf2"]) {
     expect(scene.getObjectByName(name)).toBeDefined();
   }
-  for (const name of ["Monitor", "MonitorBody", "ScreenSeat", "MonitorNeck", "MonitorFoot"]) {
+  for (const name of ["BoardFrame", "BoardFace", "Monitor", "MonitorBody", "ScreenSeat", "MonitorNeck", "MonitorFoot"]) {
     expect(!!scene.getObjectByName(name)).toBe(false);
   }
 });
