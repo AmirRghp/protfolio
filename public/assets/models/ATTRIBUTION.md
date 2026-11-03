@@ -45,6 +45,29 @@ edge dips into the overlay. UV (0, 0) is bottom-left and (1, 1) is top-right, vi
 front. R05 measures this mesh in the current camera pose rather than treating its bounds as a
 flat rectangle. No endorsement by the original creator is implied.
 
+## compact-keyboard.glb
+
+“Compact Keyboard – Custom 75% Gaming Keyboard” by **Saksham Tale**
+([creator](https://sketchfab.com/saksham_tale)), licensed under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+
+Source: https://sketchfab.com/3d-models/compact-keyboard-custom-75-gaming-keyboard-a8393df7a4944f0680869141fcc56b86
+
+Changes: showcase root transform cleared, scaled and angled on the desk in front of the monitor,
+and unlit materials upgraded to standard PBR materials so the keycaps and case respond to the
+studio lighting.
+
+## computer-mouse.glb
+
+“Low poly - Computer Mouse [FREE] Download” by **IQINISO**
+([creator](https://sketchfab.com/iqiniso)), licensed under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+
+Source: https://sketchfab.com/3d-models/low-poly-computer-mouse-free-download-c6f6d0cd408a41f58aab1837e913fa14
+
+Changes: scaled and placed on the desk to the right of the keyboard at an inward working angle,
+with body materials adjusted for dark studio lighting.
+
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright

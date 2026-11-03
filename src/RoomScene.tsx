@@ -4,6 +4,7 @@ import {
   ACESFilmicToneMapping,
   DoubleSide,
   Mesh,
+  MeshBasicMaterial,
   MeshStandardMaterial,
   PerspectiveCamera,
   PMREMGenerator,
@@ -95,6 +96,103 @@ function ArcadeCabinet() {
     invalidate();
   }, [scene, invalidate]);
   return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
+}
+
+function CompactKeyboard() {
+  const { scene } = useLoader(GLTFLoader, "/assets/models/compact-keyboard.glb");
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    scene.traverse((object) => {
+      if (object.name === "Sketchfab_model") {
+        // Clear the Sketchfab showcase tilt matrix so the keyboard rests flat on the desk plane.
+        object.matrixAutoUpdate = true;
+        object.position.set(0, 0, 0);
+        object.rotation.set(0, 0, 0);
+        object.scale.set(1, 1, 1);
+        object.updateMatrix();
+      }
+      if (object instanceof Mesh) {
+        // The desk top does not cast a shadow onto the lower wall, so desk props use a grounded
+        // tabletop contact shadow instead of projecting through the desk onto the wall below.
+        object.castShadow = false;
+        object.receiveShadow = true;
+        if (object.material instanceof MeshBasicMaterial) {
+          const isBase = object.material.name === "base";
+          const upgraded = new MeshStandardMaterial({
+            name: object.material.name,
+            map: object.material.map,
+            color: object.material.color.clone(),
+            roughness: isBase ? 0.46 : 0.54,
+            metalness: isBase ? 0.18 : 0.04,
+            envMapIntensity: 0.9,
+            side: DoubleSide,
+          });
+          object.material = upgraded;
+        } else if (object.material instanceof MeshStandardMaterial) {
+          object.material.envMapIntensity = 0.9;
+          object.material.needsUpdate = true;
+        }
+      }
+    });
+    invalidate();
+  }, [scene, invalidate]);
+
+  return (
+    <group name="CompactKeyboard" position={[-0.62, 1.89, 1.68]} rotation={[0, 0.19, 0]}>
+      <mesh position={[0.02, 0.003, 0.03]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[2.12, 0.86]} />
+        <meshBasicMaterial color="#090706" transparent opacity={0.42} depthWrite={false} />
+      </mesh>
+      <primitive
+        object={scene}
+        position={[0, 0.095, 0]}
+        rotation={[-Math.PI / 2 + 0.06, 0, 0]}
+        scale={[0.112, 0.112, 0.38]}
+      />
+    </group>
+  );
+}
+
+function ComputerMouse() {
+  const { scene } = useLoader(GLTFLoader, "/assets/models/computer-mouse.glb");
+  const invalidate = useThree((state) => state.invalidate);
+  useEffect(() => {
+    scene.traverse((object) => {
+      if (object instanceof Mesh) {
+        object.castShadow = false;
+        object.receiveShadow = true;
+        if (object.material instanceof MeshStandardMaterial) {
+          if (object.material.name === "Material") {
+            object.material.color.set("#282c32");
+            object.material.roughness = 0.42;
+            object.material.metalness = 0.18;
+            object.material.envMapIntensity = 1.05;
+          } else if (object.material.name === "Material.001") {
+            object.material.color.set("#191c20");
+            object.material.roughness = 0.62;
+            object.material.metalness = 0.12;
+            object.material.envMapIntensity = 0.85;
+          } else if (object.material.name === "Material.002") {
+            object.material.emissiveIntensity = 0.9;
+            object.material.roughness = 0.38;
+            object.material.envMapIntensity = 0.95;
+          }
+          object.material.needsUpdate = true;
+        }
+      }
+    });
+    invalidate();
+  }, [scene, invalidate]);
+
+  return (
+    <group name="ComputerMouse" position={[1.12, 1.89, 1.36]} rotation={[0, Math.PI + 0.38, 0]}>
+      <mesh position={[0, 0.003, -0.02]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.26, 24]} />
+        <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
+      </mesh>
+      <primitive object={scene} scale={[4.4, 5.5, 5.5]} />
+    </group>
+  );
 }
 
 function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> }) {
@@ -520,6 +618,8 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
       <Suspense fallback={null}>
         <RoomFurnishings />
         <Monitor desktopRef={desktopRef} />
+        <CompactKeyboard />
+        <ComputerMouse />
         <ArcadeCabinet />
       </Suspense>
       <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />

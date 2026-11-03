@@ -27,7 +27,13 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   page.on("console", (message) => {
     if (message.type() === "error") browserErrors.push(message.text());
   });
-  const assets = ["room-furnishings.glb", "curved-monitor.glb", "arcade-cabinet.glb"].map((name) =>
+  const assets = [
+    "room-furnishings.glb",
+    "curved-monitor.glb",
+    "compact-keyboard.glb",
+    "computer-mouse.glb",
+    "arcade-cabinet.glb",
+  ].map((name) =>
     page.waitForResponse((response) => new URL(response.url()).pathname === `/assets/models/${name}`),
   );
   await page.goto("/");
