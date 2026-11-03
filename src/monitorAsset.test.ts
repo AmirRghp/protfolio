@@ -4,6 +4,7 @@ import { Box3, Mesh, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 async function loadAsset(name: string) {
+  (globalThis as Record<string, unknown>).self ??= globalThis;
   const bytes = await readFile(new URL(`../public/assets/models/${name}`, import.meta.url));
   return new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), "");
 }
@@ -76,9 +77,11 @@ test("the finished desk keeps its R13 surface bounds and readable front edge", a
 
   const topBounds = new Box3().setFromObject(top);
   const topSize = topBounds.getSize(new Vector3());
+  expect(topBounds.min.x).toBeCloseTo(-5.8, 2);
+  expect(topBounds.max.x).toBeCloseTo(2.96, 2);
   expect(topBounds.min.z).toBeCloseTo(-0.9, 3);
   expect(topBounds.max.z).toBeCloseTo(3.7, 3);
-  expect(topSize.x).toBeCloseTo(11.6, 3);
+  expect(topSize.x).toBeCloseTo(8.76, 2);
   expect(topSize.y).toBeCloseTo(0.18, 3);
   expect(topBounds.max.y).toBeCloseTo(1.89, 3);
   expect(top.material).toHaveProperty("color");
@@ -93,5 +96,12 @@ test("the finished desk keeps its R13 surface bounds and readable front edge", a
 
   for (const name of ["Floor", "DeskFloor", "DeskLeg", "DeskLegs", "DeskSupport", "DeskSupports"]) {
     expect(scene.getObjectByName(name)).toBeUndefined();
+  }
+});
+
+test("the arcade machine GLB exposes its cabinet, screen, joysticks and control deck", async () => {
+  const { scene } = await loadAsset("arcade-machine.glb");
+  for (const name of ["Screen_low", "KeyBoard_low", "JoyStick_01_low", "JoyStick_02_low", "Panel_Border_low"]) {
+    expect(scene.getObjectByName(name)).toBeDefined();
   }
 });

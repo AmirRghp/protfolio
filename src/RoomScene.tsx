@@ -3,6 +3,7 @@ import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
   ACESFilmicToneMapping,
   DoubleSide,
+  FrontSide,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
@@ -80,14 +81,16 @@ function RoomFurnishings() {
 }
 
 function ArcadeCabinet() {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-cabinet.glb");
+  const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-machine.glb");
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     scene.traverse((object) => {
       if (object instanceof Mesh) {
-        object.castShadow = true;
-        object.receiveShadow = true;
+        const parentName = object.parent?.name ?? "";
+        object.castShadow = parentName === "Panel_Border_low" || parentName === "Panel_left_low";
+        object.receiveShadow = false;
         if (object.material instanceof MeshStandardMaterial) {
+          object.material.side = FrontSide;
           object.material.envMapIntensity = 0.95;
           object.material.needsUpdate = true;
         }
@@ -95,7 +98,11 @@ function ArcadeCabinet() {
     });
     invalidate();
   }, [scene, invalidate]);
-  return <primitive object={scene} position={[4.35, 1.9, 0]} scale={[2.6, 2.2, 1.4]} />;
+  return (
+    <group name="ArcadeMachine" position={[4.22, 1.95, 0.35]} scale={[2.75, 3.75, 2.75]}>
+      <primitive object={scene} rotation={[0, -Math.PI / 2, 0]} />
+    </group>
+  );
 }
 
 function MousePad() {
@@ -129,7 +136,7 @@ function MousePad() {
   const scaleXZ = 0.138;
 
   return (
-    <group name="MousePad" position={[0.22, 1.89, 1.55]}>
+    <group name="MousePad" position={[-0.08, 1.89, 1.55]}>
       <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[3.92, 1.92]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.35} depthWrite={false} />
@@ -183,7 +190,7 @@ function CompactKeyboard() {
   }, [scene, invalidate]);
 
   return (
-    <group name="CompactKeyboard" position={[-0.62, 1.906, 1.68]} rotation={[0, 0.19, 0]}>
+    <group name="CompactKeyboard" position={[-0.92, 1.906, 1.68]} rotation={[0, 0.19, 0]}>
       <mesh position={[0.02, 0.003, 0.03]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.12, 0.86]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.42} depthWrite={false} />
@@ -230,7 +237,7 @@ function ComputerMouse() {
   }, [scene, invalidate]);
 
   return (
-    <group name="ComputerMouse" position={[1.12, 1.906, 1.36]} rotation={[0, 0.38, 0]}>
+    <group name="ComputerMouse" position={[0.82, 1.906, 1.36]} rotation={[0, 0.38, 0]}>
       <mesh position={[0, 0.003, 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.26, 24]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
@@ -349,7 +356,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
   const targets = {
     monitor: { target: monitorSurface.target, width: 4.6, height: 2.6 },
     board: { target: new Vector3(-3.5, 3.65, -1.08), width: 6.525, height: 3.05 },
-    arcade: { target: new Vector3(4.35, 3.55, -0.38), width: 2.6, height: 3.5 },
+    arcade: { target: new Vector3(4.21, 3.14, 0.7), width: 2.6, height: 3.4 },
   }[destination];
   const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
   const distance = Math.max(targets.width / (2 * tangent * aspect), targets.height / (2 * tangent)) * 1.32;
@@ -668,7 +675,7 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
         <ComputerMouse />
         <ArcadeCabinet />
       </Suspense>
-      <FocusHotspot destination="arcade" position={[4.35, 4, 0.82]} size={[3.4, 4.5]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
+      <FocusHotspot destination="arcade" position={[4.22, 2.5, 1.65]} size={[2.6, 6.4]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
     </>
   );
 }

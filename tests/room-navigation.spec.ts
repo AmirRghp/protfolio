@@ -33,7 +33,7 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
     "mouse-pad.glb",
     "compact-keyboard.glb",
     "computer-mouse.glb",
-    "arcade-cabinet.glb",
+    "arcade-machine.glb",
   ].map((name) =>
     page.waitForResponse((response) => new URL(response.url()).pathname === `/assets/models/${name}`),
   );
@@ -78,7 +78,7 @@ for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
 }
 
 test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async ({ page }) => {
-  await page.route("**/assets/models/arcade-cabinet.glb", (route) => route.abort());
+  await page.route("**/assets/models/arcade-machine.glb", (route) => route.abort());
   await page.goto("/");
 
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();

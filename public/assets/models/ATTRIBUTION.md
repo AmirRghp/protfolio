@@ -79,6 +79,18 @@ Source: https://sketchfab.com/3d-models/mouse-pad-keyboard-pad-7690f727d87847aaa
 Changes: scaled and positioned on the desk surface beneath the compact keyboard and computer mouse,
 with dark cloth finish and accent stitching materials calibrated for studio lighting.
 
+## arcade-machine.glb
+
+“Arcade Machine” by **Oonie11**
+([creator](https://sketchfab.com/Oonie11)), licensed under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+
+Source: https://sketchfab.com/3d-models/arcade-machine-7c9a7e90089644599d9f5c2d98f9708c
+
+Changes: rotated to face the viewer, scaled and positioned in the cut-out space beside the right
+edge of the desk so its upper body and control deck align with the workstation and its lower cabinet
+is clipped cleanly at the bottom boundary of the Hero section.
+
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright
