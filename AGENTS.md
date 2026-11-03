@@ -4,14 +4,14 @@
 
 1. Read this file and actual `git status --short --branch`.
 2. Read only the source files, tests, and local skill entrypoints relevant to the task.
-3. `docs/` is local-only and gitignored. Do not depend on its contents in a fresh checkout.
+3. `docs/` tracks the PRD, architecture decisions, roadmaps, and verification records in Git.
 
 Preparation P01–P08 and B01–B13 were completed; their local record is not included in Git. Follow current user instructions and this file before starting future work.
 
 ## Product decisions
 
 - English personal portfolio for Amirreza Gholipour, current role AI Engineer. No portrait, video, fabricated metrics, testimonials, or invented project results.
-- The full-screen Hero keeps the room identity and relative anchors of local-only `docs/hero-reference.png`: project board left, monitor center, arcade close on the right, with empty shelves; no computer tower, floor, side walls, baseboard, chair, desk supports, plants, wall art, desk cup, or clutter. The newer camera/desk decision in `docs/PRD.md` supersedes that image's frontal camera and shallow desk: raise and gently pitch the overview camera downward and provide a deeper, visible tabletop for future keyboard/mouse/mousepad placement. Those objects are not authorized by the camera/desk tasks. Remove absent scene geometry instead of hiding it behind the camera. Design targets tablet through desktop; mobile-specific composition is deferred. The earlier `docs/reference.png` contributes room identity and lighting only. No avatar, free walking, or drag/orbit controls.
+- The full-screen Hero keeps the room identity and relative anchors of `docs/hero-reference.png`: project board left, monitor center, arcade close on the right, with empty shelves; no computer tower, floor, side walls, baseboard, chair, desk supports, plants, wall art, desk cup, or clutter. The newer camera/desk decision in `docs/PRD.md` supersedes that image's frontal camera and shallow desk: raise and gently pitch the overview camera downward and provide a deeper, visible tabletop for future keyboard/mouse/mousepad placement. Those objects are not authorized by the camera/desk tasks. Remove absent scene geometry instead of hiding it behind the camera. Design targets tablet through desktop; mobile-specific composition is deferred. The earlier `docs/reference.png` contributes room identity and lighting only. No avatar, free walking, or drag/orbit controls.
 - Fixed overview with intentional focus transitions to monitor, board, and arcade. Keep compact, visible navigation and a clear return control over the Hero. Idle parallax is subtle, stays within the Hero, does not move controls, and yields to focused transitions. Preserve an accessible HTML path to all portfolio content below the Hero.
 - Build a coded blockout first; get human approval of composition/interactions before final GLB assets and materials. The new R13 camera/desk blockout requires its own explicit human approval before R14/R15; the old R02 approval does not cover it. The reference image is not a 3D model or evidence of implemented behavior.
 - Planned stack: React + TypeScript + Vite + Three.js + React Three Fiber. No runtime backend, database, CMS, authentication, live GitHub ingestion, router, or state library without a task requiring one. Use local React state and editable local project data.
@@ -40,7 +40,7 @@ These are real copies under `.agents/skills/`, not symlinks. Open the exact loca
 | Git | `.agents/skills/git-workflow-and-versioning/SKILL.md` | only authorized Git operations |
 | Measured performance | `.agents/skills/performance-optimization/SKILL.md` | scene profiler and measured before/after results |
 
-Choose one primary skill and the support actually needed. Load supporting references progressively. Do not invoke every skill, duplicate planning workflows, or add process artifacts merely because a skill suggests them. For the room redesign, `docs/plans.md` is the active task index and each linked `docs/plans/Rxx-*.md` is the detail for that task; `docs/plans/archive.md` is historical only. Do not create parallel `tasks/todo.md` or `docs/superpowers/` plans for the same work.
+Choose one primary skill and the support actually needed. Load supporting references progressively. Do not invoke every skill, duplicate planning workflows, or add process artifacts merely because a skill suggests them. For the room redesign, `docs/plans.md` is the active task index and each linked `docs/archive/plans/Rxx-*.md` is the detail for that task; `docs/archive/plans/archive.md` is historical only. Do not create parallel `tasks/todo.md` or `docs/superpowers/` plans for the same work.
 
 The copied skills are guidance, not proof that their examples or API claims are correct. Check examples against official documentation for installed versions. In particular, `<dialog open>` is not a modal focus trap: use `showModal()` or an established accessible primitive and test focus behavior.
 
@@ -67,7 +67,7 @@ Context7 and browser skills require available external tools; their copied instr
 
 ## Task completion and handoffs
 
-The active redesign index in `docs/plans.md` links to per-task files with dependencies, outputs, skills, checkboxes, and acceptance checks. Tick an index item only after every required subtask/check in its detail file passes; keep historical tasks in `docs/plans/archive.md` out of active progress. Record actual commands/results and blockers. On handoff, preserve accepted scope, current task, changed paths, Git state, exact verification outcomes, human approval gates, and the next pending task.
+The active redesign index in `docs/plans.md` links to per-task files with dependencies, outputs, skills, checkboxes, and acceptance checks. Tick an index item only after every required subtask/check in its detail file passes; keep historical tasks in `docs/archive/plans/archive.md` out of active progress. Record actual commands/results and blockers. On handoff, preserve accepted scope, current task, changed paths, Git state, exact verification outcomes, human approval gates, and the next pending task.
 
 B01 created the application `package.json` and runnable page scaffold. Its commands and verification results are recorded in [docs/plans.md](docs/plans.md). Do not report later scene or feature tasks as implemented or validated until their work and checks are complete.
 

@@ -119,8 +119,8 @@ describe("fixed room framing", () => {
     expect(state.y).toBe(target.y);
 
     // Returning to neutral center settles within 280ms.
-    let resetState = state;
-    for (let i = 0; i < 17; i++) {
+    let resetState = stepIdleParallax(state, { x: 0, y: 0 }, 1 / 60);
+    for (let i = 1; i < 17; i++) {
       resetState = stepIdleParallax(resetState, { x: 0, y: 0 }, 1 / 60);
     }
     expect(resetState.x).toBe(0);

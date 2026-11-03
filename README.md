@@ -47,7 +47,7 @@ npm run test:e2e
 
 - `public/assets/models/arcade-cabinet.glb` مدل کابینت آرکید است؛ اسکریپت ساخت آن `scripts/build-arcade-cabinet.mjs` است.
 - `public/assets/models/curved-monitor.glb` مدل مانیتور میز است؛ اسکریپت آماده‌سازی آن `scripts/prepare-curved-monitor.mjs` است و منبع، مجوز و تغییرات در `public/assets/models/ATTRIBUTION.md` ثبت شده‌اند.
-- تصویر مرجع طراحی اتاق در اسناد محلی نگهداری می‌شود و در Git نیست؛ این تصویر مدل سه‌بعدی یا مدرک رفتار برنامه محسوب نمی‌شود.
+- تصویر مرجع طراحی اتاق در `docs/hero-reference.png` نگهداری می‌شود؛ این تصویر مدل سه‌بعدی یا مدرک رفتار برنامه محسوب نمی‌شود.
 - صحنه به‌صورت chunk جداگانه بارگیری می‌شود. اگر WebGL یا بارگیری صحنه/مدل شکست بخورد، محتوای HTML و کنترل‌های پورتفولیو باید همچنان در دسترس بمانند.
 
 ## دسکتاپ مانیتور
