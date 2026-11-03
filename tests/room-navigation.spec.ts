@@ -106,8 +106,9 @@ async function roomFrame(page: Page) {
     const box = canvas.getBoundingClientRect();
     const screen = document.querySelector<HTMLElement>('[role="region"]')?.getBoundingClientRect();
     const top = box.y + 120;
-    const bottom = screen && screen.top > top + 60 ? screen.top - 20 : box.y + box.height - 60;
-    return { x: box.x, y: top, width: box.width, height: Math.max(60, bottom - top) };
+    const bottom = box.y + box.height - 60;
+    const left = screen && screen.right > box.x + 200 ? screen.right + 20 : box.x;
+    return { x: left, y: top, width: Math.max(60, box.right - left), height: Math.max(60, bottom - top) };
   });
   return page.screenshot({ clip });
 }
@@ -230,7 +231,7 @@ test("live reduced motion removes idle movement and a resize retargets the retur
   await page.waitForTimeout(100);
   const centered = await sceneFrame();
   expect(changedBytes(shifted, centered)).toBeGreaterThan(0);
-  await page.mouse.move(1300, 690);
+  await page.mouse.move(50, 690);
   await page.waitForTimeout(350);
   expect(changedBytes(centered, await sceneFrame())).toBe(0);
 
@@ -283,6 +284,31 @@ test("HTML destination controls focus each room and return to the overview", asy
     await page.waitForTimeout(900);
     expect(changedBytes(overview, await roomFrame(page))).toBe(0);
   }
+});
+
+test("returning from a destination allows mouse parallax without requiring an extra click", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/");
+  const canvas = page.locator('canvas[data-engine]');
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+
+  const monitorButton = page.getByRole("button", { name: "Monitor", exact: true });
+  await monitorButton.click();
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
+  await page.waitForTimeout(350);
+
+  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
+  await page.waitForTimeout(900);
+  await expect(monitorButton).toBeFocused();
+
+  const returned = await roomFrame(page);
+
+  // Moving the mouse over the room canvas must trigger idle parallax immediately without clicking first.
+  await page.mouse.move(12, 700);
+  await page.waitForTimeout(700);
+  expect(changedBytes(returned, await roomFrame(page)), "mouse movement after return should immediately move camera").toBeGreaterThan(0);
 });
 
 test("quick destination changes and a mid-transition return restore overview controls", async ({ page }) => {

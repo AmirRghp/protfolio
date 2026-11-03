@@ -399,7 +399,7 @@ function CameraFocus({ destination, onHotspotHover }: {
     const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const canvas = gl.domElement;
-    const preview = canvas.closest("section");
+
     const hotspots = scene.getObjectsByProperty("name", "focus-hotspot");
     const resetIdle = () => {
       idleTarget.current.x = 0;
@@ -469,9 +469,8 @@ function CameraFocus({ destination, onHotspotHover }: {
         clientY: event.clientY,
       } : null);
 
-      const focused = document.activeElement;
-      if (motionPreference.matches ||
-        (focused instanceof HTMLElement && preview?.contains(focused) && focused !== canvas)) {
+      if (motionPreference.matches) {
+
         resetIdle();
         return;
       }
