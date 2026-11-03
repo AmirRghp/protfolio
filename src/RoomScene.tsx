@@ -18,10 +18,13 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import {
+  MONITOR_SCENE_POSITION,
+  MONITOR_YAW,
   ROOM_FOV,
   ROOM_OVERVIEW_TARGET_Y,
   ROOM_TRANSITION_SECONDS,
   easeCameraTransition,
+  monitorScreenPose,
   roomOverviewPose,
   roomParallaxOffset,
   roomParallaxTargetOffset,
@@ -119,7 +122,7 @@ function MousePad() {
   const scaleXZ = 0.138;
 
   return (
-    <group name="MousePad" position={[-2.33, 1.89, 1.55]}>
+    <group name="MousePad" position={[-1.55, 1.89, 1.76]} rotation={[0, 0.32, 0]}>
       <mesh position={[0, 0.001, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[3.92, 1.92]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.35} depthWrite={false} />
@@ -173,7 +176,7 @@ function CompactKeyboard() {
   }, [scene, invalidate]);
 
   return (
-    <group name="CompactKeyboard" position={[-3.17, 1.906, 1.68]} rotation={[0, 0.19, 0]}>
+    <group name="CompactKeyboard" position={[-2.25, 1.906, 2.02]} rotation={[0, 0.38, 0]}>
       <mesh position={[0.02, 0.003, 0.03]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[2.12, 0.86]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.42} depthWrite={false} />
@@ -220,7 +223,7 @@ function ComputerMouse() {
   }, [scene, invalidate]);
 
   return (
-    <group name="ComputerMouse" position={[-1.43, 1.906, 1.36]} rotation={[0, 0.38, 0]}>
+    <group name="ComputerMouse" position={[-0.68, 1.906, 1.44]} rotation={[0, 0.48, 0]}>
       <mesh position={[0, 0.003, 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.26, 24]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
@@ -234,14 +237,16 @@ function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> 
   const { scene } = useLoader(GLTFLoader, "/assets/models/curved-monitor.glb");
   const invalidate = useThree((state) => state.invalidate);
   const surface = useMemo(() => {
-    scene.position.set(-2.25, 0, 0);
+    scene.position.set(...MONITOR_SCENE_POSITION);
+    scene.rotation.set(0, MONITOR_YAW, 0);
     const screen = scene.getObjectByName("MonitorScreen");
     if (!(screen instanceof Mesh)) throw new Error("The monitor model is missing MonitorScreen");
     scene.updateMatrixWorld(true);
     return readMonitorSurface(screen.geometry, screen.matrixWorld);
   }, [scene]);
   useEffect(() => {
-    scene.position.set(-2.25, 0, 0);
+    scene.position.set(...MONITOR_SCENE_POSITION);
+    scene.rotation.set(0, MONITOR_YAW, 0);
     scene.traverse((object) => {
       if (object instanceof Mesh) {
         object.castShadow = object.name !== "MonitorScreen";
@@ -325,12 +330,18 @@ function MonitorOverlay({ surface, desktopRef }: {
 
 const overviewTarget = new Vector3(0, ROOM_OVERVIEW_TARGET_Y, 0);
 
-// Measured from the prepared monitor asset placed at x=-2.25: the display surface is centred at (-2.50, 3.754, -0.25).
+const initialMonitorPose = monitorScreenPose();
 const monitorSurface = {
-  target: new Vector3(-2.50, 3.754, -0.25),
+  target: new Vector3(...initialMonitorPose.center),
+  normal: new Vector3(...initialMonitorPose.normal),
   width: 4.231,
   height: 2.136,
 };
+const monitorHotspotPosition: Triple = [
+  initialMonitorPose.center[0] + initialMonitorPose.normal[0] * 0.12,
+  initialMonitorPose.center[1],
+  initialMonitorPose.center[2] + initialMonitorPose.normal[2] * 0.12,
+];
 
 function destinationPose(destination: RoomDestination, aspect: number) {
   if (destination === "room") {
@@ -338,12 +349,19 @@ function destinationPose(destination: RoomDestination, aspect: number) {
     return { position: new Vector3(...pose.position), target: new Vector3(...pose.target) };
   }
 
+  const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
+  if (destination === "monitor") {
+    const distance = Math.max(4.6 / (2 * tangent * aspect), 2.6 / (2 * tangent)) * 1.32;
+    return {
+      position: monitorSurface.target.clone().addScaledVector(monitorSurface.normal, distance),
+      target: monitorSurface.target.clone(),
+    };
+  }
+
   const targets = {
-    monitor: { target: monitorSurface.target, width: 4.6, height: 2.6 },
     board: { target: new Vector3(-3.5, 3.65, -1.08), width: 6.525, height: 3.05 },
     arcade: { target: new Vector3(4.21, 3.14, 0.7), width: 2.6, height: 3.4 },
   }[destination];
-  const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
   const distance = Math.max(targets.width / (2 * tangent * aspect), targets.height / (2 * tangent)) * 1.32;
   return {
     position: new Vector3(targets.target.x, targets.target.y, targets.target.z + distance),
@@ -565,18 +583,18 @@ function HotspotHighlight({ size }: { size: [number, number] }) {
   );
 }
 
-function FocusHotspot({ destination, position, size, highlighted, onNavigate }: {
+function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, highlighted, onNavigate }: {
   destination: RoomHotspot;
   position: Triple;
+  rotation?: Triple;
   size: [number, number];
   highlighted: boolean;
   onNavigate: (destination: RoomDestination) => void;
 }) {
   return (
-    <>
+    <group position={position} rotation={rotation}>
       <mesh
         name="focus-hotspot"
-        position={position}
         userData={{ destination }}
         onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
       >
@@ -584,11 +602,11 @@ function FocusHotspot({ destination, position, size, highlighted, onNavigate }: 
         <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
       </mesh>
       {highlighted && (
-        <group position={[position[0], position[1], position[2] + 0.02]}>
+        <group position={[0, 0, 0.02]}>
           <HotspotHighlight size={size} />
         </group>
       )}
-    </>
+    </group>
   );
 }
 
@@ -632,7 +650,14 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
         <meshStandardMaterial color="#1e2022" roughness={0.92} metalness={0.02} />
       </mesh>
 
-      <FocusHotspot destination="monitor" position={[-2.50, 3.754, -0.1]} size={[4.231, 2.136]} highlighted={highlightedHotspot === "monitor"} onNavigate={onNavigate} />
+      <FocusHotspot
+        destination="monitor"
+        position={monitorHotspotPosition}
+        rotation={[0, MONITOR_YAW, 0]}
+        size={[4.231, 2.136]}
+        highlighted={highlightedHotspot === "monitor"}
+        onNavigate={onNavigate}
+      />
 
       <Suspense fallback={null}>
         <RoomFurnishings />
@@ -646,6 +671,21 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
     </>
   );
 }
+
+const isSoftwareGl = (() => {
+  if (typeof document === "undefined") return false;
+  try {
+    const gl = document.createElement("canvas").getContext("webgl2");
+    if (!gl) return true;
+    const ext = gl.getExtension("WEBGL_debug_renderer_info");
+    const param = ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER;
+    const gpu = String(gl.getParameter(param));
+    gl.getExtension("WEBGL_lose_context")?.loseContext();
+    return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
+  } catch {
+    return false;
+  }
+})();
 
 export default function RoomScene({ destination, onNavigate, onHotspotHover, desktopRef, onUnavailable }: {
   destination: RoomDestination;
@@ -673,19 +713,21 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
   if (contextLost) return <RoomUnavailable />;
   return (
     <Canvas
-      shadows="percentage"
+      shadows={isSoftwareGl ? false : "percentage"}
       frameloop="demand"
-      dpr={[1, 1.5]}
+      dpr={isSoftwareGl ? 1 : [1, 1.5]}
       camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }}
       onCreated={({ gl, scene, invalidate }) => {
         gl.outputColorSpace = SRGBColorSpace;
         gl.toneMapping = ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.12;
-        const pmremGenerator = new PMREMGenerator(gl);
-        const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
-        pmremGenerator.dispose();
-        scene.environment = envTarget.texture;
-        scene.environmentIntensity = 0.45;
+        if (!isSoftwareGl) {
+          const pmremGenerator = new PMREMGenerator(gl);
+          const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
+          pmremGenerator.dispose();
+          scene.environment = envTarget.texture;
+          scene.environmentIntensity = 0.45;
+        }
         invalidate();
       }}
       fallback={<RoomUnavailable />}
