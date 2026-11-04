@@ -1,4 +1,5 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { clickRoomHotspot } from "./testHelpers";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
@@ -10,7 +11,7 @@ test.describe.configure({ timeout: 90_000 });
 async function focusMonitor(page: Page, viewport = { width: 1440, height: 800 }) {
   await page.setViewportSize(viewport);
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeVisible();
   // Let the camera reach the monitor pose before comparing projected geometry.
   await page.waitForTimeout(1_200);
@@ -214,7 +215,7 @@ test("the window geometry is not persisted across a reload", async ({ page }) =>
   await expect.poll(async () => (await boxOf(window)).x).toBeGreaterThan(initial.x + 20);
 
   await page.reload({ waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeVisible();
   await page.waitForTimeout(1_200);
   await page.getByRole("button", { name: "about-me.txt" }).dblclick();
@@ -261,10 +262,10 @@ test("leaving the desktop while placing cancels Move mode and keeps the window",
   await expect(page.locator(moveLayer)).toBeVisible();
 
   // This control is outside the projected desktop, so it must both navigate and end placement.
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
   await expect(window).toBeVisible();
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeFocused();
   await expect(page.locator(moveLayer)).toHaveCount(0);
   await expect(move).toHaveAttribute("aria-pressed", "false");
@@ -307,7 +308,7 @@ test("touch drag and Move mode move the window without opening an app underneath
   });
   const page = await context.newPage();
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).tap();
+  await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
   await page.waitForTimeout(500);
   await page.getByRole("button", { name: "Freelance Project Radar" }).tap();

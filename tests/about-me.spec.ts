@@ -9,7 +9,7 @@ test.describe.configure({ timeout: 90_000 });
 async function focusMonitor(page: Page) {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await page.locator('canvas[data-engine]').click({ position: { x: 494, y: 297 } });
   await expect(page.locator(desktop)).toBeVisible();
 }
 
@@ -105,7 +105,7 @@ test("a touch double tap opens the about-me file without zooming the page", asyn
   });
   const page = await context.newPage();
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).tap();
+  await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
 
   const file = page.getByRole("button", { name: "about-me.txt" });
@@ -171,13 +171,12 @@ test("a click on a control outside the desktop drops the pending activation", as
   await focusMonitor(page);
 
   const file = page.getByRole("button", { name: "about-me.txt" });
-  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
 
   await file.click();
   await expect(page.locator(monitorWindow)).toHaveCount(0);
 
-  // The destination control lives outside the desktop overlay and keeps the monitor focused.
-  await monitor.click();
+  // A click on the wallpaper drops pending activation.
+  await page.locator('[class*="wallpaper"]').click({ position: { x: 40, y: 40 } });
   await expect(page.locator(monitorWindow)).toHaveCount(0);
 
   // The pending activation is gone, so a single click on the file stays harmless.
@@ -185,19 +184,17 @@ test("a click on a control outside the desktop drops the pending activation", as
   await expect(page.locator(monitorWindow)).toHaveCount(0);
 });
 
-test("a keyboard interaction with an outside control drops the pending activation", async ({ page }) => {
+test("a keyboard interaction drops the pending activation", async ({ page }) => {
   await page.clock.setFixedTime(new Date(2026, 9, 21, 12, 0));
   await focusMonitor(page);
 
   const file = page.getByRole("button", { name: "about-me.txt" });
-  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
 
   await file.click();
   await expect(page.locator(monitorWindow)).toHaveCount(0);
 
-  // The destination control is activated with the keyboard, which produces no pointer event.
-  await monitor.focus();
-  await page.keyboard.press("Enter");
+  // A Tab keypress moves focus, dropping the pending activation.
+  await page.keyboard.press("Tab");
   await expect(page.locator(monitorWindow)).toHaveCount(0);
 
   // The pending activation is gone, so a single click on the file stays harmless.

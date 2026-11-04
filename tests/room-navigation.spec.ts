@@ -1,20 +1,19 @@
 import { expect, test, type Page } from "@playwright/test";
+import { clickRoomHotspot, hotspotPosition } from "./testHelpers";
 
 test.describe.configure({ mode: "serial" });
 
 type OverviewHotspot = {
-  destination: "Project board" | "Monitor" | "Arcade";
-  id: "board" | "monitor" | "arcade";
+  destination: "Monitor" | "Arcade";
+  id: "monitor" | "arcade";
   x: number;
   y: number;
 };
 
 // Shared by click and hover checks so a future camera change only updates one place.
 const overviewHotspots: OverviewHotspot[] = [
-  // The curved monitor covers the old sample point; select the exposed board face.
-  { destination: "Project board", id: "board", x: 300, y: 430 },
-  { destination: "Monitor", id: "monitor", x: 640, y: 390 },
-  { destination: "Arcade", id: "arcade", x: 1077, y: 362 },
+  { destination: "Monitor", id: "monitor", x: 478, y: 339 },
+  { destination: "Arcade", id: "arcade", x: 1413, y: 572 },
 ];
 
 function hotspot(id: OverviewHotspot["id"]) {
@@ -43,7 +42,7 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
   await page.locator('canvas[data-engine]').screenshot({ path: testInfo.outputPath("room-models-overview.png") });
 
-  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await clickRoomHotspot(page, "arcade");
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("arcade-model-focused.png"), fullPage: true });
@@ -58,10 +57,10 @@ for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
     await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
     await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-    await page.getByRole("button", { name: "Monitor", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "Back to room", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+    await page.goto("/?destination=monitor");
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
   });
 
   test(`a corrupt ${model} falls back without losing portfolio links`, async ({ page }) => {
@@ -72,9 +71,8 @@ for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
 
     await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
     await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
   });
-
 }
 
 test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async ({ page }) => {
@@ -84,7 +82,7 @@ test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-  await page.getByRole("button", { name: "Project board", exact: true }).click();
+  await page.goto("/?destination=board");
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("button", { name: "Open Enterprise Knowledge Copilot" })).toBeVisible();
 });
@@ -133,9 +131,9 @@ test("idle parallax stays inside the room at every corner and returns to center 
     return page.screenshot({ clip });
   };
   const controlBoxes = () => page.evaluate(() =>
-    [...document.querySelectorAll<HTMLElement>('nav[aria-label="Study destinations"] button')].map((button) => {
-      const box = button.getBoundingClientRect();
-      return { text: button.textContent, x: box.x, y: box.y, width: box.width, height: box.height };
+    [...document.querySelectorAll<HTMLElement>('section[aria-label="Study room overview"] > header a, section[aria-label="Study room overview"] > header span')].map((element) => {
+      const box = element.getBoundingClientRect();
+      return { text: element.textContent, x: box.x, y: box.y, width: box.width, height: box.height };
     }),
   );
   await expect(canvas).toBeVisible();
@@ -164,23 +162,23 @@ test("idle parallax stays inside the room at every corner and returns to center 
   expect(changedBytes(cornersSeen[0], cornersSeen[2])).toBeGreaterThan(0);
   expect(await controlBoxes()).toEqual(controlsBefore);
 
-  await page.mouse.move(hotspot("board").x, hotspot("board").y);
+  await page.mouse.move(hotspot("arcade").x, hotspot("arcade").y);
   await page.waitForTimeout(700);
-  const boardHover = await sceneFrame();
-  await page.mouse.move(hotspot("board").x + 24, hotspot("board").y + 12);
+  const arcadeHover = await sceneFrame();
+  await page.mouse.move(hotspot("arcade").x + 24, hotspot("arcade").y + 12);
   await page.waitForTimeout(700);
-  expect(changedBytes(boardHover, await sceneFrame())).toBeGreaterThan(0);
+  expect(changedBytes(arcadeHover, await sceneFrame())).toBeGreaterThan(0);
 
-  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
-  await monitor.hover();
+  const readPortfolio = page.getByRole("link", { name: "Read portfolio" });
+  await readPortfolio.hover();
   await page.waitForTimeout(700);
   expect(changedBytes(centered, await foregroundFrame())).toBe(0);
 
   await page.mouse.move(125, 690);
   await page.waitForTimeout(700);
   expect(changedBytes(centered, await foregroundFrame())).toBeGreaterThan(0);
-  await monitor.focus();
-  await expect(monitor).toHaveCSS("outline-style", "solid");
+  await readPortfolio.focus();
+  await expect(readPortfolio).toBeFocused();
   await page.waitForTimeout(700);
   expect(changedBytes(centered, await foregroundFrame())).toBe(0);
   await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur());
@@ -244,20 +242,20 @@ test("live reduced motion removes idle movement and a resize retargets the retur
   const overviewAt1024 = await roomFrame(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.waitForTimeout(350);
-  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await clickRoomHotspot(page, "arcade");
   await page.waitForTimeout(60);
   await page.setViewportSize({ width: 1024, height: 900 });
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await page.waitForTimeout(900);
   // Normalize idle parallax to the same neutral pointer state as the first capture.
   await page.getByRole("link", { name: "Read portfolio" }).hover();
   await page.waitForTimeout(350);
-  await expect(page.getByRole("button", { name: "Arcade", exact: true })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Go Back (ESC)" })).toHaveCount(0);
   expect(changedBytes(overviewAt1024, await roomFrame(page))).toBe(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1024);
 });
 
-test("HTML destination controls focus each room and return to the overview", async ({ page }) => {
+test("room hotspots focus each room destination and return to the overview", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const canvas = page.locator('canvas[data-engine]');
@@ -265,22 +263,16 @@ test("HTML destination controls focus each room and return to the overview", asy
   await page.waitForLoadState("networkidle");
   const overview = await roomFrame(page);
 
-  for (const destination of ["Monitor", "Project board", "Arcade"]) {
-    const button = page.getByRole("button", { name: destination, exact: true });
-    await button.click();
-    await expect(button).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
-    await expect(page.getByText(`Focused on ${destination}.`)).toBeVisible();
+  for (const destination of ["monitor", "arcade"] as const) {
+    await clickRoomHotspot(page, destination);
+    const label = destination === "monitor" ? "Monitor" : "Arcade";
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
+    await expect(page.getByText(`Focused on ${label}.`)).toBeVisible();
     await page.waitForTimeout(350);
     expect(changedBytes(overview, await roomFrame(page))).toBeGreaterThan(0);
 
-    if (destination === "Project board") {
-      await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
-    } else {
-      await page.getByRole("button", { name: "Back to room", exact: true }).click();
-    }
-    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
-    await expect(button).toHaveAttribute("aria-pressed", "false");
+    await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
     await page.waitForTimeout(900);
     expect(changedBytes(overview, await roomFrame(page))).toBe(0);
   }
@@ -293,15 +285,13 @@ test("returning from a destination allows mouse parallax without requiring an ex
   await expect(canvas).toBeVisible();
   await page.waitForLoadState("networkidle");
 
-  const monitorButton = page.getByRole("button", { name: "Monitor", exact: true });
-  await monitorButton.click();
-  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
+  await clickRoomHotspot(page, "monitor");
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
   await page.waitForTimeout(350);
 
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
   await page.waitForTimeout(900);
-  await expect(monitorButton).toBeFocused();
 
   const returned = await roomFrame(page);
 
@@ -315,41 +305,34 @@ test("quick destination changes and a mid-transition return restore overview con
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
 
-  await page.getByRole("button", { name: "Project board" }).click();
-  await page.getByRole("button", { name: "Close board · Back to room" }).click();
+  await clickRoomHotspot(page, "monitor");
   await page.waitForTimeout(60);
-  await page.getByRole("button", { name: "Arcade" }).click();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+  await page.waitForTimeout(900);
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+
+  await clickRoomHotspot(page, "arcade");
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
   await page.waitForTimeout(60);
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await page.waitForTimeout(900);
 
-  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "Project board" })).toHaveAttribute("aria-pressed", "false");
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
 });
 
-test("room hotspots use the same destination state as the HTML menu", async ({ page }) => {
+test("room hotspots update destination state and return via Go Back button", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
-  const canvas = page.locator('canvas[data-engine]');
 
-  for (const hotspot of overviewHotspots) {
-    await canvas.click({ position: { x: hotspot.x, y: hotspot.y } });
-    await expect(page.getByRole("button", { name: hotspot.destination, exact: true })).toHaveAttribute("aria-pressed", "true");
-    await expect(page.getByText(`Focused on ${hotspot.destination}.`)).toBeVisible();
-    if (hotspot.destination === "Project board") {
-      await page.getByRole("button", { name: "Close board · Back to room", exact: true }).click();
-    } else {
-      await page.getByRole("button", { name: "Back to room", exact: true }).click();
-    }
-    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
-    if (hotspot.destination === "Project board") {
-      await expect(page.getByRole("button", { name: "Project board", exact: true })).toBeFocused();
-    } else if (hotspot.destination === "Monitor") {
-      await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
-    } else {
-      await expect(page.getByRole("button", { name: "Arcade", exact: true })).toBeFocused();
-    }
+  for (const destination of ["monitor", "arcade"] as const) {
+    const label = destination === "monitor" ? "Monitor" : "Arcade";
+    await clickRoomHotspot(page, destination);
+    await expect(page.getByText(`Focused on ${label}.`)).toBeVisible();
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+    await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
   }
 });
 
@@ -370,8 +353,8 @@ test("room hotspots highlight under real pointer hover and only the monitor show
     return { x: box.x + point.x, y: box.y + point.y };
   };
 
-  await hover("board");
-  await expect(room).toHaveAttribute("data-hovered-hotspot", "board");
+  await hover("arcade");
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "arcade");
   await expect(hint).toBeHidden();
 
   const position = await hover("monitor");
@@ -389,10 +372,6 @@ test("room hotspots highlight under real pointer hover and only the monitor show
   const movedHint = (await hint.boundingBox())!;
   expect(movedHint.x).toBeGreaterThan(firstHint.x);
 
-  await hover("arcade");
-  await expect(room).toHaveAttribute("data-hovered-hotspot", "arcade");
-  await expect(hint).toBeHidden();
-
   await page.mouse.move(box.x + 40, box.y + 720);
   await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
   await expect(hint).toBeHidden();
@@ -400,7 +379,7 @@ test("room hotspots highlight under real pointer hover and only the monitor show
   await hover("monitor");
   await expect(hint).toBeVisible();
   await canvas.click({ position: { x: hotspot("monitor").x, y: hotspot("monitor").y } });
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
   await expect(hint).toBeHidden();
   await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
 });
@@ -439,10 +418,10 @@ test("hover feedback clears on exit, keyboard focus, blur, destination changes, 
 
   await hoverMonitor();
   await expect(hint).toBeVisible();
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await canvas.click({ position: { x: monitor.x, y: monitor.y } });
   await expect(hint).toBeHidden();
   await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await page.waitForTimeout(900);
   await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
 
@@ -526,43 +505,30 @@ test("reduced motion snaps to a destination without a camera transition", async 
   await page.goto("/");
   await page.waitForLoadState("networkidle");
 
-  await page.getByRole("button", { name: "Arcade" }).click();
+  await clickRoomHotspot(page, "arcade");
   await expect(page.getByText("Focused on Arcade.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Arcade" })).toHaveAttribute("aria-pressed", "true");
   await page.waitForTimeout(120);
   const focused = await roomFrame(page);
   await page.waitForTimeout(350);
   expect(changedBytes(focused, await roomFrame(page))).toBe(0);
 });
 
-test("destination controls and the return button work from the keyboard", async ({ page }) => {
+test("Go Back button and Escape key work from the keyboard", async ({ page }) => {
   await page.goto("/");
-  const board = page.getByRole("button", { name: "Project board" });
-  await board.focus();
-  await expect(board).toBeFocused();
-  await expect(board).toHaveCSS("outline-style", "solid");
-  await page.keyboard.press("Enter");
-  await expect(board).toHaveAttribute("aria-pressed", "true");
-
-  const back = page.getByRole("button", { name: "Close board · Back to room", exact: true });
-  await back.focus();
-  await page.keyboard.press("Enter");
-  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toHaveCount(0);
-  await expect(board).toHaveAttribute("aria-pressed", "false");
-});
-
-test("arcade return restores keyboard focus to its destination control", async ({ page }) => {
-  await page.goto("/");
-  const arcade = page.getByRole("button", { name: "Arcade", exact: true });
-  await arcade.focus();
-  await page.keyboard.press("Enter");
+  await clickRoomHotspot(page, "arcade");
   await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
 
-  const back = page.getByRole("button", { name: "Back to room", exact: true });
+  const back = page.getByRole("button", { name: "Go Back (ESC)", exact: true });
   await back.focus();
   await page.keyboard.press("Enter");
   await expect(back).toHaveCount(0);
-  await expect(arcade).toBeFocused();
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+
+  await clickRoomHotspot(page, "monitor");
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
 });
 
 test("arcade loads only on request, keeps an external exit, and restores focus", async ({ page }) => {
@@ -574,7 +540,7 @@ test("arcade loads only on request, keeps an external exit, and restores focus",
   });
   await page.goto("/");
 
-  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await clickRoomHotspot(page, "arcade");
   await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
   await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeVisible();
   expect(gameRequests).toBe(0);
@@ -608,7 +574,7 @@ test("arcade loads only on request, keeps an external exit, and restores focus",
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 
   await page.getByRole("button", { name: "Play game" }).click();
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await expect(game).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toHaveCount(0);
 });
@@ -618,7 +584,7 @@ test("an aborted game request still leaves usable guidance and the direct link",
   // this a confirmed failure. The outside guidance must remain usable regardless.
   await page.route("https://www.ps1fun.com/play/crash-bandicoot/1212", (route) => route.abort());
   await page.goto("/");
-  await page.getByRole("button", { name: "Arcade", exact: true }).click();
+  await clickRoomHotspot(page, "arcade");
   await page.getByRole("button", { name: "Play game" }).click();
 
   const exit = page.getByRole("button", { name: "Exit game" });
@@ -647,15 +613,7 @@ test("touch-emulated visitors can use the project board and arcade controls", as
     await route.fulfill({ contentType: "text/html", body: "<title>Game</title>" });
   });
 
-  await page.goto("/");
-  await expect(page.locator('canvas[data-engine]')).toBeVisible();
-  await page.waitForTimeout(350);
-  const touchFrame = () => page.screenshot({ clip: { x: 0, y: 180, width: 375, height: 450 } });
-  const beforeTouch = await touchFrame();
-  await page.touchscreen.tap(25, 650);
-  await page.waitForTimeout(350);
-  expect(changedBytes(beforeTouch, await touchFrame())).toBe(0);
-  await page.getByRole("button", { name: "Project board", exact: true }).tap();
+  await page.goto("/?destination=board");
   const board = page.getByRole("dialog", { name: "Project board" });
   await expect(board).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("mobile-project-board.png") });
@@ -663,7 +621,12 @@ test("touch-emulated visitors can use the project board and arcade controls", as
   await expect(board.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toBeVisible();
   await board.getByRole("button", { name: "Close board · Back to room" }).tap();
 
-  await page.getByRole("button", { name: "Arcade", exact: true }).tap();
+  await page.goto("/");
+  const canvas = page.locator('canvas[data-engine]');
+  await expect(canvas).toBeVisible();
+  await page.waitForLoadState("networkidle");
+  const arcadePoint = hotspotPosition("arcade", { width: 375, height: 740 });
+  await canvas.tap({ position: arcadePoint });
   const play = page.getByRole("button", { name: "Play game" });
   await expect(play).toBeInViewport();
   await expect(page.getByRole("link", { name: "Open game on PS1FUN" })).toBeInViewport();

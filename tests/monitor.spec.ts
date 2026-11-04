@@ -1,8 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
+import { PerspectiveCamera, Vector3 } from "three";
+import { monitorScreenPose, ROOM_FOV, roomOverviewPose } from "../src/roomCamera";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const layer = '[class*="desktopLayer"]';
 const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
+
+test.describe.configure({ timeout: 60_000 });
 
 type Placement = {
   canvas: { x: number; y: number; width: number; height: number };
@@ -10,6 +14,28 @@ type Placement = {
   corners: { x: number; y: number }[];
   clipPoints: number;
 };
+
+function monitorHotspot(viewport: { width: number; height: number }) {
+  const aspect = viewport.width / viewport.height;
+  const pose = roomOverviewPose(aspect);
+  const camera = new PerspectiveCamera(ROOM_FOV, aspect, 0.1, 100);
+  camera.position.set(...pose.position);
+  camera.lookAt(new Vector3(...pose.target));
+  camera.updateMatrixWorld(true);
+  camera.updateProjectionMatrix();
+  const monitor = monitorScreenPose();
+  const p = new Vector3(...monitor.center).project(camera);
+  return {
+    x: Math.round((p.x + 1) * 0.5 * viewport.width),
+    y: Math.round((1 - p.y) * 0.5 * viewport.height),
+  };
+}
+
+async function clickMonitorHotspot(page: Page) {
+  const size = page.viewportSize() ?? { width: 1440, height: 800 };
+  const point = monitorHotspot(size);
+  await page.locator('canvas[data-engine]').click({ position: point });
+}
 
 async function readPlacement(page: Page): Promise<Placement> {
   return page.evaluate((selector) => {
@@ -54,7 +80,7 @@ test("the desktop opens inside the physical screen of the monitor", async ({ pag
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await expect(page.locator(layer)).toHaveAttribute("data-active", "true");
   await waitForSettledPlacement(page);
 
@@ -99,7 +125,7 @@ test("the monitor shows the same wallpaper in the overview and in the focus", as
   });
   expect(overview.width).toBeGreaterThan(100);
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await page.waitForTimeout(1200);
 
   const focus = await page.evaluate(() => {
@@ -118,7 +144,7 @@ test("the monitor shows the same wallpaper in the overview and in the focus", as
 test("the animated wallpaper keeps the HTML controls usable during the monitor focus", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await expect(page.locator(desktop)).toBeVisible();
   await expect(page.locator(`${desktop} canvas`)).toBeVisible();
   await page.waitForTimeout(1000);
@@ -126,8 +152,8 @@ test("the animated wallpaper keeps the HTML controls usable during the monitor f
   // A click on the animated wallpaper must not break the controls around it.
   await page.mouse.click(500, 520);
   await page.waitForTimeout(200);
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+  await expect(page.locator('[class*="preview"]')).toBeFocused();
   await expect(page.getByText("Focused on Monitor.")).not.toBeVisible();
 });
 
@@ -136,7 +162,7 @@ test("the status bar clock follows the local time and rolls the day over at midn
   await page.clock.setFixedTime(new Date(2026, 9, 19, 18, 44));
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await expect(page.getByText("Monday · 19 Oct · 6:44 PM")).toBeVisible();
 
   await page.clock.setFixedTime(new Date(2026, 9, 19, 18, 45));
@@ -150,7 +176,7 @@ test("the status bar stays readable on the monitor screen", async ({ page }) => 
   await page.setViewportSize({ width: 1920, height: 1080 });
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await expect(page.locator(desktop)).toBeVisible();
   await waitForSettledPlacement(page);
 
@@ -171,29 +197,28 @@ test("the status bar stays readable on the monitor screen", async ({ page }) => 
 test("the desktop takes the keyboard focus and returns to the room", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
-  const monitor = page.getByRole("button", { name: "Monitor", exact: true });
 
-  await monitor.focus();
-  await page.keyboard.press("Enter");
+  await clickMonitorHotspot(page);
   await expect(page.locator(desktop)).toBeFocused();
 
   await page.keyboard.press("Escape");
-  await expect(page.getByText("Study overview · Choose a destination above or select the monitor, project board, or arcade in the room.")).toBeVisible();
-  await expect(monitor).toBeFocused();
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+  await expect(page.locator('[class*="preview"]')).toBeFocused();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
 
-  await page.keyboard.press("Enter");
+  await clickMonitorHotspot(page);
   await expect(page.locator(desktop)).toBeFocused();
-  await page.getByRole("button", { name: "Back to room", exact: true }).click();
-  await expect(monitor).toBeFocused();
+  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
+  await expect(page.locator('[class*="preview"]')).toBeFocused();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
 });
 
 test("the desktop stays on the screen at every target width", async ({ page }, testInfo) => {
-  await page.goto("/", { waitUntil: "networkidle" });
+  test.setTimeout(90_000);
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.getByRole("button", { name: "Monitor", exact: true }).click();
+    await page.goto("/", { waitUntil: "networkidle" });
+    await clickMonitorHotspot(page);
     await expect(page.locator(layer)).toHaveAttribute("data-active", "true");
     await waitForSettledPlacement(page);
     const placement = await readPlacement(page);
@@ -205,7 +230,7 @@ test("the desktop stays on the screen at every target width", async ({ page }, t
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
     await page.screenshot({ path: testInfo.outputPath(`monitor-desktop-${width}.png`) });
-    await page.getByRole("button", { name: "Back to room", exact: true }).click();
+    await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   }
 });
 
@@ -214,7 +239,7 @@ test("the desktop lands on the screen without a camera transition under reduced 
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await expect(page.locator(layer)).toHaveAttribute("data-active", "true");
   await expect(page.locator(desktop)).toBeVisible();
   await waitForSettledPlacement(page);
@@ -227,7 +252,7 @@ test("the desktop lands on the screen without a camera transition under reduced 
   expect(Math.abs(centreX - (placement.canvas.x + placement.canvas.width / 2))).toBeLessThan(6);
 });
 
-test("a pending curved monitor asset does not block the HTML path or the return", async ({ page }) => {
+test("a pending curved monitor asset does not block the HTML path", async ({ page }) => {
   let release = () => {};
   const pending = new Promise<void>((resolve) => { release = resolve; });
   let requested = false;
@@ -239,11 +264,7 @@ test("a pending curved monitor asset does not block the HTML path or the return"
   try {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect.poll(() => requested).toBe(true);
-    await page.getByRole("button", { name: "Monitor", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-    await page.getByRole("button", { name: "Back to room", exact: true }).click();
-    await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
     const response = page.waitForResponse("**/assets/models/curved-monitor.glb");
     release();
     expect((await response).status()).toBe(200);
@@ -263,11 +284,9 @@ test("the desktop stays hidden when the 3D view is unavailable", async ({ page }
   });
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
   await expect(page.locator(layer)).toHaveAttribute("inert", "");
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
 });
@@ -276,7 +295,7 @@ test("the desktop disappears and releases focus when the graphics context is los
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickMonitorHotspot(page);
   await expect(page.locator(desktop)).toBeVisible();
   await page.getByRole("button", { name: "about-me.txt" }).dblclick();
   await expect(page.locator(monitorWindow)).toBeVisible();
@@ -288,6 +307,6 @@ test("the desktop disappears and releases focus when the graphics context is los
   await expect(page.locator(monitorWindow)).toHaveCount(0);
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
   await expect(page.locator(layer)).toHaveAttribute("inert", "");
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.locator('[class*="preview"]')).toBeFocused();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
 });

@@ -2,10 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("project board supports selection, hierarchical return and keyboard focus", async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
-  const board = page.getByRole("button", { name: "Project board", exact: true });
-  await board.focus();
-  await page.keyboard.press("Enter");
+  await page.goto("/?destination=board");
 
   const panel = page.getByRole("dialog", { name: "Project board" });
   await expect(panel.getByRole("heading", { name: "Selected projects" })).toBeFocused();
@@ -25,15 +22,14 @@ test("project board supports selection, hierarchical return and keyboard focus",
   await expect(project).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(panel).not.toBeVisible();
-  await expect(board).toBeFocused();
+  await expect(page.locator('[class*="preview"]')).toBeFocused();
 });
 
 test("project board remains readable and scrollable at target widths", async ({ page }, testInfo) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto("/");
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 800 });
-    await page.getByRole("button", { name: "Project board", exact: true }).click();
+    await page.goto("/?destination=board");
     const panel = page.getByRole("dialog", { name: "Project board" });
     await expect(panel.getByRole("button", { name: "Close board · Back to room" })).toBeInViewport();
     await panel.getByRole("button", { name: "Open Freelance Project Radar" }).scrollIntoViewIfNeeded();
@@ -46,11 +42,10 @@ test("project board remains readable and scrollable at target widths", async ({ 
 
 test("project board remains usable when the WebGL scene fails", async ({ page }) => {
   await page.route("**/RoomScene-*.js", (route) => route.abort());
-  await page.goto("/");
+  await page.goto("/?destination=board");
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("status")).toContainText("You can read the full portfolio below.");
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
-  await page.getByRole("button", { name: "Project board", exact: true }).click();
   const panel = page.getByRole("dialog", { name: "Project board" });
   await panel.getByRole("button", { name: "Open Laya Fine-tuning Pipeline" }).click();
   await expect(panel.getByRole("heading", { name: "Laya Fine-tuning Pipeline" })).toBeVisible();

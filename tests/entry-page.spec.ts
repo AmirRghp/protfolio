@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { clickRoomHotspot } from "./testHelpers";
 
 test("production entry page loads without browser errors or horizontal overflow", async ({ page }, testInfo) => {
   const browserErrors: string[] = [];
@@ -82,8 +83,8 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
   await expect(page.getByRole("status")).toContainText("The 3D view is unavailable.");
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Back to room", exact: true })).toBeVisible();
+
+
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
   await page.getByRole("link", { name: "Read portfolio" }).click();
@@ -123,7 +124,8 @@ test("a lost wallpaper context leaves the room usable and stops its frame loop",
     }
   });
 
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+
+  await clickRoomHotspot(page, "monitor");
   await expect(page.getByRole("region", { name: "Amirreza workspace" })).toBeVisible();
   await expect.poll(() => page.evaluate(() => (
     window as unknown as { __r09WallpaperStats: { wallpaperDraws: number } }

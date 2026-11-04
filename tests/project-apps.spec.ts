@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { clickRoomHotspot } from "./testHelpers";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
@@ -9,7 +10,7 @@ test.describe.configure({ timeout: 90_000 });
 async function focusMonitor(page: Page) {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).click();
+  await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeVisible();
 }
 
@@ -153,7 +154,7 @@ test("every app icon stays inside the screen of the monitor", async ({ page }) =
 
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 900 });
-    await page.getByRole("button", { name: "Monitor", exact: true }).click();
+    await clickRoomHotspot(page, "monitor");
     await expect(page.locator(desktop)).toBeVisible();
     await page.waitForTimeout(900);
 
@@ -173,7 +174,7 @@ test("every app icon stays inside the screen of the monitor", async ({ page }) =
     expect(icons).toHaveLength(4);
     for (const icon of icons) expect(icon.inside, `${icon.name} at ${width}px`).toBe(true);
 
-    await page.getByRole("button", { name: "Back to room", exact: true }).click();
+    await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   }
 });
 
@@ -250,7 +251,7 @@ test("a touch drag moves an icon without opening its app", async ({ browser }) =
   });
   const page = await context.newPage();
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).tap();
+  await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
 
   const icon = page.getByRole("button", { name: "Laya Fine-tuning Pipeline" });
@@ -277,7 +278,7 @@ test("a touch tap opens a project app", async ({ browser }) => {
   });
   const page = await context.newPage();
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Monitor", exact: true }).tap();
+  await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
 
   await page.getByRole("button", { name: "Freelance Project Radar" }).tap();

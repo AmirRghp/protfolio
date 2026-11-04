@@ -2,10 +2,20 @@ import { useReducer } from "react";
 import OwnerContent from "./OwnerContent";
 import RoomPreview from "./RoomPreview";
 import { portfolioContent } from "./content";
-import { initialRoomNavigation, roomNavigationReducer } from "./roomNavigation";
+import { initialRoomNavigation, roomNavigationReducer, type RoomDestination, type RoomNavigationState } from "./roomNavigation";
+
+function getInitialNavigation(): RoomNavigationState {
+  if (typeof window !== "undefined") {
+    const param = new URLSearchParams(window.location.search).get("destination") as RoomDestination | null;
+    if (param === "board" || param === "monitor" || param === "arcade") {
+      return { destination: param, selectedProjectId: null };
+    }
+  }
+  return initialRoomNavigation;
+}
 
 export default function App() {
-  const [navigation, dispatch] = useReducer(roomNavigationReducer, initialRoomNavigation);
+  const [navigation, dispatch] = useReducer(roomNavigationReducer, undefined, getInitialNavigation);
 
   return (
     <>

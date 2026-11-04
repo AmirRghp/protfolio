@@ -351,7 +351,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
 
   const tangent = Math.tan((ROOM_FOV * Math.PI) / 360);
   if (destination === "monitor") {
-    const distance = Math.max(4.6 / (2 * tangent * aspect), 2.6 / (2 * tangent)) * 1.32;
+    const distance = Math.max(4.45 / (2 * tangent * aspect), 2.32 / (2 * tangent)) * 1.05;
     return {
       position: monitorSurface.target.clone().addScaledVector(monitorSurface.normal, distance),
       target: monitorSurface.target.clone(),

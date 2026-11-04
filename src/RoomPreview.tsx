@@ -206,7 +206,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     };
   }, [hideHotspotHint]);
 
-  // A destination close returns the keyboard to the control that opened it, not to the document.
+  // A destination close returns focus to the room overview.
   useEffect(() => {
     if (navigation.destination !== "room") {
       returnFocusDestination.current = null;
@@ -215,15 +215,27 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     const destination = returnFocusDestination.current;
     if (!destination) return;
     returnFocusDestination.current = null;
-    document.getElementById(`destination-${destination}`)?.focus({ preventScroll: true });
+    previewRef.current?.focus({ preventScroll: true });
   }, [navigation.destination]);
 
+  // When a destination is focused, Escape key returns to room (if not handled by dialog like board).
+  useEffect(() => {
+    if (!focusedDestination || focusedDestination === "board") return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        returnToRoom(focusedDestination);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [focusedDestination]);
+
   // The desktop is the monitor destination. When the scene is unavailable its hidden layer must
-  // not take the focus, so the HTML destination control keeps it instead.
+  // not take the focus, so the preview container keeps it instead.
   useEffect(() => {
     if (navigation.destination !== "monitor") return;
     if (sceneFailed) {
-      document.getElementById("destination-monitor")?.focus({ preventScroll: true });
+      previewRef.current?.focus({ preventScroll: true });
       return;
     }
     desktopRef.current?.focus({ preventScroll: true });
@@ -235,34 +247,35 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
   };
 
   return (
-    <section ref={previewRef} className={styles.preview} aria-label="Study room overview">
-      <div className={styles.header}>
-        <div className={styles.headerTop}>
-          <span>AG / {portfolioContent.owner.role}</span>
-          <a href="#name">Read portfolio</a>
-        </div>
-        <nav className={styles.destinations} aria-label="Study destinations">
-          {destinations.map(({ id, label }) => (
-            <button id={`destination-${id}`} key={id} type="button" aria-pressed={navigation.destination === id} onClick={() => navigate(id)}>
-              {label}
-            </button>
-          ))}
-          {focusedDestination && (
-            <button type="button" className={styles.back} onClick={() => returnToRoom(focusedDestination)}>
-              Back to room
-            </button>
-          )}
-        </nav>
-      </div>
+    <section ref={previewRef} className={styles.preview} tabIndex={-1} aria-label="Study room overview">
+      {focusedDestination ? (
+        <button
+          type="button"
+          className={styles.backButton}
+          onClick={() => returnToRoom(focusedDestination)}
+        >
+          Go Back (ESC)
+        </button>
+      ) : (
+        <header className={styles.header}>
+          <div className={styles.headerTop}>
+            <span>AG / {portfolioContent.owner.role}</span>
+            <a href="#name">Read portfolio</a>
+          </div>
+        </header>
+      )}
       <div className={styles.scene}>
         <SceneBoundary onFailure={failScene}>
           <Suspense fallback={<p className={styles.message} role="status">Loading study…</p>}>
-            <RoomScene destination={navigation.destination} desktopRef={desktopRef} onUnavailable={failScene} onHotspotHover={handleHotspotHover} onNavigate={(destination) => {
-              if (destination === "monitor") {
-                document.getElementById(`destination-${destination}`)?.focus({ preventScroll: true });
-              }
-              navigate(destination);
-            }} />
+            <RoomScene
+              destination={navigation.destination}
+              desktopRef={desktopRef}
+              onUnavailable={failScene}
+              onHotspotHover={handleHotspotHover}
+              onNavigate={(destination) => {
+                navigate(destination);
+              }}
+            />
           </Suspense>
         </SceneBoundary>
         {navigation.destination === "arcade" && <ArcadePanel />}
@@ -290,9 +303,13 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
         onSelectProject={onSelectProject}
         onClose={() => returnToRoom("board")}
       />}
-      <p className={styles.caption} aria-live="polite">
+      <p
+        className={styles.caption}
+        data-focused={navigation.destination !== "room"}
+        aria-live="polite"
+      >
         {navigation.destination === "room"
-          ? "Study overview · Choose a destination above or select the monitor, project board, or arcade in the room."
+          ? "Study overview · Select the monitor, project board, or arcade in the room."
           : `Focused on ${destinations.find(({ id }) => id === navigation.destination)?.label ?? navigation.destination}.`}
       </p>
     </section>
