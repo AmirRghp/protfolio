@@ -148,7 +148,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     return () => window.removeEventListener("keydown", handleWindowKeyDown);
   }, [active, playing, selectedGameId, startGame]);
 
-  // Local container keydown listener: handles Escape and bubbling keys
+  // Local container keydown listener: handles Escape
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (!active) return;
 
@@ -158,24 +158,6 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
         exitGame();
       } else {
         onExit();
-      }
-      return;
-    }
-
-    if (playing) return;
-
-    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
-      event.preventDefault();
-      const currentIndex = ARCADE_GAMES.findIndex((g) => g.id === selectedGameId);
-      const nextIndex =
-        event.key === "ArrowDown"
-          ? (currentIndex + 1) % ARCADE_GAMES.length
-          : (currentIndex - 1 + ARCADE_GAMES.length) % ARCADE_GAMES.length;
-      setSelectedGameId(ARCADE_GAMES[nextIndex].id);
-    } else if (event.key === "Enter") {
-      if (selectedGame.playable) {
-        event.preventDefault();
-        startGame();
       }
     }
   };

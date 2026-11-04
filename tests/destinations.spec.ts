@@ -193,6 +193,21 @@ test("arcade menu displays 4 games, allows switching selection, and shows coming
   // Crash Bandicoot is initially selected and playable
   await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
 
+  // Pressing ArrowDown moves exactly ONE step to Pixel Tetris (does not skip to Snake Grid)
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByText("Arcade Puzzle · 1984")).toBeVisible();
+  await expect(page.getByRole("option", { name: /Pixel Tetris/i })).toHaveAttribute("data-selected", "true");
+
+  // Pressing ArrowDown again moves to Snake Grid
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByText("Retro Arcade · 1997")).toBeVisible();
+  await expect(page.getByRole("option", { name: /Snake Grid/i })).toHaveAttribute("data-selected", "true");
+
+  // Pressing ArrowUp moves back to Pixel Tetris
+  await page.keyboard.press("ArrowUp");
+  await expect(page.getByText("Arcade Puzzle · 1984")).toBeVisible();
+  await expect(page.getByRole("option", { name: /Pixel Tetris/i })).toHaveAttribute("data-selected", "true");
+
   // Click on Pixel Tetris
   await page.getByRole("option", { name: /Pixel Tetris/i }).click();
   await expect(page.getByRole("button", { name: "Play game" })).toHaveCount(0);
