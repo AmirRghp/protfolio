@@ -2,7 +2,6 @@ import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState, ty
 import { portfolioContent } from "./content";
 import { desktopApps } from "./desktopApps";
 import MonitorDesktop from "./MonitorDesktop";
-import ProjectBoard from "./ProjectBoard";
 import RoomUnavailable from "./RoomUnavailable";
 import { hotspotHintPosition, type RoomHotspot, type RoomHotspotHover } from "./roomHover";
 import styles from "./RoomPreview.module.css";
@@ -29,14 +28,17 @@ class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => vo
 type RoomPreviewProps = {
   navigation: RoomNavigationState;
   onNavigate: (destination: RoomDestination) => void;
-  onSelectProject: (projectId: string | null) => void;
 };
 
-const destinations: { id: Exclude<RoomDestination, "room">; label: string }[] = [
-  { id: "monitor", label: "Monitor" },
-  { id: "board", label: "Project board" },
-  { id: "arcade", label: "Arcade" },
-];
+const destinationLabels: Record<Exclude<RoomDestination, "room">, string> = {
+  monitor: "Monitor",
+  arcade: "Arcade",
+};
+
+const hotspotLabels: Record<RoomHotspot, string> = {
+  monitor: "USE COMPUTER",
+  arcade: "USE ARCADE",
+};
 
 const ARCADE_GAME_URL = "https://www.ps1fun.com/play/crash-bandicoot/1212";
 
@@ -137,7 +139,7 @@ function ArcadePanel() {
   );
 }
 
-export default function RoomPreview({ navigation, onNavigate, onSelectProject }: RoomPreviewProps) {
+export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps) {
   const desktopRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
@@ -166,9 +168,12 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     if (hoveredHotspot.current !== next) {
       hoveredHotspot.current = next;
       if (previewRef.current) previewRef.current.dataset.hoveredHotspot = next;
-      if (hint) hint.dataset.visible = next === "monitor" ? "true" : "false";
+      if (hint) {
+        hint.textContent = hotspotLabels[next] ?? "";
+        hint.dataset.visible = "true";
+      }
     }
-    if (next !== "monitor" || !hint) return;
+    if (!hint) return;
 
     const bounds = hint.getBoundingClientRect();
     const position = hotspotHintPosition(hover, { width: bounds.width, height: bounds.height }, {
@@ -181,7 +186,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
   /** Selecting another room destination also discards the monitor window it does not own. */
   const navigate = (destination: RoomDestination) => {
     hideHotspotHint();
-    if (destination === "board" || destination === "arcade") setOpenAppId(null);
+    if (destination === "arcade") setOpenAppId(null);
     onNavigate(destination);
   };
 
@@ -212,26 +217,20 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     onNavigate("room");
   }, [onNavigate]);
 
-  // A destination close returns the keyboard to the control that opened it, or to the preview container.
+  // A destination close returns the keyboard to the preview container.
   useEffect(() => {
     if (navigation.destination !== "room") {
       returnFocusDestination.current = null;
       return;
     }
-    const destination = returnFocusDestination.current;
-    if (!destination) return;
+    if (!returnFocusDestination.current) return;
     returnFocusDestination.current = null;
-    const trigger = document.getElementById(`destination-${destination}`);
-    if (trigger) {
-      trigger.focus({ preventScroll: true });
-    } else {
-      previewRef.current?.focus({ preventScroll: true });
-    }
+    previewRef.current?.focus({ preventScroll: true });
   }, [navigation.destination]);
 
-  // When a destination is focused, Escape key returns to room (if not handled by dialog like board).
+  // When a destination is focused, Escape key returns to room.
   useEffect(() => {
-    if (!focusedDestination || focusedDestination === "board") return;
+    if (!focusedDestination) return;
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         returnToRoom(focusedDestination);
@@ -268,19 +267,6 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
             <span>AG / {portfolioContent.owner.role}</span>
             <a href="#name">Read portfolio</a>
           </div>
-          <nav className={styles.destinations} aria-label="Study destinations">
-            {destinations.map(({ id, label }) => (
-              <button
-                id={`destination-${id}`}
-                key={id}
-                type="button"
-                aria-pressed={navigation.destination === id}
-                onClick={() => navigate(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </nav>
         </header>
       )}
       <div className={styles.scene}>
@@ -312,24 +298,16 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
             onExit={() => returnToRoom("monitor")}
           />
         </div>
-        <div ref={hintRef} className={styles.hotspotHint} data-visible="false" aria-hidden="true">
-          USE COMPUTER
-        </div>
+        <div ref={hintRef} className={styles.hotspotHint} data-visible="false" aria-hidden="true" />
       </div>
-      {navigation.destination === "board" && <ProjectBoard
-        projects={portfolioContent.projects}
-        selectedProjectId={navigation.selectedProjectId}
-        onSelectProject={onSelectProject}
-        onClose={() => returnToRoom("board")}
-      />}
       <p
         className={styles.caption}
         data-focused={navigation.destination !== "room"}
         aria-live="polite"
       >
         {navigation.destination === "room"
-          ? "Study overview · Select the monitor, project board, or arcade in the room."
-          : `Focused on ${destinations.find(({ id }) => id === navigation.destination)?.label ?? navigation.destination}.`}
+          ? "Study overview · Select the monitor or arcade in the room."
+          : `Focused on ${destinationLabels[navigation.destination] ?? navigation.destination}.`}
       </p>
     </section>
   );

@@ -153,7 +153,7 @@ test("the animated wallpaper keeps the HTML controls usable during the monitor f
   await page.mouse.click(500, 520);
   await page.waitForTimeout(200);
   await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await expect(page.getByText("Focused on Monitor.")).not.toBeVisible();
 });
 
@@ -203,13 +203,13 @@ test("the desktop takes the keyboard focus and returns to the room", async ({ pa
 
   await page.keyboard.press("Escape");
   await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
 
   await clickMonitorHotspot(page);
   await expect(page.locator(desktop)).toBeFocused();
   await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
 });
 

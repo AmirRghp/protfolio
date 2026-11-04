@@ -82,9 +82,8 @@ test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
   await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
-  await page.goto("/?destination=board");
-  await expect(page.getByRole("dialog")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Open Enterprise Knowledge Copilot" })).toBeVisible();
+  await page.goto("/?destination=arcade");
+  await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
 });
 
 function changedBytes(first: Buffer, second: Buffer) {
@@ -336,15 +335,17 @@ test("room hotspots update destination state and return via Go Back button", asy
   }
 });
 
-test("room hotspots highlight under real pointer hover and only the monitor shows USE COMPUTER", async ({ page }) => {
+test("room hotspots highlight under real pointer hover and show USE COMPUTER and USE ARCADE hints", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/");
   const canvas = page.locator('canvas[data-engine]');
   const room = page.locator('section[aria-label="Study room overview"]');
   const hint = page.getByText("USE COMPUTER", { exact: true });
+  const arcadeHint = page.getByText("USE ARCADE", { exact: true });
   await expect(canvas).toBeVisible();
   await page.waitForLoadState("networkidle");
   await expect(hint).toBeHidden();
+  await expect(arcadeHint).toBeHidden();
 
   const box = (await canvas.boundingBox())!;
   const hover = async (id: OverviewHotspot["id"]) => {
@@ -356,6 +357,7 @@ test("room hotspots highlight under real pointer hover and only the monitor show
   await hover("arcade");
   await expect(room).toHaveAttribute("data-hovered-hotspot", "arcade");
   await expect(hint).toBeHidden();
+  await expect(arcadeHint).toBeVisible();
 
   const position = await hover("monitor");
   await expect(room).toHaveAttribute("data-hovered-hotspot", "monitor");
@@ -398,8 +400,17 @@ test("hover feedback clears on exit, keyboard focus, blur, destination changes, 
   await hoverMonitor();
   await expect(room).toHaveAttribute("data-hovered-hotspot", "monitor");
   await expect(hint).toBeVisible();
+  await expect(hint).toHaveText("USE COMPUTER");
   await page.mouse.move(80, 700);
   await expect(hint).toBeHidden();
+  await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
+
+  const arcade = hotspot("arcade");
+  await page.mouse.move(arcade.x, arcade.y);
+  await expect(room).toHaveAttribute("data-hovered-hotspot", "arcade");
+  await expect(page.getByText("USE ARCADE", { exact: true })).toBeVisible();
+  await page.mouse.move(80, 700);
+  await expect(page.getByText("USE ARCADE", { exact: true })).toBeHidden();
   await expect.poll(() => room.getAttribute("data-hovered-hotspot")).toBeNull();
 
   await hoverMonitor();
@@ -599,7 +610,7 @@ test("an aborted game request still leaves usable guidance and the direct link",
   await page.screenshot({ path: testInfo.outputPath("arcade-abort-guidance.png") });
 });
 
-test("touch-emulated visitors can use the project board and arcade controls", async ({ browser }, testInfo) => {
+test("touch-emulated visitors can use the arcade controls", async ({ browser }, testInfo) => {
   const context = await browser.newContext({
     viewport: { width: 375, height: 740 },
     isMobile: true,
@@ -612,14 +623,6 @@ test("touch-emulated visitors can use the project board and arcade controls", as
     gameRequests++;
     await route.fulfill({ contentType: "text/html", body: "<title>Game</title>" });
   });
-
-  await page.goto("/?destination=board");
-  const board = page.getByRole("dialog", { name: "Project board" });
-  await expect(board).toBeVisible();
-  await page.screenshot({ path: testInfo.outputPath("mobile-project-board.png") });
-  await board.getByRole("button", { name: "Open Enterprise Knowledge Copilot" }).tap();
-  await expect(board.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toBeVisible();
-  await board.getByRole("button", { name: "Close board · Back to room" }).tap();
 
   await page.goto("/");
   const canvas = page.locator('canvas[data-engine]');

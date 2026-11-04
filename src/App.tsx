@@ -7,8 +7,8 @@ import { initialRoomNavigation, roomNavigationReducer, type RoomDestination, typ
 function getInitialNavigation(): RoomNavigationState {
   if (typeof window !== "undefined") {
     const param = new URLSearchParams(window.location.search).get("destination") as RoomDestination | null;
-    if (param === "board" || param === "monitor" || param === "arcade") {
-      return { destination: param, selectedProjectId: null };
+    if (param === "monitor" || param === "arcade") {
+      return { destination: param };
     }
   }
   return initialRoomNavigation;
@@ -22,7 +22,6 @@ export default function App() {
       <RoomPreview
         navigation={navigation}
         onNavigate={(destination) => dispatch({ type: "navigate", destination })}
-        onSelectProject={(projectId) => dispatch({ type: "select-project", projectId })}
       />
       <main className="intro" aria-labelledby="name">
         <OwnerContent />

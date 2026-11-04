@@ -43,7 +43,7 @@ test("an open window survives the overview with the same desktop and wallpaper",
   await expect(page.locator(`${desktop}[data-instance="kept"]`)).toHaveCount(1);
   await expect(page.locator(`${monitorWindow}[data-instance="kept"]`)).toHaveCount(1);
   await expect(page.locator(`${desktop} canvas[data-instance="kept"]`)).toHaveCount(1);
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await page.screenshot({ path: testInfo.outputPath("window-preserved-in-overview.png") });
 
   await clickRoomHotspot(page, "monitor");
@@ -61,7 +61,7 @@ test("an open window survives the overview with the same desktop and wallpaper",
 
   await page.keyboard.press("Escape");
   await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await expectLayerInert(page, true);
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
 });
@@ -81,7 +81,7 @@ test("arcade discards a window that survived the overview", async ({ page }) => 
   await expect(openWindow).toHaveCount(0);
   await expectLayerInert(page, true);
   await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Arcade", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
 
   await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeFocused();
@@ -159,7 +159,7 @@ test("reduced motion keeps the preserved window and every return control usable"
   await expect(openWindow).toBeVisible();
   await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await expect(openWindow).toBeVisible();
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
 
   await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeFocused();
@@ -168,11 +168,11 @@ test("reduced motion keeps the preserved window and every return control usable"
   await expect(openWindow).toHaveCount(0);
   await expect(file).toBeFocused();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("button", { name: "Monitor", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
 
   await clickRoomHotspot(page, "arcade");
   await expect(page.getByRole("button", { name: "Play game" })).toBeFocused();
   await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
-  await expect(page.getByRole("button", { name: "Arcade", exact: true })).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
 });

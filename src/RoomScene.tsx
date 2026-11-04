@@ -375,19 +375,16 @@ function destinationPose(destination: RoomDestination, aspect: number) {
     };
   }
 
-  const targets = {
-    board: { target: new Vector3(-3.5, 3.65, -1.08), width: 6.525, height: 3.05 },
-    arcade: { target: new Vector3(4.21, 3.14, 0.7), width: 2.6, height: 3.4 },
-  }[destination];
-  const distance = Math.max(targets.width / (2 * tangent * aspect), targets.height / (2 * tangent)) * 1.32;
+  const arcadeTarget = { target: new Vector3(4.21, 3.14, 0.7), width: 2.6, height: 3.4 };
+  const distance = Math.max(arcadeTarget.width / (2 * tangent * aspect), arcadeTarget.height / (2 * tangent)) * 1.32;
   return {
-    position: new Vector3(targets.target.x, targets.target.y, targets.target.z + distance),
-    target: targets.target,
+    position: new Vector3(arcadeTarget.target.x, arcadeTarget.target.y, arcadeTarget.target.z + distance),
+    target: arcadeTarget.target,
   };
 }
 
 function isRoomHotspot(value: unknown): value is RoomHotspot {
-  return value === "monitor" || value === "board" || value === "arcade";
+  return value === "monitor" || value === "arcade";
 }
 
 function CameraFocus({ destination, onHotspotHover }: {
