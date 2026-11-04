@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hotspotHintPosition } from "./roomHover";
+import { backCursorHintPosition, hotspotHintPosition } from "./roomHover";
 
 const tooltip = { width: 120, height: 28 };
 const viewport = { width: 1440, height: 900 };
@@ -35,5 +35,23 @@ describe("hotspot hint placement", () => {
       { width: 96, height: 24 },
       { width: 320, height: 700 },
     )).toEqual({ x: 212, y: 664 });
+  });
+});
+
+describe("back cursor hint placement", () => {
+  const backTooltip = { width: 80, height: 24 };
+
+  it("places the [Go Back] label below and to the right of the cursor", () => {
+    expect(backCursorHintPosition({ clientX: 300, clientY: 200 }, backTooltip, viewport)).toEqual({
+      x: 312,
+      y: 216,
+    });
+  });
+
+  it("keeps the [Go Back] label clamped within the viewport margin", () => {
+    const corner = { clientX: viewport.width, clientY: viewport.height };
+    const position = backCursorHintPosition(corner, backTooltip, viewport);
+    expect(position.x + backTooltip.width).toBeLessThanOrEqual(viewport.width - 10);
+    expect(position.y + backTooltip.height).toBeLessThanOrEqual(viewport.height - 10);
   });
 });

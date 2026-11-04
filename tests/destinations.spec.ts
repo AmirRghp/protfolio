@@ -227,3 +227,64 @@ test("arcade menu displays 4 games, allows switching selection, and shows coming
   await page.getByRole("button", { name: "Close arcade and return to room" }).click();
   await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
 });
+
+test("outside-screen cursor hint shows [Go Back] and clicking outside returns to room overview for monitor and arcade", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const hint = page.locator('[class*="backCursorHint"]');
+
+  // 1. Focus on monitor
+  await page.goto("/?destination=monitor", { waitUntil: "networkidle" });
+  await expect(page.locator(desktop)).toBeVisible();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // Hover over the desktop screen: hint should stay hidden
+  const aboutMeFile = page.getByRole("button", { name: "about-me.txt" });
+  await aboutMeFile.hover();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // Move mouse outside the monitor screen (top-left corner outside screen bounds)
+  await page.mouse.move(80, 80);
+  await expect(hint).toHaveAttribute("data-visible", "true");
+  await expect(hint).toHaveText("[Go Back]");
+  await page.screenshot({ path: testInfo.outputPath("monitor-back-hint.png") });
+
+  // Moving mouse back over desktop hides the hint
+  await aboutMeFile.hover();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // Move back outside and click: should navigate back to room overview
+  await page.mouse.move(80, 80);
+  await expect(hint).toHaveAttribute("data-visible", "true");
+  await page.mouse.click(80, 80);
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // 2. Focus on arcade
+  await page.goto("/?destination=arcade", { waitUntil: "networkidle" });
+  const screen = page.getByRole("region", { name: "Crash Bandicoot arcade screen" });
+  await expect(screen).toBeVisible();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // Hover over the arcade menu screen: hint should stay hidden
+  const firstOption = page.getByRole("option", { name: /Crash Bandicoot/i });
+  await firstOption.hover();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // Move mouse outside the arcade screen (top-left corner)
+  await page.mouse.move(80, 80);
+  await expect(hint).toHaveAttribute("data-visible", "true");
+  await expect(hint).toHaveText("[Go Back]");
+  await page.screenshot({ path: testInfo.outputPath("arcade-back-hint.png") });
+
+  // Moving mouse back over arcade menu hides hint
+  await firstOption.hover();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+
+  // Move outside and click: returns to room overview
+  await page.mouse.move(80, 80);
+  await expect(hint).toHaveAttribute("data-visible", "true");
+  await page.mouse.click(80, 80);
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+  await expect(hint).toHaveAttribute("data-visible", "false");
+});
+

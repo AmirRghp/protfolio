@@ -109,6 +109,7 @@
 
 .arcadeLayer[data-active="true"] {
   pointer-events: auto;
+  cursor: pointer;
 }
 
 .arcadeLayer[data-scene-failed="true"][data-active="true"] {
@@ -133,6 +134,11 @@
   inset: 0;
   overflow: hidden;
   pointer-events: none;
+}
+
+.desktopLayer[data-active="true"] {
+  pointer-events: auto;
+  cursor: pointer;
 }
 
 .hotspotHint {
@@ -168,6 +174,37 @@
 
 .preview[data-hovered-hotspot] canvas {
   cursor: pointer;
+}
+
+
+.backCursorHint {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 4px;
+  color: #ffffff;
+  background: rgba(10, 8, 20, 0.88);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.65);
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translate3d(-9999px, -9999px, 0);
+  transition: opacity 120ms ease;
+  will-change: transform;
+  user-select: none;
+}
+
+.backCursorHint[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
 }
 
 @media (prefers-reduced-motion: reduce) {

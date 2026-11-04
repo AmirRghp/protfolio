@@ -4,7 +4,7 @@ import { portfolioContent } from "./content";
 import { desktopApps } from "./desktopApps";
 import MonitorDesktop from "./MonitorDesktop";
 import RoomUnavailable from "./RoomUnavailable";
-import { hotspotHintPosition, type RoomHotspot, type RoomHotspotHover } from "./roomHover";
+import { backCursorHintPosition, hotspotHintPosition, type RoomHotspot, type RoomHotspotHover } from "./roomHover";
 import styles from "./RoomPreview.module.css";
 import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
 
@@ -46,6 +46,8 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
   const arcadeRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
+  const backHintRef = useRef<HTMLDivElement>(null);
+  const layerPointerDownTarget = useRef<EventTarget | null>(null);
   const hoveredHotspot = useRef<RoomHotspot | null>(null);
   const returnFocusDestination = useRef<Exclude<RoomDestination, "room"> | null>(null);
   const [sceneFailed, setSceneFailed] = useState(false);
@@ -58,6 +60,39 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     hoveredHotspot.current = null;
     if (hintRef.current) hintRef.current.dataset.visible = "false";
     if (previewRef.current) delete previewRef.current.dataset.hoveredHotspot;
+  }, []);
+
+  const hideBackHint = useCallback(() => {
+    if (backHintRef.current) backHintRef.current.dataset.visible = "false";
+  }, []);
+
+  const updateBackHint = useCallback((clientX: number, clientY: number) => {
+    const hint = backHintRef.current;
+    if (!hint) return;
+    const bounds = hint.getBoundingClientRect();
+    const position = backCursorHintPosition(
+      { clientX, clientY },
+      { width: bounds.width || 76, height: bounds.height || 24 },
+      {
+        width: document.documentElement.clientWidth || window.innerWidth,
+        height: document.documentElement.clientHeight || window.innerHeight,
+      },
+    );
+    hint.style.transform = `translate3d(${position.x}px, ${position.y}px, 0)`;
+    if (hint.dataset.visible !== "true") hint.dataset.visible = "true";
+  }, []);
+
+  const handleLayerPointerMove = useCallback((event: React.PointerEvent) => {
+    if (event.pointerType !== "mouse") return;
+    if (event.target === event.currentTarget) {
+      updateBackHint(event.clientX, event.clientY);
+    } else {
+      hideBackHint();
+    }
+  }, [updateBackHint, hideBackHint]);
+
+  const handleLayerPointerDown = useCallback((event: React.PointerEvent) => {
+    layerPointerDownTarget.current = event.target;
   }, []);
 
   const handleHotspotHover = useCallback((hover: RoomHotspotHover | null) => {
@@ -89,36 +124,49 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
   /** Selecting another room destination also discards the monitor window it does not own. */
   const navigate = (destination: RoomDestination) => {
     hideHotspotHint();
+    hideBackHint();
     if (destination === "arcade") setOpenAppId(null);
     onNavigate(destination);
   };
 
   const failScene = () => {
     hideHotspotHint();
+    hideBackHint();
     setSceneFailed(true);
     setOpenAppId(null);
   };
 
   useEffect(() => {
     hideHotspotHint();
-  }, [navigation.destination, hideHotspotHint]);
+    hideBackHint();
+  }, [navigation.destination, hideHotspotHint, hideBackHint]);
 
   useEffect(() => {
-    const hide = () => hideHotspotHint();
+    const hide = () => {
+      hideHotspotHint();
+      hideBackHint();
+    };
     const onVisibilityChange = () => { if (document.hidden) hide(); };
     window.addEventListener("blur", hide);
     document.addEventListener("visibilitychange", onVisibilityChange);
     return () => {
       window.removeEventListener("blur", hide);
       document.removeEventListener("visibilitychange", onVisibilityChange);
-      hideHotspotHint();
+      hide();
     };
-  }, [hideHotspotHint]);
+  }, [hideHotspotHint, hideBackHint]);
 
   const returnToRoom = useCallback((from: Exclude<RoomDestination, "room">) => {
+    hideBackHint();
     returnFocusDestination.current = from;
     onNavigate("room");
-  }, [onNavigate]);
+  }, [hideBackHint, onNavigate]);
+
+  const handleLayerClick = useCallback((event: React.MouseEvent, destination: Exclude<RoomDestination, "room">) => {
+    if (event.button === 0 && event.target === event.currentTarget && layerPointerDownTarget.current === event.currentTarget) {
+      returnToRoom(destination);
+    }
+  }, [returnToRoom]);
 
   // A destination close returns the keyboard to the preview container.
   useEffect(() => {
@@ -153,7 +201,6 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     }
     desktopRef.current?.focus({ preventScroll: true });
   }, [navigation.destination, sceneFailed]);
-
 
   return (
     <section ref={previewRef} className={styles.preview} tabIndex={-1} aria-label="Study room overview">
@@ -192,6 +239,10 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           className={styles.desktopLayer}
           data-active={navigation.destination === "monitor" && !sceneFailed}
           inert={navigation.destination !== "monitor" || sceneFailed}
+          onPointerMove={handleLayerPointerMove}
+          onPointerLeave={hideBackHint}
+          onPointerDown={handleLayerPointerDown}
+          onClick={(event) => handleLayerClick(event, "monitor")}
         >
           <MonitorDesktop
             ref={desktopRef}
@@ -207,6 +258,10 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           data-active={navigation.destination === "arcade"}
           data-scene-failed={sceneFailed}
           inert={navigation.destination !== "arcade"}
+          onPointerMove={handleLayerPointerMove}
+          onPointerLeave={hideBackHint}
+          onPointerDown={handleLayerPointerDown}
+          onClick={(event) => handleLayerClick(event, "arcade")}
         >
           <ArcadeMenu
             ref={arcadeRef}
@@ -215,6 +270,9 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           />
         </div>
         <div ref={hintRef} className={styles.hotspotHint} data-visible="false" aria-hidden="true" />
+        <div ref={backHintRef} className={styles.backCursorHint} data-visible="false" aria-hidden="true">
+          [Go Back]
+        </div>
       </div>
       <p
         className={styles.caption}

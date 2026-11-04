@@ -6,6 +6,7 @@
   transform-origin: 0 0;
   visibility: hidden;
   pointer-events: auto;
+  cursor: default;
   container-type: inline-size;
   background: #090503;
   color: #ff7722;
