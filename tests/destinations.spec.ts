@@ -176,3 +176,39 @@ test("reduced motion keeps the preserved window and every return control usable"
   await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
   await expect(page.getByLabel("Study room overview")).toBeFocused();
 });
+
+test("arcade menu displays 4 games, allows switching selection, and shows coming soon for unplayable games", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto("/?destination=arcade", { waitUntil: "networkidle" });
+
+  const screen = page.getByRole("region", { name: "Crash Bandicoot arcade screen" });
+  await expect(screen).toBeVisible();
+
+  // Verify all 4 games exist in the list
+  await expect(page.getByRole("option", { name: /Crash Bandicoot/i })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Pixel Tetris/i })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Snake Grid/i })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Deparkanoid/i })).toBeVisible();
+
+  // Crash Bandicoot is initially selected and playable
+  await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
+
+  // Click on Pixel Tetris
+  await page.getByRole("option", { name: /Pixel Tetris/i }).click();
+  await expect(page.getByRole("button", { name: "Play game" })).toHaveCount(0);
+  await expect(page.getByText("Arcade Puzzle · 1984")).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("arcade-menu-tetris.png") });
+
+  // Click on Snake Grid
+  await page.getByRole("option", { name: /Snake Grid/i }).click();
+  await expect(page.getByText("Retro Arcade · 1997")).toBeVisible();
+
+  // Return to Crash Bandicoot
+  await page.getByRole("option", { name: /Crash Bandicoot/i }).click();
+  await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("arcade-menu-crash.png") });
+
+  // CLOSE [ESC] button returns to room overview
+  await page.getByRole("button", { name: "Close arcade and return to room" }).click();
+  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
+});

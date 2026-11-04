@@ -6,6 +6,7 @@ import {
   ROOM_OVERVIEW_CAMERA_Y,
   ROOM_OVERVIEW_TARGET_Y,
   ROOM_TRANSITION_SECONDS,
+  arcadeFocusPose,
   dampValue,
   easeCameraTransition,
   monitorScreenPose,
@@ -145,5 +146,31 @@ describe("fixed room framing", () => {
     expect(easeCameraTransition(1)).toBe(1);
     expect(easeCameraTransition(0.05)).toBeLessThan(0.01);
     expect(dampValue(0.24, 0.24, 0, 0.12, 1 / 60).settled).toBe(true);
+  });
+
+  it("frames the arcade cabinet with the screen and control deck in view across viewports", () => {
+    for (const [width, height] of [[768, 900], [1024, 768], [1440, 900], [1920, 1080]]) {
+      const aspect = width / height;
+      const pose = arcadeFocusPose(aspect);
+      expect(pose.position[0]).toBeCloseTo(4.21, 2);
+      expect(pose.position[1]).toBe(3.2);
+      expect(pose.target[1]).toBe(2.8);
+
+      const camera = new PerspectiveCamera(ROOM_FOV, aspect, 0.1, 100);
+      camera.position.set(...pose.position);
+      camera.lookAt(new Vector3(...pose.target));
+      camera.updateMatrixWorld(true);
+      camera.updateProjectionMatrix();
+
+      const topScreen = new Vector3(4.21, 4.14, 0.565).project(camera);
+      const bottomDeck = new Vector3(4.21, 1.58, 1.35).project(camera);
+
+      // Top of screen should be comfortably within viewport with room for the canopy
+      expect(topScreen.y).toBeGreaterThan(0.65);
+      expect(topScreen.y).toBeLessThan(0.95);
+      // Bottom of joystick control deck should be near the bottom of the viewport
+      expect(bottomDeck.y).toBeGreaterThan(-1.0);
+      expect(bottomDeck.y).toBeLessThan(-0.75);
+    }
   });
 });

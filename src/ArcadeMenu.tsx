@@ -1,0 +1,308 @@
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
+import {
+  ARCADE_GAMES,
+  ARCADE_GAME_URL,
+  ARCADE_LOAD_TIMEOUT_MS,
+} from "./arcadeData";
+import styles from "./ArcadeMenu.module.css";
+
+export type ArcadeMenuProps = {
+  active: boolean;
+  onExit: () => void;
+};
+
+const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMenu(
+  { active, onExit },
+  forwardedRef,
+) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const playButtonRef = useRef<HTMLButtonElement>(null);
+  const exitButtonRef = useRef<HTMLButtonElement>(null);
+  const loadTimeout = useRef<number | null>(null);
+
+  useImperativeHandle(forwardedRef, () => containerRef.current as HTMLDivElement);
+
+  const [selectedGameId, setSelectedGameId] = useState<string>("crash");
+  const [playing, setPlaying] = useState<boolean>(false);
+  const [loadTimedOut, setLoadTimedOut] = useState<boolean>(false);
+
+  const selectedGame = ARCADE_GAMES.find((g) => g.id === selectedGameId) ?? ARCADE_GAMES[0];
+
+  const clearLoadTimeout = useCallback(() => {
+    if (loadTimeout.current !== null) {
+      window.clearTimeout(loadTimeout.current);
+      loadTimeout.current = null;
+    }
+  }, []);
+
+  const startGame = useCallback(() => {
+    if (!selectedGame.playable) return;
+    clearLoadTimeout();
+    setLoadTimedOut(false);
+    setPlaying(true);
+    loadTimeout.current = window.setTimeout(() => {
+      loadTimeout.current = null;
+      setLoadTimedOut(true);
+    }, ARCADE_LOAD_TIMEOUT_MS);
+  }, [clearLoadTimeout, selectedGame.playable]);
+
+  const exitGame = useCallback(() => {
+    clearLoadTimeout();
+    setLoadTimedOut(false);
+    setPlaying(false);
+  }, [clearLoadTimeout]);
+
+  const handleFrameLoad = () => {
+    clearLoadTimeout();
+  };
+
+  useEffect(() => () => {
+    if (loadTimeout.current !== null) window.clearTimeout(loadTimeout.current);
+  }, []);
+
+  // Manage focus between play and exit buttons
+  useEffect(() => {
+    if (!active) return;
+    const frameId = window.requestAnimationFrame(() => {
+      if (playing) {
+        exitButtonRef.current?.focus({ preventScroll: true });
+      } else {
+        playButtonRef.current?.focus({ preventScroll: true });
+      }
+    });
+    return () => window.cancelAnimationFrame(frameId);
+  }, [active, playing, loadTimedOut]);
+
+  // Handle keyboard navigation: ArrowUp/Down to switch game, Enter to play, Escape to exit game or menu
+  const handleKeyDown = (event: React.KeyboardEvent) => {
+    if (!active) return;
+
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      if (playing) {
+        exitGame();
+      } else {
+        onExit();
+      }
+      return;
+    }
+
+    if (playing) return;
+
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      const currentIndex = ARCADE_GAMES.findIndex((g) => g.id === selectedGameId);
+      const nextIndex =
+        event.key === "ArrowDown"
+          ? (currentIndex + 1) % ARCADE_GAMES.length
+          : (currentIndex - 1 + ARCADE_GAMES.length) % ARCADE_GAMES.length;
+      setSelectedGameId(ARCADE_GAMES[nextIndex].id);
+    } else if (event.key === "Enter") {
+      if (selectedGame.playable) {
+        event.preventDefault();
+        startGame();
+      }
+    }
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      className={styles.arcadeScreenContainer}
+      tabIndex={active ? 0 : -1}
+      onKeyDown={handleKeyDown}
+      role="region"
+      aria-label="Crash Bandicoot arcade screen"
+    >
+      {playing ? (
+        <div className={styles.gameplayContainer}>
+          {loadTimedOut ? (
+            <div className={styles.timeoutFallback}>
+              <h2>Crash Bandicoot</h2>
+              <p role="status">
+                The game did not appear in the arcade within 8 seconds. Open it directly on PS1FUN with the link below.
+              </p>
+              <button
+                ref={exitButtonRef}
+                type="button"
+                className={styles.playButton}
+                onClick={exitGame}
+              >
+                Exit game
+              </button>
+              <a href={ARCADE_GAME_URL} target="_blank" rel="noopener noreferrer" className={styles.hudLink}>
+                Open game on PS1FUN
+              </a>
+            </div>
+          ) : (
+            <>
+              <div className={styles.gameplayHud}>
+                <button
+                  ref={exitButtonRef}
+                  type="button"
+                  className={styles.hudExitButton}
+                  onClick={exitGame}
+                >
+                  Exit game
+                </button>
+                <span className={styles.hudTitle}>CRASH BANDICOOT (PS1)</span>
+                <a
+                  href={ARCADE_GAME_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.hudLink}
+                >
+                  Open game on PS1FUN
+                </a>
+              </div>
+              <div className={styles.gameViewport}>
+                <iframe
+                  title="Crash Bandicoot on PS1FUN"
+                  src={ARCADE_GAME_URL}
+                  scrolling="no"
+                  allow="fullscreen; gamepad; autoplay"
+                  allowFullScreen
+                  sandbox="allow-scripts allow-same-origin"
+                  referrerPolicy="no-referrer"
+                  onLoad={handleFrameLoad}
+                />
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <div className={styles.screenBezel}>
+          <div className={styles.outerFrame}>
+            <div className={styles.topBar}>
+              <button
+                type="button"
+                className={styles.closeButton}
+                onClick={onExit}
+                aria-label="Close arcade and return to room"
+              >
+                CLOSE [ESC]
+              </button>
+              <div className={styles.topTabs}>
+                <span>— GAMES —</span>
+                <span>— PREVIEW —</span>
+              </div>
+              <span style={{ fontSize: "0.68rem", opacity: 0.8 }}>SYSTEM READY</span>
+            </div>
+
+            <div className={styles.mainSection}>
+              {/* Left Column: Games list */}
+              <div className={styles.listPanel}>
+                <div className={styles.panelHeader}>Arcade Select</div>
+                <div className={styles.gamesList} role="listbox" aria-label="Games list">
+                  {ARCADE_GAMES.map((game) => {
+                    const isSelected = game.id === selectedGameId;
+                    return (
+                      <button
+                        key={game.id}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        data-selected={isSelected}
+                        className={styles.gameItem}
+                        onClick={() => setSelectedGameId(game.id)}
+                      >
+                        <span className={styles.gameItemTitle}>
+                          {isSelected ? "> " : "  "}
+                          {game.title}
+                        </span>
+                        <span className={game.playable ? styles.badgePlay : styles.badgeSoon}>
+                          {game.badge}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Right Column: Preview area */}
+              <div className={styles.previewPanel}>
+                <h3 className={styles.previewTitle}>{selectedGame.title}</h3>
+                <span className={styles.previewSystem}>
+                  {selectedGame.system} · {selectedGame.year}
+                </span>
+
+                <div className={styles.previewArtBox}>
+                  {selectedGame.icon({ className: styles.previewSvg })}
+                </div>
+
+                <p className={styles.previewDescription}>{selectedGame.description}</p>
+                {selectedGame.controls && (
+                  <p className={styles.previewControls}>{selectedGame.controls}</p>
+                )}
+
+                {selectedGame.playable ? (
+                  <>
+                    <button
+                      ref={playButtonRef}
+                      type="button"
+                      className={styles.playButton}
+                      onClick={startGame}
+                    >
+                      Play game
+                    </button>
+                    <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                      Hosted by PS1FUN. The game loads after you choose to play.
+                    </p>
+                    <a
+                      href={ARCADE_GAME_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.hudLink}
+                    >
+                      Open game on PS1FUN
+                    </a>
+                  </>
+                ) : (
+                  <div className={styles.disabledTag}>COMING SOON</div>
+                )}
+              </div>
+            </div>
+
+            {/* Bottom Row: Quick-action cards */}
+            <div className={styles.bottomCards}>
+              {ARCADE_GAMES.map((game) => (
+                <button
+                  key={game.id}
+                  type="button"
+                  data-playable={game.playable}
+                  className={styles.cardItem}
+                  onClick={() => {
+                    setSelectedGameId(game.id);
+                    if (game.playable) startGame();
+                  }}
+                  title={game.playable ? `Play ${game.title}` : `${game.title} (Coming Soon)`}
+                >
+                  {game.icon({ className: styles.cardIcon })}
+                  <span className={styles.cardTitle}>{game.title}</span>
+                  <span className={styles.cardStatus}>
+                    {game.playable ? "PLAY NOW" : "COMING SOON"}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className={styles.footerBar}>
+              <span>↑/↓ NAVIGATE · ENTER SELECT · ESC CLOSE</span>
+              <span>— ARCADE V1.0 —</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+});
+
+export default ArcadeMenu;

@@ -17,12 +17,14 @@ import {
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
+import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "./arcadeProjection";
 import {
   MONITOR_SCENE_POSITION,
   MONITOR_YAW,
   ROOM_FOV,
   ROOM_OVERVIEW_TARGET_Y,
   ROOM_TRANSITION_SECONDS,
+  arcadeFocusPose,
   easeCameraTransition,
   monitorScreenPose,
   roomOverviewPose,
@@ -72,7 +74,7 @@ function RoomFurnishings() {
   return <primitive object={scene} />;
 }
 
-function ArcadeCabinet() {
+function ArcadeCabinet({ arcadeRef }: { arcadeRef?: RefObject<HTMLDivElement | null> }) {
   const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-machine.glb");
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
@@ -93,8 +95,44 @@ function ArcadeCabinet() {
   return (
     <group name="ArcadeMachine" position={[4.22, 1.95, 0.35]} scale={[2.75, 3.75, 2.75]}>
       <primitive object={scene} rotation={[0, -Math.PI / 2, 0]} />
+      {arcadeRef && <ArcadeOverlay arcadeRef={arcadeRef} />}
     </group>
   );
+}
+
+function ArcadeOverlay({ arcadeRef }: { arcadeRef: RefObject<HTMLDivElement | null> }) {
+  const { camera, size } = useThree();
+  const applied = useRef({ transform: "" });
+
+  const resting = useMemo(() => {
+    const pose = arcadeFocusPose(size.width / size.height);
+    const restCamera = new PerspectiveCamera(ROOM_FOV, size.width / size.height, 0.1, 100);
+    restCamera.position.set(...pose.position);
+    restCamera.lookAt(new Vector3(...pose.target));
+    restCamera.updateMatrixWorld(true);
+    restCamera.updateProjectionMatrix();
+    return projectedArcadeSize(restCamera, size, ARCADE_SCREEN_SURFACE);
+  }, [size]);
+
+  useEffect(() => () => {
+    if (arcadeRef.current) arcadeRef.current.dataset.projected = "false";
+  }, [arcadeRef]);
+
+  useFrame(() => {
+    const element = arcadeRef.current;
+    if (!element) return;
+    camera.updateMatrixWorld();
+    const layout = arcadeOverlayLayout(camera, size, ARCADE_SCREEN_SURFACE, resting);
+    if (layout.transform !== applied.current.transform) {
+      element.style.transform = layout.transform;
+      applied.current.transform = layout.transform;
+    }
+    if (element.style.width !== `${resting.width}px`) element.style.width = `${resting.width}px`;
+    if (element.style.height !== `${resting.height}px`) element.style.height = `${resting.height}px`;
+    if (element.dataset.projected !== "true") element.dataset.projected = "true";
+  });
+
+  return null;
 }
 
 function MousePad() {
@@ -375,11 +413,10 @@ function destinationPose(destination: RoomDestination, aspect: number) {
     };
   }
 
-  const arcadeTarget = { target: new Vector3(4.21, 3.14, 0.7), width: 2.6, height: 3.4 };
-  const distance = Math.max(arcadeTarget.width / (2 * tangent * aspect), arcadeTarget.height / (2 * tangent)) * 1.32;
+  const pose = arcadeFocusPose(aspect);
   return {
-    position: new Vector3(arcadeTarget.target.x, arcadeTarget.target.y, arcadeTarget.target.z + distance),
-    target: arcadeTarget.target,
+    position: new Vector3(...pose.position),
+    target: new Vector3(...pose.target),
   };
 }
 
@@ -632,9 +669,10 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
   return null;
 }
 
-function Study({ onNavigate, desktopRef, highlightedHotspot }: {
+function Study({ onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
   onNavigate: (destination: RoomDestination) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
+  arcadeRef?: RefObject<HTMLDivElement | null>;
   highlightedHotspot: RoomHotspot | null;
 }) {
   return (
@@ -684,7 +722,7 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
         <MousePad />
         <CompactKeyboard />
         <ComputerMouse />
-        <ArcadeCabinet />
+        <ArcadeCabinet arcadeRef={arcadeRef} />
       </Suspense>
       <FocusHotspot destination="arcade" position={[4.22, 2.5, 1.65]} size={[2.6, 6.4]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
     </>
@@ -706,11 +744,19 @@ const isSoftwareGl = (() => {
   }
 })();
 
-export default function RoomScene({ destination, onNavigate, onHotspotHover, desktopRef, onUnavailable }: {
+export default function RoomScene({
+  destination,
+  onNavigate,
+  onHotspotHover,
+  desktopRef,
+  arcadeRef,
+  onUnavailable,
+}: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
   onHotspotHover: (hover: RoomHotspotHover | null) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
+  arcadeRef?: RefObject<HTMLDivElement | null>;
   onUnavailable?: () => void;
 }) {
   const [contextLost, setContextLost] = useState(false);
@@ -759,7 +805,12 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
         setContextLost(true);
         onUnavailable?.();
       }} />
-      <Study onNavigate={onNavigate} desktopRef={desktopRef} highlightedHotspot={destination === "room" ? highlightedHotspot : null} />
+      <Study
+        onNavigate={onNavigate}
+        desktopRef={desktopRef}
+        arcadeRef={arcadeRef}
+        highlightedHotspot={destination === "room" ? highlightedHotspot : null}
+      />
     </Canvas>
   );
 }

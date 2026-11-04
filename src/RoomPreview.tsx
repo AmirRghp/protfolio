@@ -1,4 +1,5 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import ArcadeMenu from "./ArcadeMenu";
 import { portfolioContent } from "./content";
 import { desktopApps } from "./desktopApps";
 import MonitorDesktop from "./MonitorDesktop";
@@ -40,107 +41,9 @@ const hotspotLabels: Record<RoomHotspot, string> = {
   arcade: "USE ARCADE",
 };
 
-const ARCADE_GAME_URL = "https://www.ps1fun.com/play/crash-bandicoot/1212";
-
-/** How long the third-party game may take before the arcade reports that it cannot be shown. */
-const ARCADE_LOAD_TIMEOUT_MS = 8000;
-
-function ArcadePanel() {
-  const [playing, setPlaying] = useState(false);
-  const [loadTimedOut, setLoadTimedOut] = useState(false);
-  const playButton = useRef<HTMLButtonElement>(null);
-  const exitButton = useRef<HTMLButtonElement>(null);
-  const loadTimeout = useRef<number | null>(null);
-
-  const clearLoadTimeout = () => {
-    if (loadTimeout.current !== null) {
-      window.clearTimeout(loadTimeout.current);
-      loadTimeout.current = null;
-    }
-  };
-
-  useEffect(() => () => {
-    if (loadTimeout.current !== null) window.clearTimeout(loadTimeout.current);
-  }, []);
-
-  useEffect(() => {
-    const target = playing ? exitButton.current : playButton.current;
-    target?.focus({ preventScroll: true });
-  }, [playing]);
-
-  const startGame = () => {
-    clearLoadTimeout();
-    setLoadTimedOut(false);
-    setPlaying(true);
-    loadTimeout.current = window.setTimeout(() => {
-      loadTimeout.current = null;
-      setLoadTimedOut(true);
-    }, ARCADE_LOAD_TIMEOUT_MS);
-  };
-
-  // A cross-origin load event can belong to the browser's error page, so it only stops the
-  // no-load timer. It is not evidence that the game rendered, and the outside guidance stays up.
-  const handleFrameLoad = () => {
-    clearLoadTimeout();
-  };
-
-  const exitGame = () => {
-    clearLoadTimeout();
-    setLoadTimedOut(false);
-    setPlaying(false);
-  };
-
-  return (
-    <section className={styles.arcade} aria-label="Crash Bandicoot arcade screen">
-      <div className={styles.arcadeScreen}>
-        {playing ? (
-          loadTimedOut ? (
-            <div className={styles.arcadePrompt}>
-              <h2>Crash Bandicoot</h2>
-              <p role="status">
-                The game did not appear in the arcade within 8 seconds. Open it directly on PS1FUN with the link below.
-              </p>
-            </div>
-          ) : (
-            <div className={styles.arcadeViewport}>
-              <iframe
-                title="Crash Bandicoot on PS1FUN"
-                src={ARCADE_GAME_URL}
-                scrolling="no"
-                allow="fullscreen; gamepad; autoplay"
-                allowFullScreen
-                sandbox="allow-scripts allow-same-origin"
-                referrerPolicy="no-referrer"
-                aria-describedby="arcade-embed-hint"
-                onLoad={handleFrameLoad}
-              />
-            </div>
-          )
-        ) : (
-          <div className={styles.arcadePrompt}>
-            <h2>Crash Bandicoot</h2>
-            <button ref={playButton} type="button" onClick={startGame}>Play game</button>
-            <p>Hosted by PS1FUN. The game loads after you choose to play.</p>
-          </div>
-        )}
-      </div>
-      <div className={styles.arcadeControls}>
-        {playing && <button ref={exitButton} type="button" onClick={exitGame}>Exit game</button>}
-        <a href={ARCADE_GAME_URL} target="_blank" rel="noopener noreferrer">
-          Open game on PS1FUN
-        </a>
-        {playing && !loadTimedOut && (
-          <p id="arcade-embed-hint" className={styles.arcadeHint}>
-            If the game does not appear, open it directly on PS1FUN.
-          </p>
-        )}
-      </div>
-    </section>
-  );
-}
-
 export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps) {
   const desktopRef = useRef<HTMLDivElement>(null);
+  const arcadeRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
   const hoveredHotspot = useRef<RoomHotspot | null>(null);
@@ -251,6 +154,13 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     desktopRef.current?.focus({ preventScroll: true });
   }, [navigation.destination, sceneFailed]);
 
+  useEffect(() => {
+    if (navigation.destination !== "arcade") return;
+    if (sceneFailed) {
+      previewRef.current?.focus({ preventScroll: true });
+    }
+  }, [navigation.destination, sceneFailed]);
+
   return (
     <section ref={previewRef} className={styles.preview} tabIndex={-1} aria-label="Study room overview">
       {focusedDestination ? (
@@ -275,6 +185,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
             <RoomScene
               destination={navigation.destination}
               desktopRef={desktopRef}
+              arcadeRef={arcadeRef}
               onUnavailable={failScene}
               onHotspotHover={handleHotspotHover}
               onNavigate={(destination) => {
@@ -283,7 +194,17 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
             />
           </Suspense>
         </SceneBoundary>
-        {navigation.destination === "arcade" && <ArcadePanel />}
+        <div
+          className={styles.arcadeLayer}
+          data-active={navigation.destination === "arcade" && !sceneFailed}
+          inert={navigation.destination !== "arcade" || sceneFailed}
+        >
+          <ArcadeMenu
+            ref={arcadeRef}
+            active={navigation.destination === "arcade" && !sceneFailed}
+            onExit={() => returnToRoom("arcade")}
+          />
+        </div>
         <div
           className={styles.desktopLayer}
           data-active={navigation.destination === "monitor" && !sceneFailed}

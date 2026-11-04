@@ -51,6 +51,23 @@ export function roomOverviewPose(aspect: number) {
 }
 
 /**
+ * Poses the camera for the arcade focus destination: raised slightly above the control deck
+ * and pitched downward so the arcade monitor screen fills the upper center frame while the
+ * joystick control deck grounds the bottom of the viewport (matching the reference composition).
+ */
+export function arcadeFocusPose(aspect: number) {
+  const halfFov = (ROOM_FOV * Math.PI) / 360;
+  const tangent = Math.tan(halfFov);
+  const target: [number, number, number] = [4.21, 2.8, 0.7];
+  const minDistance = Math.max(2.1 / (2 * tangent * aspect), 2.5 / (2 * tangent));
+  const distance = Math.max(4.1, minDistance * 1.25);
+  return {
+    position: [4.21, 3.2, 0.7 + distance] as [number, number, number],
+    target,
+  };
+}
+
+/**
  * Cursor-driven camera offset in the overview, calibrated to PRD R15 limits (±0.24, ±0.12)
  * so elements remain in view without clipping across tablet and desktop viewports.
  */
