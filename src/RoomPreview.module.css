@@ -112,6 +112,11 @@
   cursor: pointer;
 }
 
+.arcadeLayer[data-outside-hover="true"] {
+  background: radial-gradient(circle at center, transparent 38%, rgba(14, 6, 4, 0.45) 100%);
+  transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .arcadeLayer[data-scene-failed="true"][data-active="true"] {
   display: flex;
   align-items: center;
@@ -139,6 +144,11 @@
 .desktopLayer[data-active="true"] {
   pointer-events: auto;
   cursor: pointer;
+}
+
+.desktopLayer[data-outside-hover="true"] {
+  background: radial-gradient(circle at center, transparent 38%, rgba(6, 4, 16, 0.42) 100%);
+  transition: background 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .hotspotHint {

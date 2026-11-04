@@ -15,11 +15,12 @@ import styles from "./ArcadeMenu.module.css";
 
 export type ArcadeMenuProps = {
   active: boolean;
+  outsideHover?: boolean;
   onExit: () => void;
 };
 
 const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMenu(
-  { active, onExit },
+  { active, outsideHover = false, onExit },
   forwardedRef,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -168,6 +169,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
       className={styles.arcadeScreenContainer}
       tabIndex={active ? 0 : -1}
       data-active={active}
+      data-outside-hover={outsideHover ? "true" : undefined}
       onKeyDown={handleKeyDown}
       role={active ? "region" : undefined}
       aria-label={active ? "Crash Bandicoot arcade screen" : undefined}
@@ -356,6 +358,12 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
           </div>
         </div>
       )}
+      <div className={styles.crtHighlightFrame} aria-hidden="true">
+        <span className={`${styles.arcadeCornerNotch} ${styles.notchTopLeft}`} />
+        <span className={`${styles.arcadeCornerNotch} ${styles.notchTopRight}`} />
+        <span className={`${styles.arcadeCornerNotch} ${styles.notchBottomLeft}`} />
+        <span className={`${styles.arcadeCornerNotch} ${styles.notchBottomRight}`} />
+      </div>
     </div>
   );
 });

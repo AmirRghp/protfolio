@@ -36,6 +36,7 @@ type MonitorDesktopProps = {
   onOpenAppChange?: (appId: string | null) => void;
   onExit?: () => void;
   ref?: Ref<HTMLDivElement>;
+  outsideHover?: boolean;
 };
 
 function WifiIcon() {
@@ -238,6 +239,7 @@ export function DesktopWindow({
 export default function MonitorDesktop({
   apps = [],
   active = true,
+  outsideHover = false,
   openAppId = null,
   onOpenAppChange,
   onExit,
@@ -638,6 +640,7 @@ export default function MonitorDesktop({
   return (
     <div
       className={styles.desktop}
+      data-outside-hover={outsideHover ? "true" : undefined}
       ref={(element) => {
         desktopElement.current = element;
         if (typeof ref === "function") ref(element);

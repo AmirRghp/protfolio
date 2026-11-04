@@ -51,6 +51,14 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
   const hoveredHotspot = useRef<RoomHotspot | null>(null);
   const returnFocusDestination = useRef<Exclude<RoomDestination, "room"> | null>(null);
   const [sceneFailed, setSceneFailed] = useState(false);
+  const [outsideHover, setOutsideHover] = useState(false);
+  const [prevDestination, setPrevDestination] = useState(navigation.destination);
+  if (prevDestination !== navigation.destination) {
+    setPrevDestination(navigation.destination);
+    if (outsideHover) {
+      setOutsideHover(false);
+    }
+  }
   const [openAppId, setOpenAppId] = useState<string | null>(null);
   const focusedDestination: Exclude<RoomDestination, "room"> | null = navigation.destination === "room"
     ? null
@@ -64,6 +72,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
 
   const hideBackHint = useCallback(() => {
     if (backHintRef.current) backHintRef.current.dataset.visible = "false";
+    setOutsideHover(false);
   }, []);
 
   const updateBackHint = useCallback((clientX: number, clientY: number) => {
@@ -85,6 +94,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
   const handleLayerPointerMove = useCallback((event: React.PointerEvent) => {
     if (event.pointerType !== "mouse") return;
     if (event.target === event.currentTarget) {
+      setOutsideHover(true);
       updateBackHint(event.clientX, event.clientY);
     } else {
       hideBackHint();
@@ -138,8 +148,8 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
 
   useEffect(() => {
     hideHotspotHint();
-    hideBackHint();
-  }, [navigation.destination, hideHotspotHint, hideBackHint]);
+    if (backHintRef.current) backHintRef.current.dataset.visible = "false";
+  }, [navigation.destination, hideHotspotHint]);
 
   useEffect(() => {
     const hide = () => {
@@ -238,6 +248,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
         <div
           className={styles.desktopLayer}
           data-active={navigation.destination === "monitor" && !sceneFailed}
+          data-outside-hover={outsideHover && navigation.destination === "monitor" && !sceneFailed}
           inert={navigation.destination !== "monitor" || sceneFailed}
           onPointerMove={handleLayerPointerMove}
           onPointerLeave={hideBackHint}
@@ -248,6 +259,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
             ref={desktopRef}
             apps={desktopApps}
             active={navigation.destination === "monitor" && !sceneFailed}
+            outsideHover={outsideHover && navigation.destination === "monitor" && !sceneFailed}
             openAppId={openAppId}
             onOpenAppChange={setOpenAppId}
             onExit={() => returnToRoom("monitor")}
@@ -256,6 +268,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
         <div
           className={styles.arcadeLayer}
           data-active={navigation.destination === "arcade"}
+          data-outside-hover={outsideHover && navigation.destination === "arcade"}
           data-scene-failed={sceneFailed}
           inert={navigation.destination !== "arcade"}
           onPointerMove={handleLayerPointerMove}
@@ -266,6 +279,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           <ArcadeMenu
             ref={arcadeRef}
             active={navigation.destination === "arcade"}
+            outsideHover={outsideHover && navigation.destination === "arcade"}
             onExit={() => returnToRoom("arcade")}
           />
         </div>

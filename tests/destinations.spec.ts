@@ -231,26 +231,36 @@ test("arcade menu displays 4 games, allows switching selection, and shows coming
 test("outside-screen cursor hint shows [Go Back] and clicking outside returns to room overview for monitor and arcade", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   const hint = page.locator('[class*="backCursorHint"]');
+  const desktopElem = page.locator(desktop);
+  const desktopLayer = page.locator(layer);
+  const arcadeLayer = page.locator('[class*="arcadeLayer"]');
 
   // 1. Focus on monitor
   await page.goto("/?destination=monitor", { waitUntil: "networkidle" });
-  await expect(page.locator(desktop)).toBeVisible();
+  await expect(desktopElem).toBeVisible();
   await expect(hint).toHaveAttribute("data-visible", "false");
+  await expect(desktopLayer).toHaveAttribute("data-outside-hover", "false");
 
-  // Hover over the desktop screen: hint should stay hidden
+  // Hover over the desktop screen: hint should stay hidden and outside-hover inactive
   const aboutMeFile = page.getByRole("button", { name: "about-me.txt" });
   await aboutMeFile.hover();
   await expect(hint).toHaveAttribute("data-visible", "false");
+  await expect(desktopLayer).toHaveAttribute("data-outside-hover", "false");
 
-  // Move mouse outside the monitor screen (top-left corner outside screen bounds)
+  // Move mouse outside the monitor screen (top-left corner outside screen bounds):
+  // Should activate outside hover highlight and show [Go Back] hint
   await page.mouse.move(80, 80);
   await expect(hint).toHaveAttribute("data-visible", "true");
   await expect(hint).toHaveText("[Go Back]");
+  await expect(desktopLayer).toHaveAttribute("data-outside-hover", "true");
+  await expect(desktopElem).toHaveAttribute("data-outside-hover", "true");
   await page.screenshot({ path: testInfo.outputPath("monitor-back-hint.png") });
 
-  // Moving mouse back over desktop hides the hint
+  // Moving mouse back over desktop hides the hint and clears outside-hover highlight
   await aboutMeFile.hover();
   await expect(hint).toHaveAttribute("data-visible", "false");
+  await expect(desktopLayer).toHaveAttribute("data-outside-hover", "false");
+  await expect(desktopElem).not.toHaveAttribute("data-outside-hover", "true");
 
   // Move back outside and click: should navigate back to room overview
   await page.mouse.move(80, 80);
@@ -264,21 +274,28 @@ test("outside-screen cursor hint shows [Go Back] and clicking outside returns to
   const screen = page.getByRole("region", { name: "Crash Bandicoot arcade screen" });
   await expect(screen).toBeVisible();
   await expect(hint).toHaveAttribute("data-visible", "false");
+  await expect(arcadeLayer).toHaveAttribute("data-outside-hover", "false");
 
-  // Hover over the arcade menu screen: hint should stay hidden
+  // Hover over the arcade menu screen: hint and outside-hover should stay inactive
   const firstOption = page.getByRole("option", { name: /Crash Bandicoot/i });
   await firstOption.hover();
   await expect(hint).toHaveAttribute("data-visible", "false");
+  await expect(arcadeLayer).toHaveAttribute("data-outside-hover", "false");
 
-  // Move mouse outside the arcade screen (top-left corner)
+  // Move mouse outside the arcade screen (top-left corner):
+  // Should activate outside hover CRT highlight and show [Go Back] hint
   await page.mouse.move(80, 80);
   await expect(hint).toHaveAttribute("data-visible", "true");
   await expect(hint).toHaveText("[Go Back]");
+  await expect(arcadeLayer).toHaveAttribute("data-outside-hover", "true");
+  await expect(screen).toHaveAttribute("data-outside-hover", "true");
   await page.screenshot({ path: testInfo.outputPath("arcade-back-hint.png") });
 
-  // Moving mouse back over arcade menu hides hint
+  // Moving mouse back over arcade menu hides hint and deactivates outside hover
   await firstOption.hover();
   await expect(hint).toHaveAttribute("data-visible", "false");
+  await expect(arcadeLayer).toHaveAttribute("data-outside-hover", "false");
+  await expect(screen).not.toHaveAttribute("data-outside-hover", "true");
 
   // Move outside and click: returns to room overview
   await page.mouse.move(80, 80);
