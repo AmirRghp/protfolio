@@ -122,9 +122,10 @@ export const ARCADE_GAMES: GameItem[] = [
     title: "Deparkanoid",
     system: "Canvas Breakout",
     year: "1986",
-    badge: "COMING SOON",
-    playable: false,
-    description: "Paddle-and-ball arcade brick breaker with ricochet bounce physics. Coming soon in a future update.",
+    badge: "PLAY",
+    playable: true,
+    description: "Retro 5-level brick breaker with custom pixel art, authentic ricochet physics, and retro Departure Mono typography.",
+    controls: "Mouse / Arrows: Move · Space / Click: Launch · Esc: Exit",
     icon: ArkanoidIcon,
   },
 ];

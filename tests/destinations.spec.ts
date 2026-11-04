@@ -112,6 +112,34 @@ test("arcade game starts, runs, and can be exited", async ({ page }) => {
   await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
 });
 
+test("deparkanoid starts, runs canvas game with 5 levels, and can be exited", async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1440, height: 800 });
+  await page.goto("/?destination=arcade", { waitUntil: "networkidle" });
+
+  const deparkanoidOption = page.getByRole("option", { name: /Deparkanoid/i });
+  await deparkanoidOption.click();
+
+  const playBtn = page.getByRole("button", { name: "Play game" });
+  await expect(playBtn).toBeVisible();
+  await playBtn.click();
+
+  const canvasRegion = page.getByRole("region", { name: "Deparkanoid arcade game" });
+  await expect(canvasRegion).toBeVisible();
+
+  const exitBtn = page.getByRole("button", { name: "Exit game" });
+  await expect(exitBtn).toBeVisible();
+
+  await canvasRegion.focus();
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(300);
+
+  await page.screenshot({ path: testInfo.outputPath("arcade-deparkanoid-playing.png") });
+
+  await exitBtn.click();
+  await expect(playBtn).toBeVisible();
+  await expect(canvasRegion).toHaveCount(0);
+});
+
 test("a game frame that never loads falls back to the direct link and an outside exit", async ({ page }, testInfo) => {
   test.setTimeout(90_000);
   let release = () => {};

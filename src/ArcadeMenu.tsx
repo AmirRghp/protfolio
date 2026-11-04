@@ -11,6 +11,7 @@ import {
   ARCADE_GAME_URL,
   ARCADE_LOAD_TIMEOUT_MS,
 } from "./arcadeData";
+import Deparkanoid from "./Deparkanoid";
 import styles from "./ArcadeMenu.module.css";
 
 export type ArcadeMenuProps = {
@@ -48,11 +49,13 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     clearLoadTimeout();
     setLoadTimedOut(false);
     setPlaying(true);
-    loadTimeout.current = window.setTimeout(() => {
-      loadTimeout.current = null;
-      setLoadTimedOut(true);
-    }, ARCADE_LOAD_TIMEOUT_MS);
-  }, [clearLoadTimeout, selectedGame.playable]);
+    if (selectedGame.id === "crash") {
+      loadTimeout.current = window.setTimeout(() => {
+        loadTimeout.current = null;
+        setLoadTimedOut(true);
+      }, ARCADE_LOAD_TIMEOUT_MS);
+    }
+  }, [clearLoadTimeout, selectedGame.id, selectedGame.playable]);
 
   const exitGame = useCallback(() => {
     clearLoadTimeout();
@@ -80,7 +83,9 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     if (!active) return;
     const focusTarget = () => {
       if (playing) {
-        exitButtonRef.current?.focus({ preventScroll: true });
+        if (selectedGame.id !== "deparkanoid") {
+          exitButtonRef.current?.focus({ preventScroll: true });
+        }
       } else if (playButtonRef.current) {
         playButtonRef.current.focus({ preventScroll: true });
       } else {
@@ -114,7 +119,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
       window.clearTimeout(timer);
       observer?.disconnect();
     };
-  }, [active, playing, selectedGameId, loadTimedOut]);
+  }, [active, playing, selectedGameId, selectedGame.id, loadTimedOut]);
 
   // Global window keydown listener so ArrowUp / ArrowDown and Enter work immediately upon entering
   // the arcade view, regardless of whether canvas or a child button currently holds focus.
@@ -177,7 +182,26 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     >
       {playing ? (
         <div className={styles.gameplayContainer}>
-          {loadTimedOut ? (
+          {selectedGame.id === "deparkanoid" ? (
+            <>
+              <div className={styles.gameplayHud}>
+                <button
+                  ref={exitButtonRef}
+                  type="button"
+                  className={styles.hudExitButton}
+                  onClick={exitGame}
+                >
+                  Exit game
+                </button>
+                <p id="deparkanoid-hint" className={styles.arcadeHint}>
+                  Mouse / Arrows: Move · Space / Click: Launch · Esc: Exit
+                </p>
+              </div>
+              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
+                <Deparkanoid onExit={exitGame} />
+              </div>
+            </>
+          ) : loadTimedOut ? (
             <div className={styles.timeoutFallback}>
               <h2>Crash Bandicoot</h2>
               <p role="status">
@@ -309,17 +333,25 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                     >
                       Play game
                     </button>
-                    <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
-                      Hosted by PS1FUN. The game loads after you choose to play.
-                    </p>
-                    <a
-                      href={ARCADE_GAME_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.hudLink}
-                    >
-                      Open game on PS1FUN
-                    </a>
+                    {selectedGame.id === "crash" ? (
+                      <>
+                        <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                          Hosted by PS1FUN. The game loads after you choose to play.
+                        </p>
+                        <a
+                          href={ARCADE_GAME_URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.hudLink}
+                        >
+                          Open game on PS1FUN
+                        </a>
+                      </>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                        5 Handcrafted Levels · Authentic Departure Mono · Ricochet Physics
+                      </p>
+                    )}
                   </>
                 ) : (
                   <div className={styles.disabledTag}>COMING SOON</div>

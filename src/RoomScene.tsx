@@ -7,6 +7,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  Object3D,
   PerspectiveCamera,
   PMREMGenerator,
   Raycaster,
@@ -16,6 +17,10 @@ import {
 } from "three";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "./arcadeProjection";
 import {
@@ -74,7 +79,13 @@ function RoomFurnishings() {
   return <primitive object={scene} />;
 }
 
-function ArcadeCabinet({ arcadeRef }: { arcadeRef?: RefObject<HTMLDivElement | null> }) {
+function ArcadeCabinet({
+  arcadeRef,
+  onLoaded,
+}: {
+  arcadeRef?: RefObject<HTMLDivElement | null>;
+  onLoaded?: (objs: Object3D[]) => void;
+}) {
   const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-machine.glb");
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
@@ -90,8 +101,9 @@ function ArcadeCabinet({ arcadeRef }: { arcadeRef?: RefObject<HTMLDivElement | n
         }
       }
     });
+    onLoaded?.([scene]);
     invalidate();
-  }, [scene, invalidate]);
+  }, [scene, invalidate, onLoaded]);
   return (
     <group name="ArcadeMachine" position={[4.495, 1.95, 0.35]} scale={[3.35, 3.5, 2.75]}>
       <primitive object={scene} rotation={[0, -Math.PI / 2, 0]} />
@@ -288,7 +300,13 @@ function ComputerMouse() {
   );
 }
 
-function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> }) {
+function Monitor({
+  desktopRef,
+  onLoaded,
+}: {
+  desktopRef: RefObject<HTMLDivElement | null>;
+  onLoaded?: (objs: Object3D[]) => void;
+}) {
   const { scene } = useLoader(GLTFLoader, "/assets/models/curved-monitor.glb");
   const invalidate = useThree((state) => state.invalidate);
   const surface = useMemo(() => {
@@ -314,8 +332,14 @@ function Monitor({ desktopRef }: { desktopRef: RefObject<HTMLDivElement | null> 
         }
       }
     });
+    const body = scene.getObjectByName("MonitorBody");
+    const screen = scene.getObjectByName("MonitorScreen");
+    const monitorMeshes: Object3D[] = [];
+    if (body) monitorMeshes.push(body);
+    if (screen) monitorMeshes.push(screen);
+    onLoaded?.(monitorMeshes.length > 0 ? monitorMeshes : [scene]);
     invalidate();
-  }, [scene, invalidate]);
+  }, [scene, invalidate, onLoaded]);
   return (
     <>
       <primitive object={scene} />
@@ -428,7 +452,7 @@ function CameraFocus({ destination, onHotspotHover }: {
   destination: RoomDestination;
   onHotspotHover: (hover: RoomHotspotHover | null) => void;
 }) {
-  const { camera, size, invalidate, gl, scene } = useThree();
+  const { camera, size, invalidate, gl, scene, raycaster } = useThree();
   const lookAt = useRef(overviewTarget.clone());
   const baseTarget = useRef(overviewTarget.clone());
   const hotspotRaycaster = useRef(new Raycaster());
@@ -450,6 +474,8 @@ function CameraFocus({ destination, onHotspotHover }: {
     const motionPreference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const finePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
     const canvas = gl.domElement;
+    raycaster.layers.enable(1);
+    hotspotRaycaster.current.layers.enable(1);
 
     const hotspots = scene.getObjectsByProperty("name", "focus-hotspot");
     const resetIdle = () => {
@@ -572,7 +598,7 @@ function CameraFocus({ destination, onHotspotHover }: {
       finePointer.removeEventListener("change", onPointerCapabilityChange);
       onHotspotHover(null);
     };
-  }, [camera, destination, size.width, size.height, gl, scene, invalidate, onHotspotHover]);
+  }, [camera, destination, size.width, size.height, gl, scene, raycaster, invalidate, onHotspotHover]);
 
   useFrame((_, delta) => {
     if (active.current) {
@@ -606,44 +632,88 @@ function CameraFocus({ destination, onHotspotHover }: {
   return null;
 }
 
-const HIGHLIGHT_STROKE = 0.035;
+function HotspotOutlinePass({ selectedObjects }: { selectedObjects: Object3D[] }) {
+  const { gl, scene, camera, size, invalidate } = useThree();
 
-function HotspotHighlight({ size }: { size: [number, number] }) {
-  const [width, height] = size;
-  const borders: { position: Triple; size: Triple }[] = [
-    { position: [0, height / 2, 0.004], size: [width, HIGHLIGHT_STROKE, 0.008] },
-    { position: [0, -height / 2, 0.004], size: [width, HIGHLIGHT_STROKE, 0.008] },
-    { position: [width / 2, 0, 0.004], size: [HIGHLIGHT_STROKE, height, 0.008] },
-    { position: [-width / 2, 0, 0.004], size: [HIGHLIGHT_STROKE, height, 0.008] },
-  ];
+  const passesRef = useRef<{
+    composer: EffectComposer;
+    outlinePass: OutlinePass;
+  } | null>(null);
 
-  return (
-    <>
-      <mesh raycast={() => {}} renderOrder={2}>
-        <planeGeometry args={size} />
-        <meshBasicMaterial color="#e3c992" transparent opacity={0.08} depthWrite={false} toneMapped={false} />
-      </mesh>
-      {borders.map((border, index) => (
-        <mesh key={index} position={border.position} raycast={() => {}} renderOrder={3}>
-          <boxGeometry args={border.size} />
-          <meshBasicMaterial color="#e3c992" transparent opacity={0.92} depthWrite={false} toneMapped={false} />
-        </mesh>
-      ))}
-    </>
-  );
+  if (passesRef.current == null) {
+    const composer = new EffectComposer(gl);
+    const renderPass = new RenderPass(scene, camera);
+    composer.addPass(renderPass);
+
+    const outlinePass = new OutlinePass(
+      new Vector2(size.width, size.height),
+      scene,
+      camera,
+    );
+    outlinePass.edgeStrength = 4.2;
+    outlinePass.edgeGlow = 0.7;
+    outlinePass.edgeThickness = 2.0;
+    outlinePass.pulsePeriod = 0;
+    outlinePass.visibleEdgeColor.set("#ffffff");
+    outlinePass.hiddenEdgeColor.set("#000000");
+    composer.addPass(outlinePass);
+
+    const outputPass = new OutputPass();
+    composer.addPass(outputPass);
+
+    passesRef.current = { composer, outlinePass };
+  }
+
+  useEffect(() => {
+    const passes = passesRef.current;
+    if (!passes) return;
+    const pr = gl.getPixelRatio();
+    passes.composer.setPixelRatio(pr);
+    passes.composer.setSize(size.width, size.height);
+    passes.outlinePass.resolution.set(size.width * pr, size.height * pr);
+    invalidate();
+  }, [size.width, size.height, gl, invalidate]);
+
+  useEffect(() => {
+    const passes = passesRef.current;
+    if (!passes) return;
+    passes.outlinePass.selectedObjects = selectedObjects;
+    invalidate();
+  }, [selectedObjects, invalidate]);
+
+  useEffect(() => {
+    return () => {
+      passesRef.current?.composer.dispose();
+      passesRef.current = null;
+    };
+  }, []);
+
+  useFrame(() => {
+    passesRef.current?.composer.render();
+  }, 1);
+
+  return null;
 }
 
-function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, highlighted, onNavigate }: {
+function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, onNavigate }: {
   destination: RoomHotspot;
   position: Triple;
   rotation?: Triple;
   size: [number, number];
-  highlighted: boolean;
   onNavigate: (destination: RoomDestination) => void;
 }) {
+  const meshRef = useRef<Mesh>(null);
+
+  useLayoutEffect(() => {
+    if (meshRef.current) {
+      meshRef.current.layers.set(1);
+    }
+  }, []);
+
   return (
     <group position={position} rotation={rotation}>
       <mesh
+        ref={meshRef}
         name="focus-hotspot"
         userData={{ destination }}
         onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
@@ -651,11 +721,6 @@ function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, highl
         <planeGeometry args={size} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
       </mesh>
-      {highlighted && (
-        <group position={[0, 0, 0.02]}>
-          <HotspotHighlight size={size} />
-        </group>
-      )}
     </group>
   );
 }
@@ -675,6 +740,15 @@ function Study({ onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
   arcadeRef?: RefObject<HTMLDivElement | null>;
   highlightedHotspot: RoomHotspot | null;
 }) {
+  const [monitorObjects, setMonitorObjects] = useState<Object3D[]>([]);
+  const [arcadeObjects, setArcadeObjects] = useState<Object3D[]>([]);
+
+  const selectedObjects = useMemo<Object3D[]>(() => {
+    if (highlightedHotspot === "monitor") return monitorObjects;
+    if (highlightedHotspot === "arcade") return arcadeObjects;
+    return [];
+  }, [highlightedHotspot, monitorObjects, arcadeObjects]);
+
   return (
     <>
       <color attach="background" args={["#080614"]} />
@@ -712,19 +786,20 @@ function Study({ onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
         position={monitorHotspotPosition}
         rotation={[0, MONITOR_YAW, 0]}
         size={[4.231, 2.136]}
-        highlighted={highlightedHotspot === "monitor"}
         onNavigate={onNavigate}
       />
 
       <Suspense fallback={null}>
         <RoomFurnishings />
-        <Monitor desktopRef={desktopRef} />
+        <Monitor desktopRef={desktopRef} onLoaded={setMonitorObjects} />
         <MousePad />
         <CompactKeyboard />
         <ComputerMouse />
-        <ArcadeCabinet arcadeRef={arcadeRef} />
+        <ArcadeCabinet arcadeRef={arcadeRef} onLoaded={setArcadeObjects} />
       </Suspense>
-      <FocusHotspot destination="arcade" position={[4.495, 2.5, 1.65]} size={[3.1, 6.4]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
+      <FocusHotspot destination="arcade" position={[4.495, 2.5, 1.65]} size={[3.1, 6.4]} onNavigate={onNavigate} />
+
+      <HotspotOutlinePass selectedObjects={selectedObjects} />
     </>
   );
 }

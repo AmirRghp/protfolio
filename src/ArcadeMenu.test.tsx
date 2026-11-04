@@ -38,8 +38,8 @@ describe("ArcadeMenu component", () => {
     expect(snake?.badge).toBe("COMING SOON");
 
     const deparkanoid = ARCADE_GAMES.find((g) => g.id === "deparkanoid");
-    expect(deparkanoid?.playable).toBe(false);
-    expect(deparkanoid?.badge).toBe("COMING SOON");
+    expect(deparkanoid?.playable).toBe(true);
+    expect(deparkanoid?.badge).toBe("PLAY");
   });
 
   it("defines the authentic PS1FUN crash bandicoot url", () => {
