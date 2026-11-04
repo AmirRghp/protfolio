@@ -51,13 +51,13 @@ export function roomOverviewPose(aspect: number) {
 }
 
 /**
- * Cursor-driven camera offset in the zoomed-in overview, giving a lush horizontal and vertical
- * glide across the desk similar to the Shopify BFCM 2025 interactive scene.
+ * Cursor-driven camera offset in the overview, calibrated to PRD R15 limits (±0.24, ±0.12)
+ * so elements remain in view without clipping across tablet and desktop viewports.
  */
 export function roomParallaxOffset(x: number, y: number) {
   return {
-    x: Math.max(-1, Math.min(1, x)) * 0.56,
-    y: Math.max(-1, Math.min(1, y)) * 0.24,
+    x: Math.max(-1, Math.min(1, x)) * 0.24,
+    y: Math.max(-1, Math.min(1, y)) * 0.12,
   };
 }
 
@@ -150,73 +150,3 @@ export function easeCameraTransition(progress: number): number {
   const t = Math.max(0, Math.min(1, progress));
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
-
-/** Slightly heavier spring time constant for the mechanical keyboard's secondary sway. */
-export const ROOM_KEYBOARD_SWAY_SMOOTH_TIME = 0.145;
-
-/** Lighter, more agile spring time constant for the mouse's secondary sway. */
-export const ROOM_MOUSE_SWAY_SMOOTH_TIME = 0.105;
-
-export type DeskPropSway = {
-  dx: number;
-  dz: number;
-  dPitch: number;
-  dYaw: number;
-  dRoll: number;
-};
-
-/**
- * Advances the spring state for a desk peripheral (keyboard or mouse) and computes its subtle
- * positional and rotational sway from both spring displacement and instantaneous velocity.
- */
-export function stepDeskPropSway(
-  prop: "keyboard" | "mouse",
-  state: IdleParallaxState,
-  target: { x: number; y: number },
-  delta: number,
-): { state: IdleParallaxState & { settled: boolean }; sway: DeskPropSway } {
-  const isReturningToCenter = target.x === 0 && target.y === 0;
-  const activeSmoothTime =
-    prop === "keyboard" ? ROOM_KEYBOARD_SWAY_SMOOTH_TIME : ROOM_MOUSE_SWAY_SMOOTH_TIME;
-  const nextState = stepIdleParallax(
-    state,
-    target,
-    delta,
-    isReturningToCenter ? ROOM_PARALLAX_RETURN_SMOOTH_TIME : activeSmoothTime,
-  );
-  return {
-    state: nextState,
-    sway: deskPropSwayTransform(prop, nextState),
-  };
-}
-
-/**
- * Maps a peripheral's spring displacement and velocity into subtle tabletop translation and
- * gasket-like micro-tilt so the keyboard and mouse feel tactile as the camera moves.
- */
-export function deskPropSwayTransform(
-  prop: "keyboard" | "mouse",
-  state: IdleParallaxState,
-): DeskPropSway {
-  if (state.x === 0 && state.y === 0 && state.vx === 0 && state.vy === 0) {
-    return { dx: 0, dz: 0, dPitch: 0, dYaw: 0, dRoll: 0 };
-  }
-  if (prop === "keyboard") {
-    return {
-      dx: state.x * 0.18,
-      dz: -state.y * 0.22,
-      dPitch: state.y * 0.08 + state.vy * 0.02,
-      dYaw: state.x * 0.14 + state.vx * 0.015,
-      dRoll: -state.x * 0.06 - state.vx * 0.018,
-    };
-  }
-  return {
-    dx: state.x * 0.28,
-    dz: -state.y * 0.32,
-    dPitch: state.y * 0.1 + state.vy * 0.025,
-    dYaw: -state.x * 0.22 - state.vx * 0.022,
-    dRoll: -state.x * 0.08 - state.vx * 0.022,
-  };
-}
-
-

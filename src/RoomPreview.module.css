@@ -35,6 +35,87 @@
   color: #fde29b;
 }
 
+.destinations {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.destinations button {
+  min-height: 2.25rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid rgb(192 132 252 / 58%);
+  border-radius: 999px;
+  color: #f3f1ff;
+  background: rgb(12 9 28 / 86%);
+  box-shadow:
+    0 0 14px rgb(192 38 211 / 28%),
+    inset 0 0 8px rgb(192 132 252 / 14%),
+    0 6px 18px rgb(0 0 0 / 45%);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.destinations button:nth-child(1) {
+  border-color: rgb(236 72 153 / 68%);
+  box-shadow:
+    0 0 15px rgb(236 72 153 / 32%),
+    inset 0 0 8px rgb(236 72 153 / 14%),
+    0 6px 18px rgb(0 0 0 / 45%);
+}
+
+.destinations button:nth-child(2) {
+  border-color: rgb(168 85 247 / 64%);
+  box-shadow:
+    0 0 15px rgb(168 85 247 / 28%),
+    inset 0 0 8px rgb(56 189 248 / 14%),
+    0 6px 18px rgb(0 0 0 / 45%);
+}
+
+.destinations button:nth-child(3) {
+  border-color: rgb(0 229 255 / 68%);
+  box-shadow:
+    0 0 15px rgb(0 229 255 / 32%),
+    inset 0 0 8px rgb(0 229 255 / 14%),
+    0 6px 18px rgb(0 0 0 / 45%);
+}
+
+.destinations button:hover {
+  border-color: rgb(56 189 248 / 88%);
+  background: rgb(20 15 44 / 94%);
+  box-shadow:
+    0 0 18px rgb(56 189 248 / 38%),
+    0 8px 22px rgb(0 0 0 / 48%);
+}
+
+.destinations button:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.destinations button[aria-pressed="true"] {
+  border-color: #38bdf8;
+  color: #7dd3fc;
+  background: rgb(22 16 48 / 94%);
+  box-shadow:
+    0 0 20px rgb(56 189 248 / 42%),
+    0 6px 18px rgb(0 0 0 / 48%);
+}
+
+.destinations button:active {
+  transform: scale(0.98);
+}
+
 .backButton {
   position: absolute;
   top: clamp(1rem, 2.5vw, 1.5rem);
@@ -284,6 +365,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .header a,
+  .destinations button,
   .backButton {
     transition: none;
   }

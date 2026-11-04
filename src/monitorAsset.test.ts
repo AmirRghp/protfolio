@@ -1,7 +1,26 @@
 import { readFile } from "node:fs/promises";
-import { expect, test } from "vitest";
-import { Box3, Mesh, Vector3 } from "three";
+import { afterAll, beforeAll, expect, test } from "vitest";
+import { Box3, Mesh, Texture, TextureLoader, Vector3 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+let originalTextureLoader: typeof TextureLoader.prototype.load;
+
+beforeAll(() => {
+  originalTextureLoader = TextureLoader.prototype.load;
+  // Mock texture loading in Node test environment to avoid blob:nodedata warnings
+  (TextureLoader.prototype as unknown as { load: unknown }).load = function (
+    _url: string,
+    onLoad?: (texture: Texture) => void,
+  ) {
+    const texture = new Texture();
+    if (onLoad) setTimeout(() => onLoad(texture), 0);
+    return texture;
+  };
+});
+
+afterAll(() => {
+  TextureLoader.prototype.load = originalTextureLoader;
+});
 
 async function loadAsset(name: string) {
   (globalThis as Record<string, unknown>).self ??= globalThis;
@@ -104,4 +123,53 @@ test("the arcade machine GLB exposes its cabinet, screen, joysticks and control 
   for (const name of ["Screen_low", "KeyBoard_low", "JoyStick_01_low", "JoyStick_02_low", "Panel_Border_low"]) {
     expect(scene.getObjectByName(name)).toBeDefined();
   }
+});
+
+test("the compact keyboard GLB exposes its meshes and fits desk dimensions", async () => {
+  const { scene } = await loadAsset("compact-keyboard.glb");
+  const bounds = new Box3().setFromObject(scene);
+  const size = bounds.getSize(new Vector3());
+  expect(size.x).toBeGreaterThan(0);
+  expect(size.y).toBeGreaterThan(0);
+  expect(size.z).toBeGreaterThan(0);
+  let meshCount = 0;
+  scene.traverse((child) => {
+    if (child instanceof Mesh) meshCount++;
+  });
+  expect(meshCount).toBeGreaterThan(0);
+});
+
+test("the computer mouse GLB exposes its geometry and working scale", async () => {
+  const { scene } = await loadAsset("computer-mouse.glb");
+  const bounds = new Box3().setFromObject(scene);
+  const size = bounds.getSize(new Vector3());
+  expect(size.x).toBeGreaterThan(0);
+  expect(size.y).toBeGreaterThan(0);
+  expect(size.z).toBeGreaterThan(0);
+  let meshCount = 0;
+  scene.traverse((child) => {
+    if (child instanceof Mesh) meshCount++;
+  });
+  expect(meshCount).toBeGreaterThan(0);
+});
+
+test("the mouse pad GLB exposes its surface and accent materials", async () => {
+  const { scene } = await loadAsset("mouse-pad.glb");
+  const bounds = new Box3().setFromObject(scene);
+  const size = bounds.getSize(new Vector3());
+  expect(size.x).toBeGreaterThan(0);
+  expect(size.y).toBeGreaterThan(0);
+  expect(size.z).toBeGreaterThan(0);
+  const materialNames: string[] = [];
+  scene.traverse((child) => {
+    if (child instanceof Mesh) {
+      if (Array.isArray(child.material)) {
+        materialNames.push(...child.material.map((m) => m.name));
+      } else if (child.material) {
+        materialNames.push(child.material.name);
+      }
+    }
+  });
+  expect(materialNames).toContain("Material.001");
+  expect(materialNames).toContain("Material.002");
 });

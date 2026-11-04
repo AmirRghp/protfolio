@@ -15,7 +15,7 @@ globalThis.FileReader ??= class {
   }
 };
 
-const wood = new THREE.MeshStandardMaterial({ color: "#89552e", roughness: 0.68 });
+const wood = new THREE.MeshStandardMaterial({ color: "#1e1b2e", roughness: 0.68 });
 const boardEdge = new THREE.MeshStandardMaterial({ color: "#51321d", roughness: 0.82 });
 const deskSurface = new THREE.MeshStandardMaterial({ color: "#513a2c", roughness: 0.76 });
 

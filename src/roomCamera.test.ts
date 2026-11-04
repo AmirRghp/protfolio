@@ -13,7 +13,6 @@ import {
   roomOverviewPose,
   roomParallaxOffset,
   roomParallaxTargetOffset,
-  stepDeskPropSway,
   stepIdleParallax,
 } from "./roomCamera";
 
@@ -96,12 +95,12 @@ describe("fixed room framing", () => {
 
   it("limits idle pointer movement and keeps its center neutral", () => {
     expect(roomParallaxOffset(0, 0)).toEqual({ x: 0, y: 0 });
-    expect(roomParallaxOffset(1, 1)).toEqual({ x: 0.56, y: 0.24 });
-    expect(roomParallaxOffset(-2, -3)).toEqual({ x: -0.56, y: -0.24 });
+    expect(roomParallaxOffset(1, 1)).toEqual({ x: 0.24, y: 0.12 });
+    expect(roomParallaxOffset(-2, -3)).toEqual({ x: -0.24, y: -0.12 });
     expect(roomParallaxTargetOffset({ x: 0, y: 0 })).toEqual({ x: 0, y: 0 });
-    expect(roomParallaxTargetOffset({ x: 0.56, y: 0.24 })).toEqual({
-      x: 0.56 * 1.15,
-      y: 0.24 * 0.85,
+    expect(roomParallaxTargetOffset({ x: 0.24, y: 0.12 })).toEqual({
+      x: 0.24 * 1.15,
+      y: 0.12 * 0.85,
     });
   });
 
@@ -146,38 +145,5 @@ describe("fixed room framing", () => {
     expect(easeCameraTransition(1)).toBe(1);
     expect(easeCameraTransition(0.05)).toBeLessThan(0.01);
     expect(dampValue(0.24, 0.24, 0, 0.12, 1 / 60).settled).toBe(true);
-  });
-
-  it("sways the keyboard and mouse with distinct spring inertia and settles cleanly to rest", () => {
-    const target = roomParallaxOffset(1, 1);
-    let kbState = { x: 0, y: 0, vx: 0, vy: 0 };
-    let mouseState = { x: 0, y: 0, vx: 0, vy: 0 };
-
-    const kbStep1 = stepDeskPropSway("keyboard", kbState, target, 1 / 60);
-    const mouseStep1 = stepDeskPropSway("mouse", mouseState, target, 1 / 60);
-
-    // The lighter mouse responds faster and glides further than the heavier mechanical keyboard.
-    expect(Math.abs(mouseStep1.sway.dx)).toBeGreaterThan(Math.abs(kbStep1.sway.dx));
-    expect(Math.abs(mouseStep1.sway.dYaw)).toBeGreaterThan(0);
-    expect(Math.abs(kbStep1.sway.dRoll)).toBeGreaterThan(0);
-
-    kbState = kbStep1.state;
-    mouseState = mouseStep1.state;
-    for (let i = 0; i < 45; i++) {
-      kbState = stepDeskPropSway("keyboard", kbState, target, 1 / 60).state;
-      mouseState = stepDeskPropSway("mouse", mouseState, target, 1 / 60).state;
-    }
-
-    // Returning to neutral center settles both props to exact zero sway within 280ms.
-    let kbReturn = stepDeskPropSway("keyboard", kbState, { x: 0, y: 0 }, 1 / 60);
-    let mouseReturn = stepDeskPropSway("mouse", mouseState, { x: 0, y: 0 }, 1 / 60);
-    for (let i = 0; i < 16; i++) {
-      kbReturn = stepDeskPropSway("keyboard", kbReturn.state, { x: 0, y: 0 }, 1 / 60);
-      mouseReturn = stepDeskPropSway("mouse", mouseReturn.state, { x: 0, y: 0 }, 1 / 60);
-    }
-    expect(kbReturn.state.settled).toBe(true);
-    expect(mouseReturn.state.settled).toBe(true);
-    expect(kbReturn.sway).toEqual({ dx: 0, dz: 0, dPitch: 0, dYaw: 0, dRoll: 0 });
-    expect(mouseReturn.sway).toEqual({ dx: 0, dz: 0, dPitch: 0, dYaw: 0, dRoll: 0 });
   });
 });

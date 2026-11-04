@@ -7,7 +7,7 @@ type Project = PortfolioContent["projects"][number];
 /** How long the embedded page may take before the window reports that it cannot be shown. */
 const EMBED_TIMEOUT_MS = 6000;
 
-type EmbedState = "preview" | "loading" | "failed";
+type EmbedState = "preview" | "loading" | "loaded" | "failed";
 
 /** The address without its scheme, as a browser shows it. */
 function displayUrl(url: string): string {
@@ -56,6 +56,7 @@ export function RadarGlyph() {
 /** The project app of the monitor desktop: the address of the project and a summary of it. */
 export default function ProjectApp({ project, icon }: { project: Project; icon: ReactNode }) {
   const target = projectTarget(project);
+  const isGitHub = /^https?:\/\/(www\.)?github\.com/i.test(target);
   const [embedState, setEmbedState] = useState<EmbedState>("preview");
   const timeout = useRef<number | null>(null);
 
@@ -74,6 +75,7 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
       window.clearTimeout(timeout.current);
       timeout.current = null;
     }
+    setEmbedState("loaded");
   };
 
   return (
@@ -86,7 +88,7 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
         </a>
       </div>
 
-      {embedState === "loading" && (
+      {(embedState === "loading" || embedState === "loaded") && (
         <div className={styles.embed}>
           <iframe
             className={styles.frame}
@@ -124,6 +126,11 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
             <h2 className={styles.title}>{project.title}</h2>
             <p className={styles.brief}>{project.brief}</p>
           </div>
+          {isGitHub && (
+            <p className={styles.embedNotice}>
+              GitHub repositories block inline embedded viewing via security policies. We recommend opening directly in a new tab.
+            </p>
+          )}
           {project.highlights && (
             <ul className={styles.chips}>
               {project.highlights.map((highlight) => <li key={highlight} className={styles.chip}>{highlight}</li>)}

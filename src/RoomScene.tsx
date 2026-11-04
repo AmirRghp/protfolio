@@ -47,13 +47,19 @@ function RoomFurnishings() {
         object.receiveShadow = true;
         if (object.material instanceof MeshStandardMaterial) {
           if (object.name === "DeskTop") {
+            object.material.color.set("#15181e");
             object.material.roughness = 0.62;
             object.material.metalness = 0.06;
             object.material.envMapIntensity = 0.85;
           } else if (object.name === "DeskFrontEdge") {
+            object.material.color.set("#181b22");
             object.material.roughness = 0.56;
             object.material.metalness = 0.08;
             object.material.envMapIntensity = 0.9;
+          } else if (object.name === "Shelf1" || object.name === "Shelf2") {
+            object.material.color.set("#1a1824");
+            object.material.roughness = 0.65;
+            object.material.envMapIntensity = 0.8;
           } else {
             object.material.envMapIntensity = 0.75;
           }
@@ -106,9 +112,11 @@ function MousePad() {
             object.material.metalness = 0.04;
             object.material.envMapIntensity = 0.85;
           } else if (object.material.name === "Material.002") {
-            object.material.color.set("#a32828");
-            object.material.roughness = 0.65;
-            object.material.metalness = 0.05;
+            object.material.color.set("#00e5ff");
+            object.material.emissive.set("#00e5ff");
+            object.material.emissiveIntensity = 0.8;
+            object.material.roughness = 0.45;
+            object.material.metalness = 0.1;
             object.material.envMapIntensity = 0.9;
           }
           object.material.needsUpdate = true;
@@ -140,6 +148,7 @@ function CompactKeyboard() {
   const { scene } = useLoader(GLTFLoader, "/assets/models/compact-keyboard.glb");
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
+    const createdMaterials: MeshStandardMaterial[] = [];
     scene.traverse((object) => {
       if (object.name === "Sketchfab_model") {
         // Clear the Sketchfab showcase tilt matrix so the keyboard rests flat on the desk plane.
@@ -155,17 +164,20 @@ function CompactKeyboard() {
         object.castShadow = false;
         object.receiveShadow = true;
         if (object.material instanceof MeshBasicMaterial) {
-          const isBase = object.material.name === "base";
+          const oldMat = object.material;
+          const isBase = oldMat.name === "base";
           const upgraded = new MeshStandardMaterial({
-            name: object.material.name,
-            map: object.material.map,
-            color: object.material.color.clone(),
+            name: oldMat.name,
+            map: oldMat.map,
+            color: oldMat.color.clone(),
             roughness: isBase ? 0.46 : 0.54,
             metalness: isBase ? 0.18 : 0.04,
             envMapIntensity: 0.9,
             side: DoubleSide,
           });
+          createdMaterials.push(upgraded);
           object.material = upgraded;
+          oldMat.dispose();
         } else if (object.material instanceof MeshStandardMaterial) {
           object.material.envMapIntensity = 0.9;
           object.material.needsUpdate = true;
@@ -173,6 +185,11 @@ function CompactKeyboard() {
       }
     });
     invalidate();
+    return () => {
+      for (const mat of createdMaterials) {
+        mat.dispose();
+      }
+    };
   }, [scene, invalidate]);
 
   return (
@@ -223,7 +240,7 @@ function ComputerMouse() {
   }, [scene, invalidate]);
 
   return (
-    <group name="ComputerMouse" position={[-0.68, 1.906, 1.44]} rotation={[0, 0.48, 0]}>
+    <group name="ComputerMouse" position={[-0.68, 1.906, 1.44]} rotation={[0, 0.48 + Math.PI, 0]}>
       <mesh position={[0, 0.003, 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.26, 24]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
@@ -370,7 +387,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
 }
 
 function isRoomHotspot(value: unknown): value is RoomHotspot {
-  return value === "monitor" || value === "arcade";
+  return value === "monitor" || value === "board" || value === "arcade";
 }
 
 function CameraFocus({ destination, onHotspotHover }: {
@@ -625,13 +642,13 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
 }) {
   return (
     <>
-      <color attach="background" args={["#0e1012"]} />
-      <ambientLight intensity={0.34} color="#dcd5c6" />
-      <hemisphereLight args={["#9bb2d0", "#2c231c", 0.58]} />
+      <color attach="background" args={["#080614"]} />
+      <ambientLight intensity={0.38} color="#1b1532" />
+      <hemisphereLight args={["#38bdf8", "#120e24", 0.45]} />
       <directionalLight
         position={[1.8, 7.5, 6.2]}
-        intensity={1.75}
-        color="#f3dfbe"
+        intensity={1.4}
+        color="#dbeafe"
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.0005}
@@ -641,12 +658,18 @@ function Study({ onNavigate, desktopRef, highlightedHotspot }: {
         shadow-camera-top={6}
         shadow-camera-bottom={-4}
       />
-      <pointLight position={[-2.4, 5.8, 3.2]} color="#f5c78e" intensity={6.5} distance={11} decay={2} />
-      <pointLight position={[2.4, 5.8, 3.2]} color="#8ec5ff" intensity={5.0} distance={11} decay={2} />
+      <pointLight position={[-2.4, 5.8, 3.2]} color="#c084fc" intensity={4.5} distance={11} decay={2} />
+      <pointLight position={[2.4, 5.8, 3.2]} color="#38bdf8" intensity={4.5} distance={11} decay={2} />
+
+      {/* Under-shelf neon LED illumination (cyan to magenta) */}
+      <pointLight position={[1.9, 4.05, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[3.2, 4.05, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[1.9, 5.30, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[3.2, 5.30, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
 
       <mesh position={[0, 3.2, -1.4]} receiveShadow>
         <planeGeometry args={[30, 24]} />
-        <meshStandardMaterial color="#1e2022" roughness={0.92} metalness={0.02} />
+        <meshStandardMaterial color="#120e24" roughness={0.92} metalness={0.02} />
       </mesh>
 
       <FocusHotspot
@@ -722,8 +745,10 @@ export default function RoomScene({ destination, onNavigate, onHotspotHover, des
         gl.toneMappingExposure = 1.12;
         if (!isSoftwareGl) {
           const pmremGenerator = new PMREMGenerator(gl);
-          const envTarget = pmremGenerator.fromScene(new RoomEnvironment(), 0.04);
+          const roomEnv = new RoomEnvironment();
+          const envTarget = pmremGenerator.fromScene(roomEnv, 0.04);
           pmremGenerator.dispose();
+          roomEnv.dispose();
           scene.environment = envTarget.texture;
           scene.environmentIntensity = 0.45;
         }

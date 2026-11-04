@@ -40,25 +40,16 @@ export default function ProjectBoard({ projects, selectedProjectId, onSelectProj
   }, [selectedProject]);
 
   return (
-    <dialog ref={dialog} className={styles.panel} aria-labelledby="project-board-title"
+    <dialog
+      ref={dialog}
+      className={styles.panel}
+      aria-labelledby="project-board-title"
       onCancel={(event) => {
         event.preventDefault();
         if (selectedProject) onSelectProject(null);
         else onClose();
       }}
-      onKeyDown={(event) => {
-        if (event.key !== "Tab") return;
-        const controls = [...event.currentTarget.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]')];
-        const first = controls[0];
-        const last = controls[controls.length - 1];
-        if (event.shiftKey && (document.activeElement === first || document.activeElement === heading.current)) {
-          event.preventDefault();
-          last?.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first?.focus();
-        }
-      }}>
+    >
       <header className={styles.header}>
         <h2 id="project-board-title">Project board</h2>
         <button type="button" onClick={onClose}>Close board · Back to room</button>

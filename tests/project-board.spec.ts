@@ -22,7 +22,7 @@ test("project board supports selection, hierarchical return and keyboard focus",
   await expect(project).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(panel).not.toBeVisible();
-  await expect(page.locator('[class*="preview"]')).toBeFocused();
+  await expect(page.getByRole("button", { name: "Project board", exact: true })).toBeFocused();
 });
 
 test("project board remains readable and scrollable at target widths", async ({ page }, testInfo) => {

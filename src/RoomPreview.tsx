@@ -105,8 +105,9 @@ function ArcadePanel() {
                 title="Crash Bandicoot on PS1FUN"
                 src={ARCADE_GAME_URL}
                 scrolling="no"
-                allow="fullscreen"
+                allow="fullscreen; gamepad; autoplay"
                 allowFullScreen
+                sandbox="allow-scripts allow-same-origin"
                 referrerPolicy="no-referrer"
                 aria-describedby="arcade-embed-hint"
                 onLoad={handleFrameLoad}
@@ -206,7 +207,12 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     };
   }, [hideHotspotHint]);
 
-  // A destination close returns focus to the room overview.
+  const returnToRoom = useCallback((from: Exclude<RoomDestination, "room">) => {
+    returnFocusDestination.current = from;
+    onNavigate("room");
+  }, [onNavigate]);
+
+  // A destination close returns the keyboard to the control that opened it, or to the preview container.
   useEffect(() => {
     if (navigation.destination !== "room") {
       returnFocusDestination.current = null;
@@ -215,7 +221,12 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     const destination = returnFocusDestination.current;
     if (!destination) return;
     returnFocusDestination.current = null;
-    previewRef.current?.focus({ preventScroll: true });
+    const trigger = document.getElementById(`destination-${destination}`);
+    if (trigger) {
+      trigger.focus({ preventScroll: true });
+    } else {
+      previewRef.current?.focus({ preventScroll: true });
+    }
   }, [navigation.destination]);
 
   // When a destination is focused, Escape key returns to room (if not handled by dialog like board).
@@ -228,7 +239,7 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [focusedDestination]);
+  }, [focusedDestination, returnToRoom]);
 
   // The desktop is the monitor destination. When the scene is unavailable its hidden layer must
   // not take the focus, so the preview container keeps it instead.
@@ -240,11 +251,6 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
     }
     desktopRef.current?.focus({ preventScroll: true });
   }, [navigation.destination, sceneFailed]);
-
-  const returnToRoom = (from: Exclude<RoomDestination, "room">) => {
-    returnFocusDestination.current = from;
-    onNavigate("room");
-  };
 
   return (
     <section ref={previewRef} className={styles.preview} tabIndex={-1} aria-label="Study room overview">
@@ -262,6 +268,19 @@ export default function RoomPreview({ navigation, onNavigate, onSelectProject }:
             <span>AG / {portfolioContent.owner.role}</span>
             <a href="#name">Read portfolio</a>
           </div>
+          <nav className={styles.destinations} aria-label="Study destinations">
+            {destinations.map(({ id, label }) => (
+              <button
+                id={`destination-${id}`}
+                key={id}
+                type="button"
+                aria-pressed={navigation.destination === id}
+                onClick={() => navigate(id)}
+              >
+                {label}
+              </button>
+            ))}
+          </nav>
         </header>
       )}
       <div className={styles.scene}>

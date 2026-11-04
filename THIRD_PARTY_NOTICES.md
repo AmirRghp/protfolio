@@ -51,5 +51,11 @@ https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md.
 
 ## 3D models
 
-The room furnishings, the arcade cabinet and the monitor are attributed in
-`public/assets/models/ATTRIBUTION.md`.
+The 3D assets used in the room workstation and scene are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+- **curved-monitor.glb**: “Computer Monitor Lowpoly Model” by Marco Zakaria.
+- **compact-keyboard.glb**: “Compact Keyboard – Custom 75% Gaming Keyboard” by Saksham Tale.
+- **computer-mouse.glb**: “Low poly - Computer Mouse [FREE] Download” by IQINISO.
+- **mouse-pad.glb**: “Mouse Pad / Keyboard Pad” by mfk.
+- **arcade-machine.glb**: “Arcade Machine” by Oonie11.
+
+Detailed attribution, creators, sources, and integration modifications are recorded in `public/assets/models/ATTRIBUTION.md`.

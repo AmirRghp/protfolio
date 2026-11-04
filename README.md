@@ -45,8 +45,9 @@ npm run test:e2e
 
 ## صحنه و دارایی‌ها
 
-- `public/assets/models/arcade-cabinet.glb` مدل کابینت آرکید است؛ اسکریپت ساخت آن `scripts/build-arcade-cabinet.mjs` است.
+- `public/assets/models/arcade-machine.glb` مدل دستگاه آرکید است؛ منبع، مجوز و تغییرات در `public/assets/models/ATTRIBUTION.md` ثبت شده‌اند.
 - `public/assets/models/curved-monitor.glb` مدل مانیتور میز است؛ اسکریپت آماده‌سازی آن `scripts/prepare-curved-monitor.mjs` است و منبع، مجوز و تغییرات در `public/assets/models/ATTRIBUTION.md` ثبت شده‌اند.
+- مدل‌های تجهیزات میز شامل `public/assets/models/compact-keyboard.glb` (کیبورد فشرده)، `public/assets/models/computer-mouse.glb` (موس کامپیوتر) و `public/assets/models/mouse-pad.glb` (موس‌پد نئونی) هستند؛ مشخصات و مجوز CC BY 4.0 آن‌ها در `public/assets/models/ATTRIBUTION.md` مستند شده است.
 - تصویر مرجع طراحی اتاق در `docs/hero-reference.png` نگهداری می‌شود؛ این تصویر مدل سه‌بعدی یا مدرک رفتار برنامه محسوب نمی‌شود.
 - صحنه به‌صورت chunk جداگانه بارگیری می‌شود. اگر WebGL یا بارگیری صحنه/مدل شکست بخورد، محتوای HTML و کنترل‌های پورتفولیو باید همچنان در دسترس بمانند.
 
