@@ -154,12 +154,6 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     desktopRef.current?.focus({ preventScroll: true });
   }, [navigation.destination, sceneFailed]);
 
-  useEffect(() => {
-    if (navigation.destination !== "arcade") return;
-    if (sceneFailed) {
-      previewRef.current?.focus({ preventScroll: true });
-    }
-  }, [navigation.destination, sceneFailed]);
 
   return (
     <section ref={previewRef} className={styles.preview} tabIndex={-1} aria-label="Study room overview">
@@ -195,17 +189,6 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           </Suspense>
         </SceneBoundary>
         <div
-          className={styles.arcadeLayer}
-          data-active={navigation.destination === "arcade" && !sceneFailed}
-          inert={navigation.destination !== "arcade" || sceneFailed}
-        >
-          <ArcadeMenu
-            ref={arcadeRef}
-            active={navigation.destination === "arcade" && !sceneFailed}
-            onExit={() => returnToRoom("arcade")}
-          />
-        </div>
-        <div
           className={styles.desktopLayer}
           data-active={navigation.destination === "monitor" && !sceneFailed}
           inert={navigation.destination !== "monitor" || sceneFailed}
@@ -217,6 +200,18 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
             openAppId={openAppId}
             onOpenAppChange={setOpenAppId}
             onExit={() => returnToRoom("monitor")}
+          />
+        </div>
+        <div
+          className={styles.arcadeLayer}
+          data-active={navigation.destination === "arcade"}
+          data-scene-failed={sceneFailed}
+          inert={navigation.destination !== "arcade"}
+        >
+          <ArcadeMenu
+            ref={arcadeRef}
+            active={navigation.destination === "arcade"}
+            onExit={() => returnToRoom("arcade")}
           />
         </div>
         <div ref={hintRef} className={styles.hotspotHint} data-visible="false" aria-hidden="true" />

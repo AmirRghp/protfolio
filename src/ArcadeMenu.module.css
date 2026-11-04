@@ -14,6 +14,7 @@
   box-sizing: border-box;
 }
 
+.arcadeScreenContainer[data-active="true"],
 .arcadeScreenContainer[data-projected="true"] {
   visibility: visible;
 }
@@ -431,6 +432,17 @@
   letter-spacing: 0.06em;
 }
 
+.arcadeHint {
+  margin: 0;
+  font-size: 0.65rem;
+  color: rgba(255, 180, 110, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.arcadeViewport {
+  overflow: hidden;
+}
+
 .hudLink {
   color: #ff9944;
   font-size: 0.64rem;
@@ -490,3 +502,53 @@
   line-height: 1.45;
   color: rgba(255, 180, 110, 0.85);
 }
+
+@container (max-width: 480px) {
+  .screenBezel {
+    padding: 0.45rem 0.55rem;
+  }
+
+  .outerFrame {
+    padding: 0.35rem;
+  }
+
+  .topTabs {
+    display: none;
+  }
+
+  .mainSection {
+    gap: 0.4rem;
+  }
+
+  .previewArtBox {
+    display: none;
+  }
+
+  .previewDescription {
+    display: none;
+  }
+
+  .previewControls {
+    display: none;
+  }
+
+  .bottomCards {
+    display: none;
+  }
+
+  .playButton {
+    padding: 0.35rem 0.6rem;
+    font-size: 0.72rem;
+  }
+
+  .gamesList {
+    gap: 0.2rem;
+    padding: 0.2rem;
+  }
+
+  .gameItem {
+    padding: 0.35rem 0.4rem;
+    font-size: 0.68rem;
+  }
+}
+

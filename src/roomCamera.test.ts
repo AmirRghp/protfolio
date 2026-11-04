@@ -152,9 +152,9 @@ describe("fixed room framing", () => {
     for (const [width, height] of [[768, 900], [1024, 768], [1440, 900], [1920, 1080]]) {
       const aspect = width / height;
       const pose = arcadeFocusPose(aspect);
-      expect(pose.position[0]).toBeCloseTo(4.21, 2);
-      expect(pose.position[1]).toBe(3.2);
-      expect(pose.target[1]).toBe(2.8);
+      expect(pose.position[0]).toBeCloseTo(4.4811, 2);
+      expect(pose.target[0]).toBeCloseTo(4.4811, 2);
+      expect(pose.target[1]).toBeCloseTo(3.21, 2);
 
       const camera = new PerspectiveCamera(ROOM_FOV, aspect, 0.1, 100);
       camera.position.set(...pose.position);
@@ -162,15 +162,15 @@ describe("fixed room framing", () => {
       camera.updateMatrixWorld(true);
       camera.updateProjectionMatrix();
 
-      const topScreen = new Vector3(4.21, 4.14, 0.565).project(camera);
-      const bottomDeck = new Vector3(4.21, 1.58, 1.35).project(camera);
+      const topScreen = new Vector3(4.4811, 3.98, 0.567).project(camera);
+      const bottomScreen = new Vector3(4.4811, 2.44, 0.789).project(camera);
 
-      // Top of screen should be comfortably within viewport with room for the canopy
-      expect(topScreen.y).toBeGreaterThan(0.65);
-      expect(topScreen.y).toBeLessThan(0.95);
-      // Bottom of joystick control deck should be near the bottom of the viewport
-      expect(bottomDeck.y).toBeGreaterThan(-1.0);
-      expect(bottomDeck.y).toBeLessThan(-0.75);
+      // Top of screen should be comfortably within viewport
+      expect(topScreen.y).toBeGreaterThan(0.55);
+      expect(topScreen.y).toBeLessThan(1.0);
+      // Bottom of screen should be above the bottom edge with room for control deck
+      expect(bottomScreen.y).toBeGreaterThan(-1.0);
+      expect(bottomScreen.y).toBeLessThan(-0.5);
     }
   });
 });

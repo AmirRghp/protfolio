@@ -51,19 +51,33 @@ export function roomOverviewPose(aspect: number) {
 }
 
 /**
- * Poses the camera for the arcade focus destination: raised slightly above the control deck
- * and pitched downward so the arcade monitor screen fills the upper center frame while the
- * joystick control deck grounds the bottom of the viewport (matching the reference composition).
+ * World-space center and normal of the tilted arcade screen surface.
+ */
+export const ARCADE_SCREEN_CENTER: [number, number, number] = [4.4811, 3.21, 0.6781];
+export const ARCADE_SCREEN_NORMAL: [number, number, number] = [0, 0.1427, 0.9898];
+export const ARCADE_SCREEN_WIDTH = 2.1633;
+export const ARCADE_SCREEN_HEIGHT = 1.5559;
+
+/**
+ * Poses the camera for the arcade focus destination: positioned directly along the outward
+ * normal of the tilted arcade monitor screen at close framing distance (matching the monitor zoom),
+ * filling the viewport with the CRT display while revealing the joystick control deck below.
  */
 export function arcadeFocusPose(aspect: number) {
   const halfFov = (ROOM_FOV * Math.PI) / 360;
   const tangent = Math.tan(halfFov);
-  const target: [number, number, number] = [4.21, 2.8, 0.7];
-  const minDistance = Math.max(2.1 / (2 * tangent * aspect), 2.5 / (2 * tangent));
-  const distance = Math.max(4.1, minDistance * 1.25);
+  const distance = Math.max(
+    ARCADE_SCREEN_WIDTH / (2 * tangent * aspect),
+    ARCADE_SCREEN_HEIGHT / (2 * tangent),
+  ) * 1.08;
+
   return {
-    position: [4.21, 3.2, 0.7 + distance] as [number, number, number],
-    target,
+    position: [
+      ARCADE_SCREEN_CENTER[0] + ARCADE_SCREEN_NORMAL[0] * distance,
+      ARCADE_SCREEN_CENTER[1] + ARCADE_SCREEN_NORMAL[1] * distance,
+      ARCADE_SCREEN_CENTER[2] + ARCADE_SCREEN_NORMAL[2] * distance,
+    ] as [number, number, number],
+    target: ARCADE_SCREEN_CENTER,
   };
 }
 

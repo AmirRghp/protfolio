@@ -13,16 +13,23 @@ export type ArcadeSurface = {
 
 /**
  * World-space quad corners of the arcade cabinet screen (`Screen_low`),
- * positioned at [4.22, 1.95, 0.35] with scale [2.75, 3.75, 2.75] and yaw -PI/2.
+ * positioned at [4.495, 1.95, 0.35] with scale [3.35, 3.50, 2.75] and yaw -PI/2.
+ * The bottom edge sits at Y = 2.4400 to clear the joystick heads (highest Y = 2.2926)
+ * with a generous safety margin and a wide ~4:3 aspect ratio (2.16 x 1.56).
  */
 export const ARCADE_SCREEN_SURFACE: ArcadeSurface = {
   corners: [
-    new Vector3(3.3206, 2.1405, 0.8018), // Bottom-Left
-    new Vector3(5.0965, 2.1405, 0.8018), // Bottom-Right
-    new Vector3(5.0965, 4.1412, 0.5648), // Top-Right
-    new Vector3(3.3206, 4.1412, 0.5648), // Top-Left
+    new Vector3(3.3994, 2.4400, 0.7891), // Bottom-Left
+    new Vector3(5.5627, 2.4400, 0.7891), // Bottom-Right
+    new Vector3(5.5627, 3.9800, 0.5670), // Top-Right
+    new Vector3(3.3994, 3.9800, 0.5670), // Top-Left
   ],
 };
+
+export const ARCADE_SCREEN_CENTER = new Vector3(4.4811, 3.2100, 0.6781);
+export const ARCADE_SCREEN_NORMAL = new Vector3(0, 0.1427, 0.9898);
+export const ARCADE_SCREEN_WIDTH = 2.1633;
+export const ARCADE_SCREEN_HEIGHT = 1.5559;
 
 export type ArcadeOverlayLayout = {
   /** CSS `matrix3d(...)` that maps the local overlay rectangle onto the projected arcade screen. */

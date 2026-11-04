@@ -20,10 +20,10 @@ describe("arcade screen projection", () => {
 
   it("calculates positive projected dimensions for the arcade screen", () => {
     const size = projectedArcadeSize(camera, viewport);
-    expect(size.width).toBeGreaterThan(450);
-    expect(size.width).toBeLessThan(700);
-    expect(size.height).toBeGreaterThan(500);
-    expect(size.height).toBeLessThan(800);
+    expect(size.width).toBeGreaterThan(900);
+    expect(size.width).toBeLessThan(1300);
+    expect(size.height).toBeGreaterThan(700);
+    expect(size.height).toBeLessThan(900);
   });
 
   it("generates a valid CSS matrix3d transform mapping local quad to screen corners", () => {

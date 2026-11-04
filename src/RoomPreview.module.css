@@ -107,6 +107,25 @@
   pointer-events: none;
 }
 
+.arcadeLayer[data-active="true"] {
+  pointer-events: auto;
+}
+
+.arcadeLayer[data-scene-failed="true"][data-active="true"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(8, 6, 20, 0.95);
+}
+
+.arcadeLayer[data-scene-failed="true"][data-active="true"] [class*="arcadeScreenContainer"] {
+  position: relative;
+  visibility: visible;
+  width: min(92vw, 760px) !important;
+  height: min(88vh, 620px) !important;
+  transform: none !important;
+}
+
 /* The desktop is projected on the physical screen in every camera pose, so the wallpaper never swaps. */
 .desktopLayer {
   position: absolute;

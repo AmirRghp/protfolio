@@ -59,6 +59,13 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     setPlaying(false);
   }, [clearLoadTimeout]);
 
+  // When returning to room or un-focusing arcade, stop game playback
+  useEffect(() => {
+    if (!active) {
+      exitGame();
+    }
+  }, [active, exitGame]);
+
   const handleFrameLoad = () => {
     clearLoadTimeout();
   };
@@ -67,20 +74,81 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     if (loadTimeout.current !== null) window.clearTimeout(loadTimeout.current);
   }, []);
 
-  // Manage focus between play and exit buttons
+  // Manage focus between play and exit buttons, or container when viewing unplayable games
   useEffect(() => {
     if (!active) return;
-    const frameId = window.requestAnimationFrame(() => {
+    const focusTarget = () => {
       if (playing) {
         exitButtonRef.current?.focus({ preventScroll: true });
+      } else if (playButtonRef.current) {
+        playButtonRef.current.focus({ preventScroll: true });
       } else {
-        playButtonRef.current?.focus({ preventScroll: true });
+        containerRef.current?.focus({ preventScroll: true });
       }
-    });
-    return () => window.cancelAnimationFrame(frameId);
-  }, [active, playing, loadTimedOut]);
+    };
 
-  // Handle keyboard navigation: ArrowUp/Down to switch game, Enter to play, Escape to exit game or menu
+    focusTarget();
+    const frameId = window.requestAnimationFrame(focusTarget);
+    const timer = window.setTimeout(focusTarget, 60);
+
+    // When the container is not yet projected, its CSS visibility is hidden, which prevents
+    // browsers from giving it focus. Once ArcadeOverlay sets data-projected="true", focus the target.
+    const container = containerRef.current;
+    let observer: MutationObserver | null = null;
+    if (container && container.dataset.projected !== "true") {
+      observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+          if (mutation.type === "attributes" && mutation.attributeName === "data-projected") {
+            if (container.dataset.projected === "true") {
+              focusTarget();
+            }
+          }
+        }
+      });
+      observer.observe(container, { attributes: true, attributeFilter: ["data-projected"] });
+    }
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.clearTimeout(timer);
+      observer?.disconnect();
+    };
+  }, [active, playing, selectedGameId, loadTimedOut]);
+
+  // Global window keydown listener so ArrowUp / ArrowDown and Enter work immediately upon entering
+  // the arcade view, regardless of whether canvas or a child button currently holds focus.
+  useEffect(() => {
+    if (!active || playing) return;
+
+    const handleWindowKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        setSelectedGameId((currentId) => {
+          const currentIndex = ARCADE_GAMES.findIndex((g) => g.id === currentId);
+          const nextIndex =
+            event.key === "ArrowDown"
+              ? (currentIndex + 1) % ARCADE_GAMES.length
+              : (currentIndex - 1 + ARCADE_GAMES.length) % ARCADE_GAMES.length;
+          return ARCADE_GAMES[nextIndex].id;
+        });
+      } else if (event.key === "Enter") {
+        if (target && (target.tagName === "BUTTON" || target.tagName === "A")) return;
+        const currentGame = ARCADE_GAMES.find((g) => g.id === selectedGameId);
+        if (currentGame?.playable) {
+          event.preventDefault();
+          startGame();
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleWindowKeyDown);
+    return () => window.removeEventListener("keydown", handleWindowKeyDown);
+  }, [active, playing, selectedGameId, startGame]);
+
+  // Local container keydown listener: handles Escape and bubbling keys
   const handleKeyDown = (event: React.KeyboardEvent) => {
     if (!active) return;
 
@@ -117,9 +185,11 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
       ref={containerRef}
       className={styles.arcadeScreenContainer}
       tabIndex={active ? 0 : -1}
+      data-active={active}
       onKeyDown={handleKeyDown}
-      role="region"
-      aria-label="Crash Bandicoot arcade screen"
+      role={active ? "region" : undefined}
+      aria-label={active ? "Crash Bandicoot arcade screen" : undefined}
+      aria-hidden={!active}
     >
       {playing ? (
         <div className={styles.gameplayContainer}>
@@ -152,7 +222,9 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                 >
                   Exit game
                 </button>
-                <span className={styles.hudTitle}>CRASH BANDICOOT (PS1)</span>
+                <p id="arcade-embed-hint" className={styles.arcadeHint}>
+                  If the game does not appear, open it directly on PS1FUN.
+                </p>
                 <a
                   href={ARCADE_GAME_URL}
                   target="_blank"
@@ -162,7 +234,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                   Open game on PS1FUN
                 </a>
               </div>
-              <div className={styles.gameViewport}>
+              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
                 <iframe
                   title="Crash Bandicoot on PS1FUN"
                   src={ARCADE_GAME_URL}
@@ -172,6 +244,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                   sandbox="allow-scripts allow-same-origin"
                   referrerPolicy="no-referrer"
                   onLoad={handleFrameLoad}
+                  aria-describedby="arcade-embed-hint"
                 />
               </div>
             </>

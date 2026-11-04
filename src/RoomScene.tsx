@@ -93,7 +93,7 @@ function ArcadeCabinet({ arcadeRef }: { arcadeRef?: RefObject<HTMLDivElement | n
     invalidate();
   }, [scene, invalidate]);
   return (
-    <group name="ArcadeMachine" position={[4.22, 1.95, 0.35]} scale={[2.75, 3.75, 2.75]}>
+    <group name="ArcadeMachine" position={[4.495, 1.95, 0.35]} scale={[3.35, 3.5, 2.75]}>
       <primitive object={scene} rotation={[0, -Math.PI / 2, 0]} />
       {arcadeRef && <ArcadeOverlay arcadeRef={arcadeRef} />}
     </group>
@@ -724,7 +724,7 @@ function Study({ onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
         <ComputerMouse />
         <ArcadeCabinet arcadeRef={arcadeRef} />
       </Suspense>
-      <FocusHotspot destination="arcade" position={[4.22, 2.5, 1.65]} size={[2.6, 6.4]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
+      <FocusHotspot destination="arcade" position={[4.495, 2.5, 1.65]} size={[3.1, 6.4]} highlighted={highlightedHotspot === "arcade"} onNavigate={onNavigate} />
     </>
   );
 }
