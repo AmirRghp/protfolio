@@ -154,7 +154,7 @@ describe("fixed room framing", () => {
       const pose = arcadeFocusPose(aspect);
       expect(pose.position[0]).toBeCloseTo(4.4811, 2);
       expect(pose.target[0]).toBeCloseTo(4.4811, 2);
-      expect(pose.target[1]).toBeCloseTo(3.21, 2);
+      expect(pose.target[1]).toBeCloseTo(3.0615, 2);
 
       const camera = new PerspectiveCamera(ROOM_FOV, aspect, 0.1, 100);
       camera.position.set(...pose.position);
@@ -162,15 +162,15 @@ describe("fixed room framing", () => {
       camera.updateMatrixWorld(true);
       camera.updateProjectionMatrix();
 
-      const topScreen = new Vector3(4.4811, 3.98, 0.567).project(camera);
-      const bottomScreen = new Vector3(4.4811, 2.44, 0.789).project(camera);
+      const topScreen = new Vector3(4.4811, 3.9952, 0.5648).project(camera);
+      const bottomScreen = new Vector3(4.4811, 2.1278, 0.8018).project(camera);
 
       // Top of screen should be comfortably within viewport
-      expect(topScreen.y).toBeGreaterThan(0.55);
+      expect(topScreen.y).toBeGreaterThan(0.65);
       expect(topScreen.y).toBeLessThan(1.0);
-      // Bottom of screen should be above the bottom edge with room for control deck
+      // Bottom of screen should be within viewport
       expect(bottomScreen.y).toBeGreaterThan(-1.0);
-      expect(bottomScreen.y).toBeLessThan(-0.5);
+      expect(bottomScreen.y).toBeLessThan(-0.65);
     }
   });
 });

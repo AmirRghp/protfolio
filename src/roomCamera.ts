@@ -53,10 +53,10 @@ export function roomOverviewPose(aspect: number) {
 /**
  * World-space center and normal of the tilted arcade screen surface.
  */
-export const ARCADE_SCREEN_CENTER: [number, number, number] = [4.4811, 3.21, 0.6781];
-export const ARCADE_SCREEN_NORMAL: [number, number, number] = [0, 0.1427, 0.9898];
+export const ARCADE_SCREEN_CENTER: [number, number, number] = [4.4811, 3.0615, 0.6833];
+export const ARCADE_SCREEN_NORMAL: [number, number, number] = [0, 0.1259, 0.9920];
 export const ARCADE_SCREEN_WIDTH = 2.1633;
-export const ARCADE_SCREEN_HEIGHT = 1.5559;
+export const ARCADE_SCREEN_HEIGHT = 1.8824;
 
 /**
  * Poses the camera for the arcade focus destination: positioned directly along the outward
