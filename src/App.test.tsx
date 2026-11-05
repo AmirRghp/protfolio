@@ -49,7 +49,5 @@ describe("portfolio entry page", () => {
 
     expect(html).toContain('data-testid="lanyard-intro"');
     expect(html).toContain("Pull down to enter");
-    expect(html).toContain("A.Gholipour");
   });
 });
-

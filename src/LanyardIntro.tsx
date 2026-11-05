@@ -3,7 +3,7 @@ import Lanyard from "./Lanyard";
 import { LANYARD_PULL_MIN_PX } from "./lanyardPull";
 import styles from "./LanyardIntro.module.css";
 
-const CARD_IMAGE_PATH = "/assets/aistudio/Gemini_Generated_Image_xcy0c8xcy0c8xcy0_8801922b.jpg";
+const CARD_IMAGE_PATH = "/assets/lanyard-photo.webp";
 const EXIT_DURATION_MS = 820;
 
 export type LanyardIntroProps = {
@@ -53,9 +53,6 @@ export default function LanyardIntro({ onEnter, onDismissed }: LanyardIntroProps
       data-state={state}
       aria-label="Portfolio loading screen"
     >
-      <div className={styles.brandHeader}>
-        <span className={styles.brandName}>A.Gholipour</span>
-      </div>
       <div className={styles.lanyardStage}>
         <Lanyard
           frontImage={CARD_IMAGE_PATH}
