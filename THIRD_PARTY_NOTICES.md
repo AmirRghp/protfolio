@@ -1,12 +1,13 @@
 # Third-party notices
 
-## Gradient Waves (React Bits)
+## Gradient Waves & Lanyard (React Bits)
 
-`src/GradientWaves.tsx` is a TypeScript port of the Gradient Waves component published by
-React Bits (https://reactbits.dev/backgrounds/gradient-waves, source variant
-`GradientWaves-JS-CSS`). The wave shader, the wave model and the pointer behaviour are kept as
-published; the component was rewritten in TypeScript and integrated into the monitor desktop of
-this project.
+`src/GradientWaves.tsx` and `src/Lanyard.tsx` are TypeScript ports of the Gradient Waves
+(https://reactbits.dev/backgrounds/gradient-waves, source variant `GradientWaves-JS-CSS`) and
+Lanyard (https://reactbits.dev/components/lanyard, source variant `Lanyard-JS-CSS`) components
+published by React Bits. Their shaders, simulation models and pointer behaviours are kept as
+published; the components were rewritten in TypeScript and integrated into the monitor desktop
+and entry loading screen of this project.
 
 MIT + Commons Clause License Condition v1.0
 

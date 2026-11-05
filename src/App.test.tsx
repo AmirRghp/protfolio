@@ -43,4 +43,12 @@ describe("portfolio entry page", () => {
       "https://github.com/AmirRghp/laya-finetune",
     ]);
   });
+
+  it("renders the black lanyard loading overlay with English pull-down prompt on initial load", () => {
+    const html = renderToStaticMarkup(<App />);
+
+    expect(html).toContain('data-testid="lanyard-intro"');
+    expect(html).toContain("Pull down to enter");
+  });
 });
+
