@@ -290,7 +290,7 @@ function ComputerMouse() {
   }, [scene, invalidate]);
 
   return (
-    <group name="ComputerMouse" position={[-0.68, 1.906, 1.44]} rotation={[0, 0.48 + Math.PI, 0]}>
+    <group name="ComputerMouse" position={[-0.68, 1.906, 1.44]} rotation={[0, 0.48, 0]}>
       <mesh position={[0, 0.003, 0.02]} rotation={[-Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.26, 24]} />
         <meshBasicMaterial color="#090706" transparent opacity={0.4} depthWrite={false} />
