@@ -97,6 +97,34 @@
   list-style: none;
 }
 
+.contributionWidget {
+  position: absolute;
+  z-index: 1;
+  right: clamp(14px, 3cqw, 38px);
+  top: calc(var(--ui-bar) + var(--ui-sag-top) + clamp(12px, 2.5cqw, 32px));
+  pointer-events: auto;
+}
+
+@container (max-width: 760px) {
+  .contributionWidget {
+    transform: scale(0.85);
+    transform-origin: top right;
+  }
+}
+
+@container (max-width: 580px) {
+  .contributionWidget {
+    transform: scale(0.7);
+    transform-origin: top right;
+  }
+}
+
+@container (max-width: 440px) {
+  .contributionWidget {
+    display: none;
+  }
+}
+
 .iconItem {
   position: relative;
   flex: none;

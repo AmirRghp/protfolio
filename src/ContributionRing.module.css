@@ -1,0 +1,216 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.8cqw, 22px);
+  user-select: none;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  color: #e6f1f5;
+}
+
+.ringWrapper {
+  position: relative;
+  flex: none;
+  width: clamp(140px, 18cqw, 210px);
+  height: clamp(140px, 18cqw, 210px);
+  aspect-ratio: 1 / 1;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.centerDial {
+  fill: #06101c;
+  stroke: rgba(56, 189, 248, 0.22);
+  stroke-width: 1;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.6));
+}
+
+.streakCount {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 21px;
+  font-weight: 700;
+  fill: #f0fdf4;
+  letter-spacing: -0.03em;
+}
+
+.streakLabel {
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  fill: #38bdf8;
+  opacity: 0.9;
+}
+
+.monthLabel {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 7.5px;
+  font-weight: 600;
+  fill: #7dd3fc;
+  opacity: 0.8;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cell {
+  transition: opacity 0.2s ease, fill 0.2s ease;
+  cursor: pointer;
+}
+
+.cell:focus-visible {
+  outline: none;
+  stroke: #38bdf8;
+  stroke-width: 1.5;
+}
+
+.cell:hover {
+  stroke: #38bdf8;
+  stroke-width: 1.2;
+  filter: drop-shadow(0 0 5px #00e5ff);
+}
+
+.level0 {
+  fill: #161b22;
+  opacity: 0.65;
+}
+
+.level1 {
+  fill: #0e4429;
+}
+
+.level2 {
+  fill: #006d32;
+}
+
+.level3 {
+  fill: #26a641;
+}
+
+.level4 {
+  fill: #39d353;
+  filter: drop-shadow(0 0 3px rgba(57, 211, 83, 0.45));
+}
+
+.sweepHand {
+  stroke: #38bdf8;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  pointer-events: none;
+  filter: drop-shadow(0 0 5px #00e5ff);
+  transition: opacity 0.3s ease;
+}
+
+.sweepTip {
+  fill: #00e5ff;
+  pointer-events: none;
+  filter: drop-shadow(0 0 7px #00e5ff);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: clamp(6px, 1.2cqw, 12px);
+  min-width: 0;
+}
+
+.metric {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.totalCount {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: clamp(16px, 2.2cqw, 26px);
+  font-weight: 700;
+  color: #f0fdf4;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.totalLabel {
+  font-size: clamp(7.5px, 0.85cqw, 10px);
+  font-weight: 600;
+  color: #38bdf8;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.dateRange {
+  font-size: clamp(6.5px, 0.75cqw, 9px);
+  font-weight: 500;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.replayButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  border-radius: 4px;
+  background: rgba(14, 29, 41, 0.85);
+  color: #bae6fd;
+  font-family: inherit;
+  font-size: clamp(7.5px, 0.8cqw, 9.5px);
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.replayButton:hover {
+  border-color: #38bdf8;
+  background: rgba(56, 189, 248, 0.2);
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+}
+
+.replayButton:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
+.replayIcon {
+  font-size: 1.15em;
+  line-height: 1;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  border-radius: 4px;
+  background: rgba(5, 14, 25, 0.94);
+  font-size: 8.5px;
+  color: #e6f1f5;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+}
+
+.tipCount {
+  font-weight: 600;
+  color: #4ade80;
+}
+
+.tipDate {
+  color: #94a3b8;
+}

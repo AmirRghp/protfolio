@@ -128,4 +128,12 @@ describe("monitor desktop", () => {
     expect(html).toContain("width:640px");
     expect(html).toContain("height:420px");
   });
+
+  it("renders the GitHub contribution widget on the desktop wallpaper layer", () => {
+    const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} />);
+
+    expect(html).toContain("Round the year contribution graph");
+    expect(html).toContain("CONTRIBUTIONS");
+    expect(html).toContain("STREAK");
+  });
 });

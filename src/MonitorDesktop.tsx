@@ -15,6 +15,7 @@ import {
   type WindowRect,
 } from "./desktopDrag";
 import GradientWaves from "./GradientWaves";
+import ContributionRing from "./ContributionRing";
 import styles from "./MonitorDesktop.module.css";
 
 export type DesktopApp = {
@@ -764,6 +765,9 @@ export default function MonitorDesktop({
           );
         })}
       </ul>
+      <div className={styles.contributionWidget} inert={moving}>
+        <ContributionRing autoPlay={active} />
+      </div>
       {openApp && (
         <DesktopWindow
           key={openApp.id}
