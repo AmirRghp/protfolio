@@ -53,6 +53,9 @@ export default function LanyardIntro({ onEnter, onDismissed }: LanyardIntroProps
       data-state={state}
       aria-label="Portfolio loading screen"
     >
+      <div className={styles.brandHeader}>
+        <span className={styles.brandName}>A.Gholipour</span>
+      </div>
       <div className={styles.lanyardStage}>
         <Lanyard
           frontImage={CARD_IMAGE_PATH}

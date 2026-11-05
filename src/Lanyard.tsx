@@ -585,25 +585,67 @@ const paintFace = (
   ctx.fillStyle = toCss(color);
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (image) drawFitted(ctx, image, canvas.width, canvas.height, fit);
+
+  // Top-right text on the badge card with high-contrast glassy pill backing
+  ctx.save();
+  const fontSize = Math.round(canvas.width * 0.046);
+  ctx.font = `700 ${fontSize}px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+  const text = "A.Gholipour";
+  const textMetrics = ctx.measureText(text);
+  const textWidth = textMetrics.width;
+  const padX = fontSize * 0.55;
+  const padY = fontSize * 0.35;
+  const pillW = textWidth + padX * 2;
+  const pillH = fontSize + padY * 2;
+  const pillRight = canvas.width * 0.92;
+  const pillTop = canvas.height * 0.052;
+  const pillX = pillRight - pillW;
+  const pillRadius = pillH / 2;
+
+  // Dark glassy pill backing for guaranteed legibility across holographic foil
+  ctx.fillStyle = "rgba(10, 10, 16, 0.88)";
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.28)";
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.roundRect(pillX, pillTop, pillW, pillH, pillRadius);
+  ctx.fill();
+  ctx.stroke();
+
+  // Sharp white text with crisp shadow
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = "#ffffff";
+  ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
+  ctx.shadowBlur = 4;
+  ctx.fillText(text, pillX + pillW / 2, pillTop + pillH / 2 + 1);
+  ctx.restore();
 };
 
-const drawAtomMark = (ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, color: string) => {
+const drawAGMark = (ctx: CanvasRenderingContext2D, cx: number, cy: number, radius: number, color: string) => {
   ctx.save();
   ctx.translate(cx, cy);
-  ctx.strokeStyle = color;
-  ctx.fillStyle = color;
-  ctx.lineWidth = Math.max(2.4, radius * 0.17);
-  for (const angle of [0, Math.PI / 3, -Math.PI / 3]) {
-    ctx.save();
-    ctx.rotate(angle);
-    ctx.beginPath();
-    ctx.ellipse(0, 0, radius, radius * 0.4, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.restore();
-  }
+
+  // High-contrast dark circular backing
+  ctx.fillStyle = "rgba(12, 12, 18, 0.92)";
   ctx.beginPath();
-  ctx.arc(0, 0, radius * 0.19, 0, Math.PI * 2);
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
   ctx.fill();
+
+  // Crisp border around the emblem
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(3.5, radius * 0.12);
+  ctx.beginPath();
+  ctx.arc(0, 0, radius, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Big bold monogram A/G for clear visibility on the strap
+  ctx.font = `900 ${Math.round(radius * 0.98)}px "Plus Jakarta Sans", system-ui, -apple-system, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillStyle = color;
+  ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+  ctx.shadowBlur = 4;
+  ctx.fillText("A/G", 0, 1);
   ctx.restore();
 };
 
@@ -636,7 +678,10 @@ const paintStrap = (
     ctx.fillRect(across * 0.075, y, 2, 8);
     ctx.fillRect(across * 0.925 - 2, y, 2, 8);
   }
-  drawAtomMark(ctx, across * 0.5, along * 0.72, across * 0.16, toCss(ink, 0.9));
+  // Prominently sized repeating A/G icons along the strap
+  const emblemRadius = across * 0.30;
+  drawAGMark(ctx, across * 0.5, along * 0.35, emblemRadius, toCss(ink, 0.98));
+  drawAGMark(ctx, across * 0.5, along * 0.78, emblemRadius, toCss(ink, 0.98));
   return along / across;
 };
 
@@ -1118,7 +1163,7 @@ export default function Lanyard({
     let placed = false;
     let hovering = false;
     let press: { x: number; y: number; time: number; point: THREE.Vector3 } | null = null;
-    let dragStart: { x: number; y: number; triggered: boolean } | null = null;
+    let dragStart: { x: number; y: number; qualified: boolean; deltaY: number; triggered: boolean } | null = null;
     let imageToken = 0;
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
 
@@ -1481,7 +1526,7 @@ export default function Lanyard({
         target: hit.point.clone(),
       };
       press = { x: event.clientX, y: event.clientY, time: performance.now(), point: hit.point.clone() };
-      dragStart = { x: event.clientX, y: event.clientY, triggered: false };
+      dragStart = { x: event.clientX, y: event.clientY, qualified: false, deltaY: 0, triggered: false };
       settingsRef.current.onPullProgress?.(0, 0);
       canvas.setPointerCapture?.(event.pointerId);
       setCursor("grabbing");
@@ -1504,10 +1549,10 @@ export default function Lanyard({
             settingsRef.current.pullThreshold,
           );
           settingsRef.current.onPullProgress?.(gesture.progress, gesture.deltaY);
-          if (gesture.triggered) {
-            dragStart.triggered = true;
-            settingsRef.current.onPullComplete?.(gesture.deltaY);
-          }
+          dragStart.qualified = gesture.triggered;
+          dragStart.deltaY = gesture.deltaY;
+          // IMPORTANT: Do NOT open the page while the user is still holding the card!
+          // We wait until they release (pointerup) after pulling down past threshold.
         }
         start();
         return;
@@ -1521,7 +1566,14 @@ export default function Lanyard({
       if (!sim.grab) return;
       sim.grab = null;
       if (dragStart && !dragStart.triggered) {
-        settingsRef.current.onPullProgress?.(0, 0);
+        if (dragStart.qualified) {
+          // User pulled past threshold and released the card: fire completion!
+          dragStart.triggered = true;
+          settingsRef.current.onPullComplete?.(dragStart.deltaY);
+        } else {
+          // User released before meeting the pull threshold: reset progress to zero
+          settingsRef.current.onPullProgress?.(0, 0);
+        }
       }
       dragStart = null;
       if (press && event.type === "pointerup" && performance.now() - press.time < 450) flip(press.point);
