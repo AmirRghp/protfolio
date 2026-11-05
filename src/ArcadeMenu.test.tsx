@@ -34,8 +34,8 @@ describe("ArcadeMenu component", () => {
     expect(tetris?.badge).toBe("COMING SOON");
 
     const snake = ARCADE_GAMES.find((g) => g.id === "snake");
-    expect(snake?.playable).toBe(false);
-    expect(snake?.badge).toBe("COMING SOON");
+    expect(snake?.playable).toBe(true);
+    expect(snake?.badge).toBe("PLAY");
 
     const deparkanoid = ARCADE_GAMES.find((g) => g.id === "deparkanoid");
     expect(deparkanoid?.playable).toBe(true);

@@ -112,9 +112,10 @@ export const ARCADE_GAMES: GameItem[] = [
     title: "Snake Grid",
     system: "Retro Arcade",
     year: "1997",
-    badge: "COMING SOON",
-    playable: false,
-    description: "Grid-based snake retro action. Feed, grow, and avoid walls. Coming soon in a future update.",
+    badge: "PLAY",
+    playable: true,
+    description: "Retro 5-level cyber snake with progressive speed, obstacle mazes, golden bonus apples, and neon particle bursts.",
+    controls: "Arrows / WASD: Move · Space / Click: Start / Advance · Esc: Exit",
     icon: SnakeIcon,
   },
   {

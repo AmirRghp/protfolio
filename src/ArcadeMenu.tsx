@@ -12,6 +12,7 @@ import {
   ARCADE_LOAD_TIMEOUT_MS,
 } from "./arcadeData";
 import Deparkanoid from "./Deparkanoid";
+import SnakeGame from "./SnakeGame";
 import styles from "./ArcadeMenu.module.css";
 
 export type ArcadeMenuProps = {
@@ -83,7 +84,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     if (!active) return;
     const focusTarget = () => {
       if (playing) {
-        if (selectedGame.id !== "deparkanoid") {
+        if (selectedGame.id !== "deparkanoid" && selectedGame.id !== "snake") {
           exitButtonRef.current?.focus({ preventScroll: true });
         }
       } else if (playButtonRef.current) {
@@ -199,6 +200,25 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
               </div>
               <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
                 <Deparkanoid onExit={exitGame} />
+              </div>
+            </>
+          ) : selectedGame.id === "snake" ? (
+            <>
+              <div className={styles.gameplayHud}>
+                <button
+                  ref={exitButtonRef}
+                  type="button"
+                  className={styles.hudExitButton}
+                  onClick={exitGame}
+                >
+                  Exit game
+                </button>
+                <p id="snake-hint" className={styles.arcadeHint}>
+                  Arrows / WASD: Move · Space: Action · Esc: Exit
+                </p>
+              </div>
+              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
+                <SnakeGame onExit={exitGame} />
               </div>
             </>
           ) : loadTimedOut ? (
@@ -347,9 +367,13 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                           Open game on PS1FUN
                         </a>
                       </>
-                    ) : (
+                    ) : selectedGame.id === "deparkanoid" ? (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
                         5 Handcrafted Levels · Authentic Departure Mono · Ricochet Physics
+                      </p>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                        5 Campaign Levels · Cyber Obstacles · Golden Apples · Departure Mono
                       </p>
                     )}
                   </>
