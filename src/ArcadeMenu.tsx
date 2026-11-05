@@ -15,6 +15,7 @@ import Deparkanoid from "./Deparkanoid";
 import SnakeGame from "./SnakeGame";
 import FlappyGame from "./FlappyGame";
 import TetrisGame from "./TetrisGame";
+import PixelRunGame from "./PixelRunGame";
 import styles from "./ArcadeMenu.module.css";
 
 export type ArcadeMenuProps = {
@@ -90,7 +91,8 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
           selectedGame.id !== "deparkanoid" &&
           selectedGame.id !== "snake" &&
           selectedGame.id !== "flappy" &&
-          selectedGame.id !== "tetris"
+          selectedGame.id !== "tetris" &&
+          selectedGame.id !== "pixelrun"
         ) {
           exitButtonRef.current?.focus({ preventScroll: true });
         }
@@ -226,6 +228,25 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
               </div>
               <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
                 <SnakeGame onExit={exitGame} />
+              </div>
+            </>
+          ) : selectedGame.id === "pixelrun" ? (
+            <>
+              <div className={styles.gameplayHud}>
+                <button
+                  ref={exitButtonRef}
+                  type="button"
+                  className={styles.hudExitButton}
+                  onClick={exitGame}
+                >
+                  Exit game
+                </button>
+                <p id="pixelrun-hint" className={styles.arcadeHint}>
+                  Space/Up: Jump · Down: Duck/Slide · M: Music · Esc: Exit
+                </p>
+              </div>
+              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
+                <PixelRunGame onExit={exitGame} />
               </div>
             </>
           ) : selectedGame.id === "tetris" ? (
@@ -419,6 +440,10 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                     ) : selectedGame.id === "snake" ? (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
                         5 Campaign Levels · Cyber Obstacles · Golden Apples · Departure Mono
+                      </p>
+                    ) : selectedGame.id === "pixelrun" ? (
+                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                        5 Cyber Sectors · Variable Jump &amp; Slide-Duck · Aerial Drones · 8-Bit Chiptunes
                       </p>
                     ) : selectedGame.id === "tetris" ? (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>

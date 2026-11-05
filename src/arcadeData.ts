@@ -103,6 +103,27 @@ export function FlappyIcon({ className }: { className?: string }) {
   );
 }
 
+export function PixelRunIcon({ className }: { className?: string }) {
+  return createElement(
+    "svg",
+    {
+      className,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "1.8",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+    },
+    // Cyber dino / raptor runner icon
+    createElement("path", { d: "M4 14l4-3 5-1 3-5 5 1-1 4-3 1v3l3 4" }),
+    createElement("path", { d: "M11 13l-2 5-4 1" }),
+    createElement("path", { d: "M14 14l2 4 3 2" }),
+    createElement("circle", { cx: "17", cy: "7", r: "1", fill: "currentColor" }),
+    createElement("path", { d: "M2 20h20", strokeDasharray: "3 2" }),
+  );
+}
+
 export const ARCADE_GAMES: GameItem[] = [
   {
     id: "crash",
@@ -114,6 +135,17 @@ export const ARCADE_GAMES: GameItem[] = [
     description: "Classic 3D platformer featuring Crash. Dodge TNT, collect Wumpa fruit, and take on Dr. Neo Cortex.",
     controls: "Arrows: Move · Space/X: Jump · C: Spin",
     icon: CrashIcon,
+  },
+  {
+    id: "pixelrun",
+    title: "Pixel Run",
+    system: "Neon Arcade",
+    year: "2024",
+    badge: "PLAY",
+    playable: true,
+    description: "Retro 5-sector cyberpunk dino runner with variable jump, slide-ducking, aerial hunter drones, and 8-bit synthwave audio.",
+    controls: "Space/Up: Jump · Down: Duck/Slide · M: Music · Esc: Exit",
+    icon: PixelRunIcon,
   },
   {
     id: "tetris",

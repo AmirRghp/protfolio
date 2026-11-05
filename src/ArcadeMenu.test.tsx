@@ -4,10 +4,11 @@ import ArcadeMenu from "./ArcadeMenu";
 import { ARCADE_GAMES, ARCADE_GAME_URL } from "./arcadeData";
 
 describe("ArcadeMenu component", () => {
-  it("renders all 5 games and shows Crash Bandicoot with Play option", () => {
+  it("renders all 6 games and shows Crash Bandicoot with Play option", () => {
     const html = renderToStaticMarkup(<ArcadeMenu active={true} onExit={() => {}} />);
 
     expect(html).toContain("Crash Bandicoot");
+    expect(html).toContain("Pixel Run");
     expect(html).toContain("Cyber Tetris");
     expect(html).toContain("Snake Grid");
     expect(html).toContain("Deparkanoid");
@@ -19,13 +20,19 @@ describe("ArcadeMenu component", () => {
     expect(html).toContain("ARCADE V1.0");
   });
 
-  it("includes all 5 games in the ARCADE_GAMES dataset with appropriate statuses", () => {
-    expect(ARCADE_GAMES).toHaveLength(5);
+  it("includes all 6 games in the ARCADE_GAMES dataset with appropriate statuses", () => {
+    expect(ARCADE_GAMES).toHaveLength(6);
 
     const crash = ARCADE_GAMES.find((g) => g.id === "crash");
     expect(crash).toBeDefined();
     expect(crash?.playable).toBe(true);
     expect(crash?.badge).toBe("PLAY");
+
+    const pixelrun = ARCADE_GAMES.find((g) => g.id === "pixelrun");
+    expect(pixelrun).toBeDefined();
+    expect(pixelrun?.playable).toBe(true);
+    expect(pixelrun?.badge).toBe("PLAY");
+    expect(pixelrun?.title).toBe("Pixel Run");
 
     const tetris = ARCADE_GAMES.find((g) => g.id === "tetris");
     expect(tetris?.playable).toBe(true);
