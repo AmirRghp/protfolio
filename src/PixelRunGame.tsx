@@ -598,8 +598,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
             );
           } else if (
             state.distance >= VICTORY_DISTANCE &&
-            state.sectorIndex === TOTAL_SECTORS - 1 &&
-            state.mode !== "VICTORY"
+            state.sectorIndex === TOTAL_SECTORS - 1
           ) {
             state.mode = "VICTORY";
             pixelRunAudio.playVictory();

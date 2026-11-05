@@ -29,6 +29,7 @@ export const projectApps: DesktopApp[] = portfolioContent.projects.map((project)
     title: project.title,
     icon,
     content: <ProjectApp project={project} icon={icon} />,
+    activation: "double-click",
   };
 });
 

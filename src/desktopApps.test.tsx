@@ -15,7 +15,7 @@ describe("desktop apps", () => {
       const app = projectApps.find((candidate) => candidate.id === project.id)!;
       expect(app.title).toBe(project.title);
       expect(app.label).toBe(project.title);
-      expect(app.activation).toBeUndefined();
+      expect(app.activation).toBe("double-click");
     }
   });
 

@@ -53,7 +53,7 @@ function expectInside(inner: Awaited<ReturnType<typeof boxOf>>, outer: Awaited<R
 
 test("a title-bar drag moves the window, while controls, links and content do not start a drag", async ({ page }) => {
   await focusMonitor(page);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).click();
+  await page.getByRole("button", { name: "Freelance Project Radar" }).dblclick();
   const window = page.locator(monitorWindow);
   await expect(window).toBeVisible();
 
@@ -227,7 +227,7 @@ test("the window geometry is not persisted across a reload", async ({ page }) =>
 
 test("Move mode places the window without activating the content under the pointer", async ({ page }) => {
   await focusMonitor(page);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).click();
+  await page.getByRole("button", { name: "Freelance Project Radar" }).dblclick();
   const window = page.locator(monitorWindow);
   const move = window.getByRole("button", { name: "Move window", exact: true });
   const before = await boxOf(window);
@@ -311,7 +311,9 @@ test("touch drag and Move mode move the window without opening an app underneath
   await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
   await page.waitForTimeout(500);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).tap();
+  const radar = page.getByRole("button", { name: "Freelance Project Radar" });
+  await radar.tap();
+  await radar.tap();
   const window = page.locator(monitorWindow);
   await expect(window).toBeVisible();
 

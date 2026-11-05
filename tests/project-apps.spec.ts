@@ -25,7 +25,7 @@ test("every project is an app on the monitor desktop", async ({ page }) => {
 test("a project app shows the address, the summary and a direct link", async ({ page }) => {
   await focusMonitor(page);
 
-  await page.getByRole("button", { name: "Enterprise Knowledge Copilot" }).click();
+  await page.getByRole("button", { name: "Enterprise Knowledge Copilot" }).dblclick();
   const openWindow = page.locator(monitorWindow);
   await expect(openWindow).toBeVisible();
   await expect(openWindow.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toBeVisible();
@@ -52,7 +52,7 @@ test("a blocked embed reports the error and keeps the direct link", async ({ pag
 
   try {
     await focusMonitor(page);
-    await page.getByRole("button", { name: "Enterprise Knowledge Copilot" }).click();
+    await page.getByRole("button", { name: "Enterprise Knowledge Copilot" }).dblclick();
     const openWindow = page.locator(monitorWindow);
     await expect(openWindow).toBeVisible();
 
@@ -78,7 +78,7 @@ test("the project window takes the focus and returns it to its icon", async ({ p
   const icon = page.getByRole("button", { name: "Freelance Project Radar" });
   const close = page.getByRole("button", { name: "Close", exact: true });
 
-  await icon.click();
+  await icon.dblclick();
   await expect(icon).toHaveAttribute("data-selected", "true");
   await expect(close).toBeFocused();
 
@@ -110,7 +110,6 @@ test("selection follows project activation while hover and focus do not select i
   await project.click();
   await expect(project).toHaveAttribute("data-selected", "true");
   await expect(another).not.toHaveAttribute("data-selected", "true");
-  await page.getByRole("button", { name: "Close", exact: true }).click();
 
   await another.click();
   await expect(another).toHaveAttribute("data-selected", "true");
@@ -269,7 +268,7 @@ test("a touch drag moves an icon without opening its app", async ({ browser }) =
   await context.close();
 });
 
-test("a touch tap opens a project app", async ({ browser }) => {
+test("a touch double tap opens a project app", async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 768, height: 1024 },
     isMobile: true,
@@ -281,7 +280,14 @@ test("a touch tap opens a project app", async ({ browser }) => {
   await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
 
-  await page.getByRole("button", { name: "Freelance Project Radar" }).tap();
+  const icon = page.getByRole("button", { name: "Freelance Project Radar" });
+  const box = (await icon.boundingBox())!;
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.locator(monitorWindow)).toHaveCount(0);
+
+  await page.waitForTimeout(700);
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+  await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect(page.locator(monitorWindow)).toBeVisible();
   await expect(page.getByRole("button", { name: "Close", exact: true })).toBeFocused();
 

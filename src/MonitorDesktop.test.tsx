@@ -86,17 +86,18 @@ describe("monitor desktop", () => {
     expect(html).toContain('role="group"');
   });
 
-  it("gives the title bar its own move controls and keyboard handle", () => {
+  it("gives the title bar its own keyboard handle and action controls", () => {
     const html = renderToStaticMarkup(
-      <DesktopWindow title="about-me.txt" onClose={() => {}} onToggleMaximize={() => {}} onToggleMove={() => {}} />,
+      <DesktopWindow title="about-me.txt" onClose={() => {}} onToggleMaximize={() => {}} />,
     );
 
     expect(html).toContain("about-me.txt window title bar");
     expect(html).toContain('aria-describedby="monitor-window-move-hint"');
-    expect(html).toContain("Use the arrow keys to move this window");
-    expect(html).toContain("Move window");
+    expect(html).toContain("Use the arrow keys or drag the title bar to move this window");
     expect(html).toContain("Maximize window");
     expect(html).toContain("Close");
+    expect(html).toContain("windowControlIcon");
+    expect(html).toContain('title="Close"');
   });
 
   it("labels the window controls precisely in the maximized state", () => {
@@ -105,16 +106,12 @@ describe("monitor desktop", () => {
         title="about-me.txt"
         onClose={() => {}}
         onToggleMaximize={() => {}}
-        onToggleMove={() => {}}
         maximized
-        moving
       />,
     );
 
     expect(html).toContain("Restore window");
     expect(html).toContain("This window is maximized");
-    expect(html).toContain('aria-pressed="true"');
-    expect(html).toContain("disabled");
   });
 
   it("renders the saved local geometry of an open window", () => {

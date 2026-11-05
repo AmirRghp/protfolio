@@ -60,6 +60,31 @@ function VolumeIcon() {
   );
 }
 
+function MaximizeIcon() {
+  return (
+    <svg className={styles.windowControlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <rect x="2.5" y="2.5" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="1.4" rx="1" />
+    </svg>
+  );
+}
+
+function RestoreIcon() {
+  return (
+    <svg className={styles.windowControlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M5 3.5V2.5A1 1 0 0 1 6 1.5h7.5A1 1 0 0 1 14.5 2.5V10a1 1 0 0 1-1 1H12.5" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+      <rect x="1.5" y="4.5" width="9.5" height="9.5" fill="none" stroke="currentColor" strokeWidth="1.3" rx="1" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg className={styles.windowControlIcon} viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M3.5 3.5l9 9M12.5 3.5l-9 9" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function StatusBar({ ref }: { ref?: Ref<HTMLElement> }) {
   const now = useLiveClock();
   const timestamp = formatStatusTimestamp(now);
@@ -141,10 +166,8 @@ export function DesktopWindow({
   moving = false,
   dragging = false,
   onToggleMaximize,
-  onToggleMove,
   dragHandle,
   windowRef,
-  moveButtonRef,
 }: {
   title: string;
   onClose: () => void;
@@ -197,28 +220,33 @@ export function DesktopWindow({
         <span className={styles.windowTitle} id="monitor-window-title">{title}</span>
         <div className={styles.windowActions}>
           <button
-            ref={moveButtonRef}
-            type="button"
-            className={styles.windowControl}
-            onClick={onToggleMove}
-            disabled={maximized || !onToggleMove}
-            aria-label="Move window"
-            aria-pressed={moving}
-          >Move</button>
-          <button
             type="button"
             className={styles.windowControl}
             onClick={onToggleMaximize}
             disabled={!onToggleMaximize}
             aria-label={maximized ? "Restore window" : "Maximize window"}
-          >{maximized ? "Restore" : "Maximize"}</button>
-          <button ref={closeButton} type="button" className={styles.windowControl} onClick={onClose}>Close</button>
+            title={maximized ? "Restore window" : "Maximize window"}
+          >
+            {maximized ? <RestoreIcon /> : <MaximizeIcon />}
+            <span className={styles.visuallyHidden}>{maximized ? "Restore window" : "Maximize window"}</span>
+          </button>
+          <button
+            ref={closeButton}
+            type="button"
+            className={`${styles.windowControl} ${styles.windowControlClose}`}
+            onClick={onClose}
+            aria-label="Close"
+            title="Close"
+          >
+            <CloseIcon />
+            <span className={styles.visuallyHidden}>Close</span>
+          </button>
         </div>
       </header>
       <p id="monitor-window-move-hint" className={styles.visuallyHidden}>
         {maximized
           ? "This window is maximized. Choose Restore window to move or place it."
-          : "Use the arrow keys to move this window. Choose Move window to place it with the pointer."}
+          : "Use the arrow keys or drag the title bar to move this window."}
       </p>
       {moving && (
         <p className={styles.visuallyHidden} role="status">
