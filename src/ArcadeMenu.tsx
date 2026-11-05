@@ -14,6 +14,7 @@ import {
 import Deparkanoid from "./Deparkanoid";
 import SnakeGame from "./SnakeGame";
 import FlappyGame from "./FlappyGame";
+import TetrisGame from "./TetrisGame";
 import styles from "./ArcadeMenu.module.css";
 
 export type ArcadeMenuProps = {
@@ -88,7 +89,8 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
         if (
           selectedGame.id !== "deparkanoid" &&
           selectedGame.id !== "snake" &&
-          selectedGame.id !== "flappy"
+          selectedGame.id !== "flappy" &&
+          selectedGame.id !== "tetris"
         ) {
           exitButtonRef.current?.focus({ preventScroll: true });
         }
@@ -224,6 +226,25 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
               </div>
               <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
                 <SnakeGame onExit={exitGame} />
+              </div>
+            </>
+          ) : selectedGame.id === "tetris" ? (
+            <>
+              <div className={styles.gameplayHud}>
+                <button
+                  ref={exitButtonRef}
+                  type="button"
+                  className={styles.hudExitButton}
+                  onClick={exitGame}
+                >
+                  Exit game
+                </button>
+                <p id="tetris-hint" className={styles.arcadeHint}>
+                  Arrows/WASD: Move/Rotate · Space: Hard Drop · C: Hold · M: Music · Esc: Exit
+                </p>
+              </div>
+              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
+                <TetrisGame onExit={exitGame} />
               </div>
             </>
           ) : selectedGame.id === "flappy" ? (
@@ -398,6 +419,10 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                     ) : selectedGame.id === "snake" ? (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
                         5 Campaign Levels · Cyber Obstacles · Golden Apples · Departure Mono
+                      </p>
+                    ) : selectedGame.id === "tetris" ? (
+                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                        5 Cyber Sectors · SRS Wall Kicks · Ghost Piece · Hold Matrix · Chiptune Music
                       </p>
                     ) : (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>

@@ -8,16 +8,13 @@ describe("ArcadeMenu component", () => {
     const html = renderToStaticMarkup(<ArcadeMenu active={true} onExit={() => {}} />);
 
     expect(html).toContain("Crash Bandicoot");
-    expect(html).toContain("Pixel Tetris");
+    expect(html).toContain("Cyber Tetris");
     expect(html).toContain("Snake Grid");
     expect(html).toContain("Deparkanoid");
     expect(html).toContain("Cyber Flappy");
 
     // Check Play game button
     expect(html).toContain("Play game");
-
-    // Check COMING SOON badges
-    expect(html).toContain("COMING SOON");
     expect(html).toContain("CLOSE [ESC]");
     expect(html).toContain("ARCADE V1.0");
   });
@@ -31,8 +28,8 @@ describe("ArcadeMenu component", () => {
     expect(crash?.badge).toBe("PLAY");
 
     const tetris = ARCADE_GAMES.find((g) => g.id === "tetris");
-    expect(tetris?.playable).toBe(false);
-    expect(tetris?.badge).toBe("COMING SOON");
+    expect(tetris?.playable).toBe(true);
+    expect(tetris?.badge).toBe("PLAY");
 
     const snake = ARCADE_GAMES.find((g) => g.id === "snake");
     expect(snake?.playable).toBe(true);

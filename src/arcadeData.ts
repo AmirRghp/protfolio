@@ -117,12 +117,13 @@ export const ARCADE_GAMES: GameItem[] = [
   },
   {
     id: "tetris",
-    title: "Pixel Tetris",
-    system: "Arcade Puzzle",
+    title: "Cyber Tetris",
+    system: "Neon Arcade",
     year: "1984",
-    badge: "COMING SOON",
-    playable: false,
-    description: "Falling-block puzzle classic. Clear lines and manage the matrix. Coming soon in a future update.",
+    badge: "PLAY",
+    playable: true,
+    description: "Retro 5-sector cyberpunk falling-block puzzle with SRS wall kicks, ghost piece, hold queue, particle bursts, and 8-bit chiptune sound.",
+    controls: "Arrows/WASD: Move/Rotate · Space: Hard Drop · C: Hold · M: Music · Esc: Exit",
     icon: TetrisIcon,
   },
   {
