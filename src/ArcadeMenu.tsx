@@ -13,6 +13,7 @@ import {
 } from "./arcadeData";
 import Deparkanoid from "./Deparkanoid";
 import SnakeGame from "./SnakeGame";
+import FlappyGame from "./FlappyGame";
 import styles from "./ArcadeMenu.module.css";
 
 export type ArcadeMenuProps = {
@@ -84,7 +85,11 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     if (!active) return;
     const focusTarget = () => {
       if (playing) {
-        if (selectedGame.id !== "deparkanoid" && selectedGame.id !== "snake") {
+        if (
+          selectedGame.id !== "deparkanoid" &&
+          selectedGame.id !== "snake" &&
+          selectedGame.id !== "flappy"
+        ) {
           exitButtonRef.current?.focus({ preventScroll: true });
         }
       } else if (playButtonRef.current) {
@@ -219,6 +224,25 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
               </div>
               <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
                 <SnakeGame onExit={exitGame} />
+              </div>
+            </>
+          ) : selectedGame.id === "flappy" ? (
+            <>
+              <div className={styles.gameplayHud}>
+                <button
+                  ref={exitButtonRef}
+                  type="button"
+                  className={styles.hudExitButton}
+                  onClick={exitGame}
+                >
+                  Exit game
+                </button>
+                <p id="flappy-hint" className={styles.arcadeHint}>
+                  Space / Up / Click: Flap · Esc: Exit
+                </p>
+              </div>
+              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
+                <FlappyGame onExit={exitGame} />
               </div>
             </>
           ) : loadTimedOut ? (
@@ -371,9 +395,13 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
                         5 Handcrafted Levels · Authentic Departure Mono · Ricochet Physics
                       </p>
-                    ) : (
+                    ) : selectedGame.id === "snake" ? (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
                         5 Campaign Levels · Cyber Obstacles · Golden Apples · Departure Mono
+                      </p>
+                    ) : (
+                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
+                        5 Cyber Sectors · Laser Conduit Pylons · Bonus Data Orbs · Departure Mono
                       </p>
                     )}
                   </>

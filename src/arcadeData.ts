@@ -85,6 +85,24 @@ export function ArkanoidIcon({ className }: { className?: string }) {
   );
 }
 
+export function FlappyIcon({ className }: { className?: string }) {
+  return createElement(
+    "svg",
+    {
+      className,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "1.8",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+    },
+    createElement("path", { d: "M3 13c3-3 8-4 13-1l5 1-4 4c-4 2-9 1-14-4z" }),
+    createElement("path", { d: "M9 11l4-7c2 2 3 5 2 7" }),
+    createElement("circle", { cx: "16", cy: "11", r: "1", fill: "currentColor" }),
+  );
+}
+
 export const ARCADE_GAMES: GameItem[] = [
   {
     id: "crash",
@@ -128,5 +146,16 @@ export const ARCADE_GAMES: GameItem[] = [
     description: "Retro 5-level brick breaker with custom pixel art, authentic ricochet physics, and retro Departure Mono typography.",
     controls: "Mouse / Arrows: Move · Space / Click: Launch · Esc: Exit",
     icon: ArkanoidIcon,
+  },
+  {
+    id: "flappy",
+    title: "Cyber Flappy",
+    system: "Neon Arcade",
+    year: "2024",
+    badge: "PLAY",
+    playable: true,
+    description: "Retro 5-level cyber flappy with laser conduit pylons, oscillating gates, bonus data orbs, and neon particle bursts.",
+    controls: "Space / Up / Click: Flap · Esc: Exit",
+    icon: FlappyIcon,
   },
 ];

@@ -4,13 +4,14 @@ import ArcadeMenu from "./ArcadeMenu";
 import { ARCADE_GAMES, ARCADE_GAME_URL } from "./arcadeData";
 
 describe("ArcadeMenu component", () => {
-  it("renders all 4 games and shows Crash Bandicoot with Play option", () => {
+  it("renders all 5 games and shows Crash Bandicoot with Play option", () => {
     const html = renderToStaticMarkup(<ArcadeMenu active={true} onExit={() => {}} />);
 
     expect(html).toContain("Crash Bandicoot");
     expect(html).toContain("Pixel Tetris");
     expect(html).toContain("Snake Grid");
     expect(html).toContain("Deparkanoid");
+    expect(html).toContain("Cyber Flappy");
 
     // Check Play game button
     expect(html).toContain("Play game");
@@ -21,8 +22,8 @@ describe("ArcadeMenu component", () => {
     expect(html).toContain("ARCADE V1.0");
   });
 
-  it("includes all 4 games in the ARCADE_GAMES dataset with appropriate statuses", () => {
-    expect(ARCADE_GAMES).toHaveLength(4);
+  it("includes all 5 games in the ARCADE_GAMES dataset with appropriate statuses", () => {
+    expect(ARCADE_GAMES).toHaveLength(5);
 
     const crash = ARCADE_GAMES.find((g) => g.id === "crash");
     expect(crash).toBeDefined();
@@ -40,6 +41,11 @@ describe("ArcadeMenu component", () => {
     const deparkanoid = ARCADE_GAMES.find((g) => g.id === "deparkanoid");
     expect(deparkanoid?.playable).toBe(true);
     expect(deparkanoid?.badge).toBe("PLAY");
+
+    const flappy = ARCADE_GAMES.find((g) => g.id === "flappy");
+    expect(flappy).toBeDefined();
+    expect(flappy?.playable).toBe(true);
+    expect(flappy?.badge).toBe("PLAY");
   });
 
   it("defines the authentic PS1FUN crash bandicoot url", () => {

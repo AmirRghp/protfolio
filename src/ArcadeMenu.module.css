@@ -311,8 +311,8 @@
 /* Bottom cards row */
 .bottomCards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.5rem;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.35rem;
 }
 
 .cardItem {
