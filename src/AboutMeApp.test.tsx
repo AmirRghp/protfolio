@@ -12,7 +12,9 @@ describe("about me file", () => {
     expect(html).toContain(portfolioContent.owner.role);
     expect(html).toContain(portfolioContent.owner.email);
     expect(html).toContain(portfolioContent.owner.location);
-    expect(html).toContain(portfolioContent.owner.resumeUrl);
+    expect(html).toContain(portfolioContent.owner.githubUrl);
+    expect(html).toContain("GitHub Profile");
+    expect(html).not.toContain("View Resume PDF");
 
     for (const role of portfolioContent.owner.experience) {
       expect(html).toContain(role.title);
@@ -31,6 +33,11 @@ describe("about me file", () => {
 
     for (const course of portfolioContent.owner.courses) {
       expect(html).toContain(course.provider);
+    }
+
+    for (const project of portfolioContent.projects) {
+      expect(html).toContain(project.title);
+      expect(html).toContain(`href="${project.githubUrl}"`);
     }
   });
 

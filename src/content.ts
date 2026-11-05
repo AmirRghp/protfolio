@@ -1,4 +1,4 @@
-export type ProjectIcon = "chat" | "layers" | "radar";
+export type ProjectIcon = "scan" | "rag" | "vision" | "agent" | "chat" | "layers";
 
 export type ExperienceItem = {
   company: string;
@@ -54,7 +54,7 @@ export type PortfolioContent = {
     email: string;
     phone: string;
     githubUrl: `https://github.com/${string}`;
-    resumeUrl: string;
+    resumeUrl?: string;
     bio: string;
     languages: {
       language: string;
@@ -98,7 +98,6 @@ export const portfolioContent: PortfolioContent = {
     email: "amirreza.gh0094@gmail.com",
     phone: "09001110554",
     githubUrl: "https://github.com/AmirRghp",
-    resumeUrl: "/assets/aistudio/_______________-en_e3282018.pdf",
     bio: "First and foremost, I have always loved challenging and distinctive work. That curiosity drew me into artificial intelligence and machine learning and shaped my career path. Currently, I work as a machine learning engineer developing data-driven solutions to solve real-world problems with modern ML and generative AI models. Alongside continuous learning, collaborative teamwork is one of my favorite parts of engineering—the strongest results happen when team members bring their knowledge, experience, and perspectives together toward a shared goal.",
     languages: [
       { language: "English", proficiency: "Upper Intermediate" },
@@ -247,12 +246,6 @@ export const portfolioContent: PortfolioContent = {
         summary: "Interactive project management Kanban workspace integrated with an AI assistant for task breakdown and workflow automation.",
       },
       {
-        title: "Covid-19 Detection from Radiology Images",
-        year: "2025",
-        category: "Computer Vision & Ensemble ML",
-        summary: "Ensemble classification pipeline detecting Covid-19 patterns from chest radiology imaging.",
-      },
-      {
         title: "Cryptocurrency & Global Gold Price Forecasting",
         year: "2025",
         category: "Time-Series Forecasting",
@@ -281,6 +274,42 @@ export const portfolioContent: PortfolioContent = {
   },
   projects: [
     {
+      id: "covid-image-classification",
+      title: "COVID-19 Image Classification",
+      brief:
+        "A deep learning medical imaging pipeline using PyTorch for classifying COVID-19 radiology scans. Features custom dataset loaders, pre-trained CNN architectures (ResNet-50, VGG-19, EfficientNet), and stacking ensemble classification with accuracy/loss tracking and confusion matrix evaluations.",
+      githubUrl: "https://github.com/AmirRghp/COVID-Image-Classification-with-PyTorch",
+      highlights: ["PyTorch & CNNs", "Ensemble Stacking", "Radiology Imaging"],
+      icon: "scan",
+    },
+    {
+      id: "omnidoc-rag",
+      title: "OmniDoc RAG",
+      brief:
+        "An enterprise-grade, bilingual (Persian & English) technical RAG and evaluation engine for DevOps and infrastructure documentation. Features dual-channel hybrid retrieval (dense BGE-M3 + sparse BM25 with RRF and cross-encoder reranking), LangGraph Corrective RAG (CRAG) state machine, Qdrant vector store, local vLLM inference, and automated Ragas evaluation.",
+      githubUrl: "https://github.com/AmirRghp/omnidoc-rag",
+      highlights: ["Hybrid Retrieval & CRAG", "LangGraph & Qdrant", "vLLM & Ragas Eval"],
+      icon: "rag",
+    },
+    {
+      id: "omnidoc-vision",
+      title: "OmniDoc-Vision",
+      brief:
+        "A production-grade, bilingual (Persian & English) Multimodal Document Intelligence and Adaptive Visual RAG platform engineered to extract, index, and reason over complex technical PDFs with multi-header tables, architecture diagrams, and throughput charts under a 16GB VRAM budget.",
+      githubUrl: "https://github.com/AmirRghp/omnidoc_vision",
+      highlights: ["Multimodal Visual RAG", "Complex PDF Parsing", "Diagram & Chart Reasoning"],
+      icon: "vision",
+    },
+    {
+      id: "omniops-sre-agent",
+      title: "OmniOps SRE Agent",
+      brief:
+        "An autonomous incident response and Site Reliability Engineering platform built on FastMCP (Model Context Protocol) and LangGraph. Features autonomous alert triage, telemetry log correlation, runbook consultation, and deterministic remediation tools guarded by human-in-the-loop safety approvals.",
+      githubUrl: "https://github.com/AmirRghp/omniops-sre-agent",
+      highlights: ["Model Context Protocol (MCP)", "LangGraph Autonomous SRE", "Human-in-the-Loop Safety"],
+      icon: "agent",
+    },
+    {
       id: "enterprise-knowledge-copilot",
       title: "Enterprise Knowledge Copilot",
       brief:
@@ -297,15 +326,6 @@ export const portfolioContent: PortfolioContent = {
       githubUrl: "https://github.com/AmirRghp/laya-finetune",
       highlights: ["Persian RAG data", "Model fine-tuning", "Evaluation"],
       icon: "layers",
-    },
-    {
-      id: "freelance-project-radar",
-      title: "Freelance Project Radar",
-      brief:
-        "A backend that collects public freelance listings, normalizes and deduplicates them, ranks matches against a freelancer profile, and can send Telegram alerts. Demo mode works offline; live public-page adapters are best-effort and disabled by default.",
-      githubUrl: "https://github.com/AmirRghp/freelance-project-radar",
-      highlights: ["Listing collection", "Match ranking", "Telegram alerts"],
-      icon: "radar",
     },
   ],
 };

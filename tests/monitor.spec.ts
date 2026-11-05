@@ -264,7 +264,7 @@ test("a pending curved monitor asset does not block the HTML path", async ({ pag
   try {
     await page.goto("/", { waitUntil: "domcontentloaded" });
     await expect.poll(() => requested).toBe(true);
-    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
     const response = page.waitForResponse("**/assets/models/curved-monitor.glb");
     release();
     expect((await response).status()).toBe(200);
@@ -288,7 +288,7 @@ test("the desktop stays hidden when the 3D view is unavailable", async ({ page }
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
   await expect(page.locator(layer)).toHaveAttribute("inert", "");
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
 });
 
 test("the desktop disappears and releases focus when the graphics context is lost", async ({ page }) => {
@@ -307,6 +307,6 @@ test("the desktop disappears and releases focus when the graphics context is los
   await expect(page.locator(monitorWindow)).toHaveCount(0);
   await expect(page.locator(layer)).toHaveAttribute("data-active", "false");
   await expect(page.locator(layer)).toHaveAttribute("inert", "");
-  await expect(page.locator('[class*="preview"]')).toBeFocused();
+  await expect(page.getByLabel("Study room overview")).toBeFocused();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
 });

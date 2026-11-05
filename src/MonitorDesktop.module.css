@@ -13,11 +13,11 @@
   font-family: ui-sans-serif, system-ui, sans-serif;
   line-height: 1.4;
 
-  --ui-text: clamp(9px, 1.05cqw, 13px);
-  --ui-pad: clamp(8px, 1.3cqw, 18px);
-  --ui-gap: clamp(6px, 1.1cqw, 14px);
-  --ui-tile: clamp(30px, 4.4cqw, 54px);
-  --ui-bar: clamp(18px, 3.1cqw, 30px);
+  --ui-text: clamp(8px, 1.05cqw, 13px);
+  --ui-pad: clamp(5px, 1.3cqw, 18px);
+  --ui-gap: clamp(4px, 1.1cqw, 14px);
+  --ui-tile: clamp(22px, 4.4cqw, 54px);
+  --ui-bar: clamp(16px, 3.1cqw, 30px);
   --ui-sag-top: 0px;
   --ui-sag-bottom: 0px;
 }
@@ -112,7 +112,7 @@
   display: grid;
   justify-items: center;
   gap: calc(var(--ui-gap) * 0.5);
-  width: clamp(48px, 8.4cqw, 92px);
+  width: clamp(40px, 8.4cqw, 92px);
   padding: 0;
   border: 0;
   border-radius: 0.5rem;
@@ -139,8 +139,12 @@
 }
 
 .iconLabel {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   font-size: var(--ui-text);
-  line-height: 1.25;
+  line-height: 1.15;
   text-align: center;
   text-shadow: 0 1px 3px rgb(0 0 0 / 70%);
 }

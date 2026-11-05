@@ -74,18 +74,10 @@ export default function AboutMeApp() {
 
         <div className={styles.heroActions}>
           <a
-            href={owner.resumeUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.primaryAction}
-          >
-            View Resume PDF
-          </a>
-          <a
             href={owner.githubUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.secondaryAction}
+            className={styles.primaryAction}
           >
             GitHub Profile
           </a>

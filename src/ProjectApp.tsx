@@ -23,6 +23,50 @@ function LockIcon() {
   );
 }
 
+export function ScanGlyph() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <path d="M6 11V7a1 1 0 0 1 1-1h4M21 6h4a1 1 0 0 1 1 1v4M26 21v4a1 1 0 0 1-1 1h-4M11 26H7a1 1 0 0 1-1-1v-4" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="16" cy="16" r="4.5" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M16 8v3.5M16 20.5V24M8 16h3.5M20.5 16H24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function RagGlyph() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <path d="M7 5.5h11l7 7V25a1.5 1.5 0 0 1-1.5 1.5H7A1.5 1.5 0 0 1 5.5 25V7A1.5 1.5 0 0 1 7 5.5Z" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" />
+      <path d="M18 5.5V13h7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <path d="M9.5 13.5h5M9.5 17.5h5M9.5 21.5h8" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <circle cx="21" cy="21" r="4" fill="none" stroke="currentColor" strokeWidth="2.2" />
+      <path d="m24 24 3.5 3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function VisionGlyph() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <rect x="5" y="6" width="22" height="20" rx="3" fill="none" stroke="currentColor" strokeWidth="2.2" />
+      <path d="M7 16c2.5-4.5 5.5-7 9-7s6.5 2.5 9 7c-2.5 4.5-5.5 7-9 7s-6.5-2.5-9-7Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="16" cy="16" r="3" fill="currentColor" />
+    </svg>
+  );
+}
+
+export function AgentGlyph() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <rect x="5.5" y="7.5" width="21" height="16" rx="3.5" fill="none" stroke="currentColor" strokeWidth="2.2" />
+      <path d="M16 3.5v4M13.5 3.5h5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="m10 13 3 2.5-3 2.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M16.5 18h5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M11.5 27.5h9M16 23.5v4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function ChatGlyph() {
   return (
     <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">

@@ -14,6 +14,22 @@ test("production entry page loads without browser errors or horizontal overflow"
   await expect(page.locator(".intro__role")).toHaveText("AI Engineer");
   await expect(page.getByRole("heading", { level: 2, name: "Experience" })).toBeVisible();
   await expect(page.getByRole("heading", { level: 2, name: "Selected projects" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "View COVID-19 Image Classification on GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/AmirRghp/COVID-Image-Classification-with-PyTorch",
+  );
+  await expect(page.getByRole("link", { name: "View OmniDoc RAG on GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/AmirRghp/omnidoc-rag",
+  );
+  await expect(page.getByRole("link", { name: "View OmniDoc-Vision on GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/AmirRghp/omnidoc_vision",
+  );
+  await expect(page.getByRole("link", { name: "View OmniOps SRE Agent on GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/AmirRghp/omniops-sre-agent",
+  );
   await expect(page.getByRole("link", { name: "View Enterprise Knowledge Copilot on GitHub" })).toHaveAttribute(
     "href",
     "https://github.com/AmirRghp/enterprise-knowledge-copilot",
@@ -21,10 +37,6 @@ test("production entry page loads without browser errors or horizontal overflow"
   await expect(page.getByRole("link", { name: "View Laya Fine-tuning Pipeline on GitHub" })).toHaveAttribute(
     "href",
     "https://github.com/AmirRghp/laya-finetune",
-  );
-  await expect(page.getByRole("link", { name: "View Freelance Project Radar on GitHub" })).toHaveAttribute(
-    "href",
-    "https://github.com/AmirRghp/freelance-project-radar",
   );
 
   for (const width of [320, 375, 768, 1024, 1440]) {
@@ -55,7 +67,7 @@ test("room fills the viewport and keeps the HTML path keyboard accessible", asyn
   await page.keyboard.press("Enter");
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
   await page.keyboard.press("Tab");
-  await expect(page.getByRole("link", { name: "View Enterprise Knowledge Copilot on GitHub" })).toBeFocused();
+  await expect(page.getByRole("link", { name: "View COVID-19 Image Classification on GitHub" })).toBeFocused();
   await expect(page.locator(":focus")).toHaveCSS("outline-style", "solid");
 
   await page.evaluate(() => window.scrollTo(0, 0));
@@ -82,11 +94,11 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("status")).toContainText("The 3D view is unavailable.");
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
 
 
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
   await page.getByRole("link", { name: "Read portfolio" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
 });
@@ -150,7 +162,7 @@ test("a lost wallpaper context leaves the room usable and stops its frame loop",
   expect(afterLossEnd - afterLossStart).toBeLessThan(5);
   await expect(page.locator("canvas[data-engine]")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
 });
 
@@ -166,5 +178,5 @@ test("a lost GPU context falls back without removing the HTML portfolio", async 
   });
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(3);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
 });

@@ -17,7 +17,14 @@ async function focusMonitor(page: Page) {
 test("every project is an app on the monitor desktop", async ({ page }) => {
   await focusMonitor(page);
 
-  for (const title of ["Enterprise Knowledge Copilot", "Laya Fine-tuning Pipeline", "Freelance Project Radar"]) {
+  for (const title of [
+    "COVID-19 Image Classification",
+    "OmniDoc RAG",
+    "OmniDoc-Vision",
+    "OmniOps SRE Agent",
+    "Enterprise Knowledge Copilot",
+    "Laya Fine-tuning Pipeline",
+  ]) {
     await expect(page.getByRole("button", { name: title })).toBeVisible();
   }
 });
@@ -75,7 +82,7 @@ test("a blocked embed reports the error and keeps the direct link", async ({ pag
 test("the project window takes the focus and returns it to its icon", async ({ page }) => {
   await focusMonitor(page);
 
-  const icon = page.getByRole("button", { name: "Freelance Project Radar" });
+  const icon = page.getByRole("button", { name: "COVID-19 Image Classification" });
   const close = page.getByRole("button", { name: "Close", exact: true });
 
   await icon.dblclick();
@@ -119,7 +126,7 @@ test("selection follows project activation while hover and focus do not select i
 test("an icon can be dragged without opening its app", async ({ page }) => {
   await focusMonitor(page);
 
-  const icon = page.getByRole("button", { name: "Enterprise Knowledge Copilot" });
+  const icon = page.getByRole("button", { name: "COVID-19 Image Classification" });
   const before = await icon.boundingBox();
   await icon.hover();
   await page.mouse.down();
@@ -135,7 +142,7 @@ test("an icon can be dragged without opening its app", async ({ page }) => {
 test("a dragged icon stays inside the screen of the monitor", async ({ page }) => {
   await focusMonitor(page);
 
-  const icon = page.getByRole("button", { name: "Freelance Project Radar" });
+  const icon = page.getByRole("button", { name: "COVID-19 Image Classification" });
   const screen = await page.locator(desktop).boundingBox();
   const before = await icon.boundingBox();
   await icon.hover();
@@ -170,7 +177,7 @@ test("every app icon stays inside the screen of the monitor", async ({ page }) =
       });
     });
 
-    expect(icons).toHaveLength(4);
+    expect(icons).toHaveLength(7);
     for (const icon of icons) expect(icon.inside, `${icon.name} at ${width}px`).toBe(true);
 
     await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
@@ -204,14 +211,14 @@ test("icons stay inside the screen after a resize", async ({ page }) => {
     });
   });
 
-  expect(icons).toHaveLength(4);
+  expect(icons).toHaveLength(7);
   for (const item of icons) expect(item.inside, `${item.name} after the resize`).toBe(true);
 });
 
 test("a cancelled pointer does not swallow the next keyboard activation", async ({ page }) => {
   await focusMonitor(page);
 
-  const icon = page.getByRole("button", { name: "Freelance Project Radar" });
+  const icon = page.getByRole("button", { name: "COVID-19 Image Classification" });
   await icon.hover();
   await page.mouse.down();
 
@@ -280,7 +287,7 @@ test("a touch double tap opens a project app", async ({ browser }) => {
   await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
 
-  const icon = page.getByRole("button", { name: "Freelance Project Radar" });
+  const icon = page.getByRole("button", { name: "COVID-19 Image Classification" });
   const box = (await icon.boundingBox())!;
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect(page.locator(monitorWindow)).toHaveCount(0);

@@ -30,11 +30,22 @@ describe("desktop apps", () => {
     const project = portfolioContent.projects[0];
     const html = renderToStaticMarkup(<ProjectApp project={project} icon={<span>glyph</span>} />);
 
-    expect(html).toContain("github.com/AmirRghp/enterprise-knowledge-copilot");
+    expect(html).toContain("github.com/AmirRghp/COVID-Image-Classification-with-PyTorch");
     expect(html).toContain(`href="${project.githubUrl}"`);
     expect(html).toContain(project.title);
     expect(html).toContain(project.brief);
-    expect(html).toContain("Authorized documents");
+    expect(html).toContain("Radiology Imaging");
+  });
+
+  it("renders a unique vector SVG glyph for each project app", () => {
+    const renderedGlyphs = projectApps.map((app) => renderToStaticMarkup(app.icon));
+    expect(renderedGlyphs).toHaveLength(portfolioContent.projects.length);
+    for (const glyph of renderedGlyphs) {
+      expect(glyph).toContain("<svg");
+      expect(glyph).toContain('viewBox="0 0 32 32"');
+    }
+    const uniqueGlyphs = new Set(renderedGlyphs);
+    expect(uniqueGlyphs.size).toBe(portfolioContent.projects.length);
   });
 
   it("keeps a dragged icon inside the desktop", () => {

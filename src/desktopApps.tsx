@@ -1,7 +1,14 @@
 import AboutMeApp, { AboutMeFileIcon } from "./AboutMeApp";
 import { portfolioContent, type ProjectIcon } from "./content";
 import type { DesktopApp } from "./MonitorDesktop";
-import ProjectApp, { ChatGlyph, LayersGlyph, RadarGlyph } from "./ProjectApp";
+import ProjectApp, {
+  AgentGlyph,
+  ChatGlyph,
+  LayersGlyph,
+  RagGlyph,
+  ScanGlyph,
+  VisionGlyph,
+} from "./ProjectApp";
 
 /** The `about-me.txt` file of the monitor desktop. */
 export const aboutMeApp: DesktopApp = {
@@ -14,9 +21,12 @@ export const aboutMeApp: DesktopApp = {
 };
 
 const projectGlyphs: Record<ProjectIcon, () => React.ReactElement> = {
+  scan: ScanGlyph,
+  rag: RagGlyph,
+  vision: VisionGlyph,
+  agent: AgentGlyph,
   chat: ChatGlyph,
   layers: LayersGlyph,
-  radar: RadarGlyph,
 };
 
 /** Every project of the shared content becomes an app of the monitor desktop. */

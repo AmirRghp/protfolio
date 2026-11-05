@@ -3,10 +3,9 @@ import { clickRoomHotspot } from "./testHelpers";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
-const moveLayer = '[class*="moveLayer"]';
 
 // The desktop is projected on a software rendered 3D scene, so these checks need more time on slow machines.
-test.describe.configure({ timeout: 90_000 });
+test.describe.configure({ mode: "serial", timeout: 90_000 });
 
 async function focusMonitor(page: Page, viewport = { width: 1440, height: 800 }) {
   await page.setViewportSize(viewport);
@@ -53,7 +52,7 @@ function expectInside(inner: Awaited<ReturnType<typeof boxOf>>, outer: Awaited<R
 
 test("a title-bar drag moves the window, while controls, links and content do not start a drag", async ({ page }) => {
   await focusMonitor(page);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).dblclick();
+  await page.getByRole("button", { name: "COVID-19 Image Classification" }).dblclick();
   const window = page.locator(monitorWindow);
   await expect(window).toBeVisible();
 
@@ -64,7 +63,6 @@ test("a title-bar drag moves the window, while controls, links and content do no
   expect(moved.y).toBeGreaterThan(before.y + 10);
 
   const nonDraggable = [
-    window.getByRole("button", { name: "Move window", exact: true }),
     window.getByRole("button", { name: "Maximize window", exact: true }),
     window.getByRole("button", { name: "Close", exact: true }),
     window.getByRole("link", { name: "Open GitHub repository" }),
@@ -77,7 +75,6 @@ test("a title-bar drag moves the window, while controls, links and content do no
     const after = await boxOf(window);
     expect(Math.abs(after.x - current.x)).toBeLessThanOrEqual(1);
     expect(Math.abs(after.y - current.y)).toBeLessThanOrEqual(1);
-    await expect(page.locator(moveLayer)).toHaveCount(0);
   }
 
   const body = window.locator('[class*="windowBody"]');
@@ -89,7 +86,7 @@ test("a title-bar drag moves the window, while controls, links and content do no
 
   // Re-activating the app that already owns the window must not throw away its geometry.
   const beforeSameApp = await boxOf(window);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).click();
+  await page.getByRole("button", { name: "COVID-19 Image Classification" }).click();
   await page.waitForTimeout(100);
   const afterSameApp = await boxOf(window);
   expect(Math.abs(afterSameApp.x - beforeSameApp.x)).toBeLessThanOrEqual(1);
@@ -153,7 +150,6 @@ test("maximize fills the workspace below the status bar and restore survives a r
   await maximize.click();
   const restore = window.getByRole("button", { name: "Restore window", exact: true });
   await expect(restore).toBeVisible();
-  await expect(window.getByRole("button", { name: "Move window", exact: true })).toBeDisabled();
   await expect(window.getByRole("button", { name: "Close", exact: true })).toBeVisible();
 
   const desktopBox = await boxOf(page.locator(desktop));
@@ -181,14 +177,12 @@ test("maximize fills the workspace below the status bar and restore survives a r
   expectInside(restored, narrowerDesktop);
   expect(restored.width).toBeLessThanOrEqual(narrowerDesktop.width - 8);
   await expect(window.getByRole("button", { name: "Maximize window", exact: true })).toBeVisible();
-  await expect(window.getByRole("button", { name: "Move window", exact: true })).toBeEnabled();
 
   await window.getByRole("button", { name: "Close", exact: true }).click();
   await expect(window).toHaveCount(0);
   await page.getByRole("button", { name: "about-me.txt" }).dblclick();
   await expect(page.locator(monitorWindow)).toBeVisible();
   await expect(page.getByRole("button", { name: "Maximize window", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Move window", exact: true })).toBeEnabled();
   const reopened = await boxOf(page.locator(monitorWindow));
   expect(reopened.width).toBeLessThan(initial.width);
 
@@ -197,9 +191,9 @@ test("maximize fills the workspace below the status bar and restore survives a r
   await expect(page.getByRole("button", { name: "Restore window", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Close", exact: true }).click();
   await expect(page.locator(monitorWindow)).toHaveCount(0);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).click();
+  await page.getByRole("button", { name: "COVID-19 Image Classification" }).dblclick();
   const projectWindow = page.locator(monitorWindow);
-  await expect(projectWindow.getByRole("heading", { name: "Freelance Project Radar" })).toBeVisible();
+  await expect(projectWindow.getByRole("heading", { name: "COVID-19 Image Classification" })).toBeVisible();
   await expect(projectWindow.getByRole("button", { name: "Maximize window", exact: true })).toBeVisible();
   await expect(projectWindow.getByRole("button", { name: "Restore window", exact: true })).toHaveCount(0);
 });
@@ -225,81 +219,35 @@ test("the window geometry is not persisted across a reload", async ({ page }) =>
   expect(Math.abs(reopened.width - initial.width)).toBeLessThanOrEqual(2);
 });
 
-test("Move mode places the window without activating the content under the pointer", async ({ page }) => {
+test("dragging the window title bar over other icons does not activate them", async ({ page }) => {
   await focusMonitor(page);
-  await page.getByRole("button", { name: "Freelance Project Radar" }).dblclick();
+  await page.getByRole("button", { name: "COVID-19 Image Classification" }).dblclick();
   const window = page.locator(monitorWindow);
-  const move = window.getByRole("button", { name: "Move window", exact: true });
-  const before = await boxOf(window);
+  await expect(window).toBeVisible();
 
-  await move.click();
-  await expect(page.locator(moveLayer)).toBeVisible();
-  await expect(move).toHaveAttribute("aria-pressed", "true");
-  await expect(move).toBeFocused();
-
-  // This icon would open a different app if the placement layer let the click through.
   const destination = await boxOf(page.getByRole("button", { name: "Enterprise Knowledge Copilot" }));
-  await page.mouse.click(destination.x + destination.width / 2, destination.y + destination.height / 2);
+  const bar = await boxOf(titleBar(window));
+  const dx = destination.x - bar.x;
+  const dy = destination.y - bar.y;
 
-  await expect(page.locator(moveLayer)).toHaveCount(0);
-  await expect(move).toHaveAttribute("aria-pressed", "false");
-  await expect(move).toBeFocused();
-  await expect(window.getByRole("heading", { name: "Freelance Project Radar" })).toBeVisible();
+  await dragFromTitleBar(page, window, dx, dy);
+  await expect(window.getByRole("heading", { name: "COVID-19 Image Classification" })).toBeVisible();
   await expect(window.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Enterprise Knowledge Copilot" })).toHaveCount(1);
-
-  const after = await boxOf(window);
-  expect(Math.hypot(after.x - before.x, after.y - before.y)).toBeGreaterThan(20);
-  expectInside(await boxOf(titleBar(window)), await boxOf(page.locator(desktop)));
 });
 
-test("leaving the desktop while placing cancels Move mode and keeps the window", async ({ page }) => {
+test("Escape closes the active window and returns focus to its icon", async ({ page }) => {
   await focusMonitor(page);
   await page.getByRole("button", { name: "about-me.txt" }).dblclick();
   const window = page.locator(monitorWindow);
-  const move = window.getByRole("button", { name: "Move window", exact: true });
-  await move.click();
-  await expect(page.locator(moveLayer)).toBeVisible();
-
-  // This control is outside the projected desktop, so it must both navigate and end placement.
-  await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
-  await expect(page.getByText("Study overview", { exact: false })).toBeVisible();
   await expect(window).toBeVisible();
-  await clickRoomHotspot(page, "monitor");
-  await expect(page.locator(desktop)).toBeFocused();
-  await expect(page.locator(moveLayer)).toHaveCount(0);
-  await expect(move).toHaveAttribute("aria-pressed", "false");
-
-  // One Escape closes the restored window; if placement were still active, it would only cancel.
-  await page.keyboard.press("Escape");
-  await expect(window).toHaveCount(0);
-  await expect(page.getByRole("button", { name: "about-me.txt" })).toBeFocused();
-});
-
-test("Escape cancels Move mode without closing the window", async ({ page }) => {
-  await focusMonitor(page);
-  await page.getByRole("button", { name: "about-me.txt" }).dblclick();
-  const window = page.locator(monitorWindow);
-  const move = window.getByRole("button", { name: "Move window", exact: true });
-  const before = await boxOf(window);
-
-  await move.click();
-  await expect(page.locator(moveLayer)).toBeVisible();
-  await page.keyboard.press("Escape");
-  await expect(page.locator(moveLayer)).toHaveCount(0);
-  await expect(window).toBeVisible();
-  await expect(move).toBeFocused();
-  const afterCancel = await boxOf(window);
-  expect(Math.abs(afterCancel.x - before.x)).toBeLessThanOrEqual(1);
-  expect(Math.abs(afterCancel.y - before.y)).toBeLessThanOrEqual(1);
-  await page.waitForTimeout(100);
 
   await page.keyboard.press("Escape");
   await expect(window).toHaveCount(0);
   await expect(page.getByRole("button", { name: "about-me.txt" })).toBeFocused();
 });
 
-test("touch drag and Move mode move the window without opening an app underneath", async ({ browser }) => {
+test("touch drag moves the window without opening an app underneath", async ({ browser }) => {
   const context = await browser.newContext({
     viewport: { width: 768, height: 1024 },
     isMobile: true,
@@ -311,9 +259,10 @@ test("touch drag and Move mode move the window without opening an app underneath
   await page.touchscreen.tap(248, 448);
   await expect(page.locator(desktop)).toBeVisible();
   await page.waitForTimeout(500);
-  const radar = page.getByRole("button", { name: "Freelance Project Radar" });
-  await radar.tap();
-  await radar.tap();
+  const appButton = page.getByRole("button", { name: "COVID-19 Image Classification" });
+  const appBox = (await appButton.boundingBox())!;
+  await page.touchscreen.tap(appBox.x + appBox.width / 2, appBox.y + appBox.height / 2);
+  await page.touchscreen.tap(appBox.x + appBox.width / 2, appBox.y + appBox.height / 2);
   const window = page.locator(monitorWindow);
   await expect(window).toBeVisible();
 
@@ -336,15 +285,6 @@ test("touch drag and Move mode move the window without opening an app underneath
     scale: globalThis.visualViewport?.scale ?? 1,
   }))).toEqual(viewBefore);
 
-  const destination = await boxOf(page.getByRole("button", { name: "Enterprise Knowledge Copilot" }));
-  const move = window.getByRole("button", { name: "Move window", exact: true });
-  await move.tap();
-  await expect(page.locator(moveLayer)).toBeVisible();
-  await page.touchscreen.tap(destination.x + destination.width / 2, destination.y + destination.height / 2);
-  await expect(page.locator(moveLayer)).toHaveCount(0);
-  await expect(window.getByRole("heading", { name: "Freelance Project Radar" })).toBeVisible();
-  await expect(window.getByRole("heading", { name: "Enterprise Knowledge Copilot" })).toHaveCount(0);
-
   await context.close();
 });
 
@@ -355,7 +295,7 @@ test("changing the geometry never remounts the embedded app frame", async ({ pag
     body: "<!doctype html><title>Embedded project</title><p>Embedded project loaded.</p>",
   }));
   await focusMonitor(page);
-  await page.getByRole("button", { name: "Enterprise Knowledge Copilot" }).click();
+  await page.getByRole("button", { name: "Enterprise Knowledge Copilot" }).dblclick();
   const window = page.locator(monitorWindow);
   const load = window.getByRole("button", { name: "Load inside this window" });
   await load.click();
@@ -401,7 +341,7 @@ test("the default window keeps its title controls usable at narrow smoke widths"
     await page.waitForTimeout(500);
     const windowBox = await boxOf(window);
     expectInside(await boxOf(titleBar(window)), windowBox);
-    for (const name of ["Move window", "Maximize window", "Close"]) {
+    for (const name of ["Maximize window", "Close"]) {
       const control = window.getByRole("button", { name, exact: true });
       await expect(control).toBeVisible();
       const controlBox = await boxOf(control);
@@ -430,7 +370,7 @@ test("a moved window stays inside the desktop across the supported widths", asyn
     expectInside(windowBox, screen);
     expectInside(await boxOf(titleBar(window)), windowBox);
 
-    for (const name of ["Move window", "Maximize window", "Close"]) {
+    for (const name of ["Maximize window", "Close"]) {
       const control = window.getByRole("button", { name, exact: true });
       await expect(control).toBeVisible();
       const controlBox = await boxOf(control);

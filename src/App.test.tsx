@@ -23,7 +23,7 @@ describe("portfolio entry page", () => {
 
     for (const project of portfolioContent.projects) {
       expect(html).toContain(project.title);
-      expect(html).toContain(project.brief.replaceAll("'", "&#x27;"));
+      expect(html).toContain(project.brief.replaceAll("&", "&amp;").replaceAll("'", "&#x27;"));
       expect(html).toContain(`href="${project.githubUrl}"`);
     }
   });
@@ -35,9 +35,12 @@ describe("portfolio entry page", () => {
     expect(new Set(ids).size).toBe(ids.length);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).toEqual([
+      "https://github.com/AmirRghp/COVID-Image-Classification-with-PyTorch",
+      "https://github.com/AmirRghp/omnidoc-rag",
+      "https://github.com/AmirRghp/omnidoc_vision",
+      "https://github.com/AmirRghp/omniops-sre-agent",
       "https://github.com/AmirRghp/enterprise-knowledge-copilot",
       "https://github.com/AmirRghp/laya-finetune",
-      "https://github.com/AmirRghp/freelance-project-radar",
     ]);
   });
 });
