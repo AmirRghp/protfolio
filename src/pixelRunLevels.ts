@@ -367,3 +367,12 @@ export function createCollectible(type: CollectibleType, startX: number, altitud
     radius: type === "shield" ? 14 : 11,
   };
 }
+
+export function getSectorProgress(distance: number, sectorIndex: number): number {
+  const clampedIndex = Math.max(0, Math.min(SECTOR_CONFIGS.length - 1, sectorIndex));
+  const startDist = clampedIndex === 0 ? 0 : SECTOR_CONFIGS[clampedIndex - 1].targetDistance;
+  const endDist = SECTOR_CONFIGS[clampedIndex].targetDistance;
+  const span = Math.max(1, endDist - startDist);
+  return Math.max(0, Math.min(1, (distance - startDist) / span));
+}
+

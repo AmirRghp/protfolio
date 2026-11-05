@@ -261,3 +261,9 @@ export function isBirdCollectingOrb(
   const combinedRadius = birdRadius + orbRadius;
   return dx * dx + dy * dy <= combinedRadius * combinedRadius;
 }
+
+export function getLevelProgress(gatesCleared: number, targetGates: number): number {
+  if (targetGates <= 0) return 0;
+  return Math.max(0, Math.min(1, gatesCleared / targetGates));
+}
+

@@ -1160,7 +1160,7 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
           height: "100%",
           display: "block",
           imageRendering: "pixelated",
-          cursor: modeRef.current === "RUNNING" ? "default" : "pointer",
+          cursor: "pointer",
         }}
       />
     </div>

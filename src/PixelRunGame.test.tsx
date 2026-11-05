@@ -20,6 +20,7 @@ import {
   createCollectible,
   createObstacle,
   getRaptorHitbox,
+  getSectorProgress,
   type RaptorState,
 } from "./pixelRunLevels";
 
@@ -45,6 +46,16 @@ describe("PixelRunGame & pixelRunLevels Engine", () => {
 
     expect(SECTOR_CONFIGS[SECTOR_CONFIGS.length - 1].targetDistance).toBe(VICTORY_DISTANCE);
     expect(VICTORY_DISTANCE).toBe(4500);
+  });
+
+  it("calculates normalized sector progress within each sector boundary", () => {
+    expect(getSectorProgress(0, 0)).toBe(0);
+    expect(getSectorProgress(250, 0)).toBeCloseTo(0.5);
+    expect(getSectorProgress(500, 0)).toBe(1);
+    // Sector 2 spans 500..1200 (span = 700)
+    expect(getSectorProgress(500, 1)).toBe(0);
+    expect(getSectorProgress(850, 1)).toBeCloseTo(0.5);
+    expect(getSectorProgress(1200, 1)).toBe(1);
   });
 
   it("calculates accurate upright and ducking hitboxes", () => {

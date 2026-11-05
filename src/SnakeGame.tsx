@@ -412,7 +412,7 @@ export default function SnakeGame(props: SnakeGameProps) {
       // Outer pulsing glow
       const pulse = Math.sin(now / 150) * 2 + 8;
       ctx.save();
-      ctx.shadowBlur = 18;
+      ctx.shadowBlur = pulse;
       ctx.shadowColor = SNAKE_PALETTE.goldenApple;
       ctx.fillStyle = SNAKE_PALETTE.goldenApple;
 

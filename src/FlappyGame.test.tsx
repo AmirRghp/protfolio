@@ -10,6 +10,7 @@ import {
   PYLON_WIDTH,
   TOTAL_FLAPPY_LEVELS,
   generatePylonGap,
+  getLevelProgress,
   isBirdCollidingWithGround,
   isBirdCollidingWithPylon,
   isBirdCollectingOrb,
@@ -20,6 +21,13 @@ describe("flappyLevels configuration & physics", () => {
   it("defines exactly 5 progressive levels", () => {
     expect(TOTAL_FLAPPY_LEVELS).toBe(5);
     expect(FLAPPY_LEVELS).toHaveLength(5);
+  });
+
+  it("calculates clamped level quota progress accurately", () => {
+    expect(getLevelProgress(0, 10)).toBe(0);
+    expect(getLevelProgress(5, 10)).toBeCloseTo(0.5);
+    expect(getLevelProgress(10, 10)).toBe(1);
+    expect(getLevelProgress(15, 10)).toBe(1);
   });
 
   it("scales difficulty progressively across levels", () => {
