@@ -15,6 +15,7 @@ import {
   SHORT_HOP_CUTOFF,
   TOTAL_SECTORS,
   VICTORY_DISTANCE,
+  DISTANCE_SCALE,
   checkCollectiblePickup,
   checkRaptorCollision,
   createCollectible,
@@ -446,9 +447,9 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
       // --- GAMEPLAY UPDATE ---
       if (state.mode === "RUNNING" || state.mode === "SECTOR_WARP") {
         const speed = currentSector.speed * (state.isEndless ? 1.25 : 1.0);
-        const distStep = speed * 60 * dt * 0.18; // 1 unit ~ 0.18m
+        const distStep = speed * 60 * dt * DISTANCE_SCALE; // Scaled so ~7.5m/s in Sector 1 up to ~13.2m/s in Sector 5
         state.distance += distStep;
-        state.score += Math.floor(distStep * 1.5);
+        state.score += distStep * 3;
 
         // Ground scroll
         state.groundScrollX = (state.groundScrollX + speed * 60 * dt) % 80;
@@ -486,8 +487,9 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
             state.mode = "VICTORY";
             pixelRunAudio.playVictory();
             state.score += 2500;
-            if (state.score > state.highScore) {
-              state.highScore = state.score;
+            const currentTotalScore = Math.floor(state.score);
+            if (currentTotalScore > state.highScore) {
+              state.highScore = currentTotalScore;
               try {
                 localStorage.setItem(STORAGE_KEY_HIGH_SCORE, state.highScore.toString());
               } catch {
@@ -638,8 +640,9 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
               spawnParticles(raptor.x + 20, raptor.y + 20, "#ff0044", 30, 8, 5);
               spawnParticles(raptor.x + 20, raptor.y + 20, palette.accent, 20, 6, 3);
 
-              if (state.score > state.highScore) {
-                state.highScore = state.score;
+              const currentTotalScore = Math.floor(state.score);
+              if (currentTotalScore > state.highScore) {
+                state.highScore = currentTotalScore;
                 try {
                   localStorage.setItem(STORAGE_KEY_HIGH_SCORE, state.highScore.toString());
                 } catch {
@@ -1107,7 +1110,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
       );
 
       // Score & Data Cores
-      const scoreStr = state.score.toString().padStart(6, "0");
+      const scoreStr = Math.floor(state.score).toString().padStart(6, "0");
       ctx.textAlign = "center";
       ctx.fillText(`SCORE: ${scoreStr}`, GAME_W / 2, 34);
       ctx.fillText(`CORES: ✦ ${state.coresCollected}`, GAME_W / 2, 56);
@@ -1200,7 +1203,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
         ctx.font = `15px "${EMBEDDED_FAMILY}", monospace`;
         ctx.fillStyle = palette.textAccent;
         ctx.fillText(`FINAL DISTANCE: ${Math.floor(state.distance)}M`, GAME_W / 2, 285);
-        ctx.fillText(`FINAL SCORE: ${state.score} PTS`, GAME_W / 2, 315);
+        ctx.fillText(`FINAL SCORE: ${Math.floor(state.score)} PTS`, GAME_W / 2, 315);
         ctx.fillText(`DATA CORES: ${state.coresCollected}`, GAME_W / 2, 345);
 
         const blink = Math.sin(time * 0.005) > 0;
@@ -1228,12 +1231,13 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
         ctx.fillStyle = "#ffffff";
         ctx.shadowBlur = 6;
         ctx.fillText(
-          `DISTANCE: ${Math.floor(state.distance)}M · SCORE: ${state.score}`,
+          `DISTANCE: ${Math.floor(state.distance)}M · SCORE: ${Math.floor(state.score)}`,
           GAME_W / 2,
           250,
         );
 
-        if (state.score >= state.highScore && state.score > 0) {
+        const finalScore = Math.floor(state.score);
+        if (finalScore >= state.highScore && finalScore > 0) {
           ctx.font = `bold 18px "${EMBEDDED_FAMILY}", monospace`;
           ctx.fillStyle = "#ffff00";
           ctx.shadowColor = "#ffff00";

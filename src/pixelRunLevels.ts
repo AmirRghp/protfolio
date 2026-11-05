@@ -15,6 +15,7 @@ export const FAST_FALL_ACCEL = 1.1;
 
 export const VICTORY_DISTANCE = 4500;
 export const TOTAL_SECTORS = 5;
+export const DISTANCE_SCALE = 0.02;
 
 export type ObstacleType =
   | "spike_single"
