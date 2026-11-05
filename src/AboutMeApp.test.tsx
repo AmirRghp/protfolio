@@ -5,15 +5,32 @@ import { aboutMeApp, desktopApps } from "./desktopApps";
 import { portfolioContent } from "./content";
 
 describe("about me file", () => {
-  it("renders the owner identity and every experience entry from the shared content", () => {
+  it("renders the owner identity, bio, experience, education, skills, courses, and projects from the shared content", () => {
     const html = renderToStaticMarkup(<AboutMeApp />);
 
     expect(html).toContain(portfolioContent.owner.name);
     expect(html).toContain(portfolioContent.owner.role);
+    expect(html).toContain(portfolioContent.owner.email);
+    expect(html).toContain(portfolioContent.owner.location);
+    expect(html).toContain(portfolioContent.owner.resumeUrl);
+
     for (const role of portfolioContent.owner.experience) {
       expect(html).toContain(role.title);
       expect(html).toContain(role.company);
       expect(html).toContain(role.period);
+    }
+
+    for (const edu of portfolioContent.owner.education) {
+      expect(html).toContain(edu.field);
+      expect(html).toContain(edu.institution);
+    }
+
+    for (const group of portfolioContent.owner.skillGroups) {
+      expect(html).toContain(group.category.replaceAll("&", "&amp;"));
+    }
+
+    for (const course of portfolioContent.owner.courses) {
+      expect(html).toContain(course.provider);
     }
   });
 

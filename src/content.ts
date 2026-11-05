@@ -1,14 +1,75 @@
 export type ProjectIcon = "chat" | "layers" | "radar";
 
+export type ExperienceItem = {
+  company: string;
+  companyNote?: string;
+  title: string;
+  roleNote?: string;
+  period: string;
+  location: string;
+  highlights: string[];
+};
+
+export type EducationItem = {
+  degree: string;
+  field: string;
+  institution: string;
+  period: string;
+};
+
+export type CourseItem = {
+  title: string;
+  provider: string;
+  year: string;
+  duration: string;
+};
+
+export type SkillGroup = {
+  category: string;
+  skills: {
+    name: string;
+    level?: string;
+  }[];
+};
+
+export type AcademicProjectItem = {
+  title: string;
+  year: string;
+  category: string;
+  summary: string;
+};
+
+export type VolunteerItem = {
+  role: string;
+  organization: string;
+  year: string;
+};
+
 export type PortfolioContent = {
   owner: {
     name: string;
     role: string;
-    experience: {
-      company: string;
-      title: string;
-      period: string;
+    headline: string;
+    location: string;
+    email: string;
+    phone: string;
+    githubUrl: `https://github.com/${string}`;
+    resumeUrl: string;
+    bio: string;
+    languages: {
+      language: string;
+      proficiency: string;
     }[];
+    metrics: {
+      value: string;
+      label: string;
+    }[];
+    experience: ExperienceItem[];
+    education: EducationItem[];
+    skillGroups: SkillGroup[];
+    courses: CourseItem[];
+    academicProjects: AcademicProjectItem[];
+    volunteer: VolunteerItem[];
   };
   projects: {
     id: string;
@@ -32,16 +93,189 @@ export const portfolioContent: PortfolioContent = {
   owner: {
     name: "Amirreza Gholipour",
     role: "AI Engineer",
+    headline: "Machine Learning Engineer · M.Sc. in Artificial Intelligence & Robotics",
+    location: "Babol, Mazandaran, Iran",
+    email: "amirreza.gh0094@gmail.com",
+    phone: "09001110554",
+    githubUrl: "https://github.com/AmirRghp",
+    resumeUrl: "/assets/aistudio/_______________-en_e3282018.pdf",
+    bio: "First and foremost, I have always loved challenging and distinctive work. That curiosity drew me into artificial intelligence and machine learning and shaped my career path. Currently, I work as a machine learning engineer developing data-driven solutions to solve real-world problems with modern ML and generative AI models. Alongside continuous learning, collaborative teamwork is one of my favorite parts of engineering—the strongest results happen when team members bring their knowledge, experience, and perspectives together toward a shared goal.",
+    languages: [
+      { language: "English", proficiency: "Upper Intermediate" },
+      { language: "Persian", proficiency: "Native" },
+    ],
+    metrics: [
+      { value: "M.Sc.", label: "AI & Robotics at MUST" },
+      { value: "Daraei360", label: "AI Engineer & Product Manager" },
+      { value: "9+ Projects", label: "Applied AI, RAG & Vision" },
+      { value: "ICSPIS 2025", label: "Executive Committee" },
+    ],
     experience: [
       {
         company: "Daraei360",
-        title: "AI Engineer",
-        period: "October 2025 – May 2026",
+        companyNote: "dadehnegareghtesad",
+        title: "Product Manager",
+        period: "May 2026 – September 2026",
+        location: "Babol, Iran",
+        highlights: [
+          "Implemented practical, high-impact product features tailored to real user workflows.",
+          "Conducted structured competitor analysis to guide roadmap prioritization.",
+          "Analyzed Microsoft Clarity, PostHog, and Metabase telemetry for behavioral user insights.",
+          "Defined, scoped, and managed engineering tasks for the IT team in Jira.",
+          "Partnered directly with customer relations and support teams to resolve user issues rapidly.",
+        ],
       },
       {
         company: "Daraei360",
-        title: "Product Manager",
-        period: "May 2026 – September 2026",
+        companyNote: "dadehnegareghtesad",
+        title: "AI Engineer",
+        roleNote: "AI Developer",
+        period: "October 2025 – May 2026",
+        location: "Babolsar, Iran",
+        highlights: [
+          "Designed and deployed data-driven machine learning and generative AI workflows.",
+          "Built retrieval-augmented generation (RAG), fine-tuning, and intelligent automation pipelines.",
+          "Integrated backend AI services using Python, FastAPI, vector databases, and modern LLM frameworks.",
+        ],
+      },
+    ],
+    education: [
+      {
+        degree: "Master of Science",
+        field: "Artificial Intelligence and Robotics",
+        institution: "Mazandaran University of Science and Technology",
+        period: "2024 – Present",
+      },
+      {
+        degree: "Bachelor of Science",
+        field: "Software Engineering",
+        institution: "Mazandaran University of Science and Technology",
+        period: "2019 – 2024",
+      },
+    ],
+    skillGroups: [
+      {
+        category: "AI, Machine Learning & GenAI",
+        skills: [
+          { name: "Python", level: "Intermediate" },
+          { name: "PyTorch" },
+          { name: "TensorFlow" },
+          { name: "Keras", level: "Intermediate" },
+          { name: "OpenCV", level: "Intermediate" },
+          { name: "Retrieval-Augmented Generation (RAG)" },
+          { name: "Model Fine-Tuning" },
+          { name: "LangChain" },
+          { name: "LangGraph" },
+          { name: "MCP (Model Context Protocol)" },
+          { name: "AI Prompt Engineering" },
+          { name: "Qdrant" },
+          { name: "MATLAB", level: "Basic" },
+        ],
+      },
+      {
+        category: "Backend, Data & Infrastructure",
+        skills: [
+          { name: "FastAPI", level: "Intermediate" },
+          { name: "REST API", level: "Basic" },
+          { name: "PostgreSQL", level: "Intermediate" },
+          { name: "MySQL", level: "Intermediate" },
+          { name: "Microsoft SQL Server", level: "Intermediate" },
+          { name: "Redis", level: "Basic" },
+          { name: "Apache Kafka", level: "Basic" },
+          { name: "Docker", level: "Intermediate" },
+          { name: "Linux", level: "Intermediate" },
+          { name: "Git & GitLab", level: "Intermediate" },
+          { name: "N8N Workflow Automation" },
+          { name: "Aiogram & Telegram Bot API" },
+        ],
+      },
+      {
+        category: "Product Analytics & Frontend",
+        skills: [
+          { name: "PostHog" },
+          { name: "Metabase" },
+          { name: "Microsoft Clarity" },
+          { name: "Jira", level: "Intermediate" },
+          { name: "HTML & CSS", level: "Intermediate" },
+          { name: "React", level: "Basic" },
+          { name: "Next.js", level: "Basic" },
+          { name: "JavaScript", level: "Basic" },
+          { name: "PyQt5" },
+          { name: "Unit Testing", level: "Basic" },
+          { name: "Selenium", level: "Basic" },
+          { name: "Postman", level: "Basic" },
+        ],
+      },
+    ],
+    courses: [
+      {
+        title: "Machine Learning Specialization",
+        provider: "Coursera",
+        year: "2025",
+        duration: "1 month",
+      },
+      {
+        title: "Unsupervised Learning, Recommenders, Reinforcement Learning",
+        provider: "Coursera",
+        year: "2025",
+        duration: "1 month",
+      },
+      {
+        title: "Advanced Learning Algorithms",
+        provider: "Coursera",
+        year: "2025",
+        duration: "1 month",
+      },
+      {
+        title: "Generative AI Complete Bootcamp — NLP, Transformers & Gen AI",
+        provider: "Udemy",
+        year: "2025",
+        duration: "1 month",
+      },
+      {
+        title: "PyTorch for Deep Learning Bootcamp",
+        provider: "Udemy",
+        year: "2025",
+        duration: "2 months",
+      },
+    ],
+    academicProjects: [
+      {
+        title: "Project Management Kanban Board with an AI Assistant",
+        year: "2026",
+        category: "AI Product Engineering",
+        summary: "Interactive project management Kanban workspace integrated with an AI assistant for task breakdown and workflow automation.",
+      },
+      {
+        title: "Covid-19 Detection from Radiology Images",
+        year: "2025",
+        category: "Computer Vision & Ensemble ML",
+        summary: "Ensemble classification pipeline detecting Covid-19 patterns from chest radiology imaging.",
+      },
+      {
+        title: "Cryptocurrency & Global Gold Price Forecasting",
+        year: "2025",
+        category: "Time-Series Forecasting",
+        summary: "Predictive machine learning models for forecasting cryptocurrency markets and global gold prices.",
+      },
+      {
+        title: "AI-Powered Telegram Bot for Social Media Analysis",
+        year: "2025",
+        category: "NLP & Bot Automation",
+        summary: "Telegram bot connected to AI models for automated social media trend and content analysis.",
+      },
+      {
+        title: "AI-Based Image Recognition for KYC Identity Verification",
+        year: "2025",
+        category: "Computer Vision & Security",
+        summary: "Automated image recognition pipeline designed for Know Your Customer (KYC) identity verification.",
+      },
+    ],
+    volunteer: [
+      {
+        role: "Executive Committee Member",
+        organization: "The 11th International Conference on Signal Processing and Intelligent Systems (ICSPIS 2025)",
+        year: "2026",
       },
     ],
   },
