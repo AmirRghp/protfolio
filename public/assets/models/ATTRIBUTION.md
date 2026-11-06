@@ -100,6 +100,19 @@ Positioned on the desk to the right of the mousepad with its emoji facing the ca
 
 “Batman Pop Vinyl” collectible figurine on the lower shelf, with satin vinyl PBR standard materials reflecting shelf illumination.
 
+## oiia-cat.glb
+
+“Oiiaioooooiai Cat” by **Zhuier**
+([creator](https://sketchfab.com/Zhuier)), licensed under
+[Creative Commons Attribution 4.0 International](https://creativecommons.org/licenses/by/4.0/).
+
+Source: https://sketchfab.com/3d-models/oiiaioooooiai-cat-30d27bf7fb224849b76e208a6eccdb36
+
+Changes: position on desk between CoffeeMug and arcade cutout, custom interactive dance system with morph target tucking paws into loaf, beat-synced spin and bounce, party spotlights, desk contact shadow, and reset on navigation blur.
+
+Audio: “Oiia Oiia (Spinning Cat)” by **W&W**
+Original track used as internet meme soundtrack for non-commercial portfolio interactive showcase.
+
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright

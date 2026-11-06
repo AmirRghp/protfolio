@@ -267,3 +267,106 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+.catHud {
+  position: absolute;
+  top: clamp(3.75rem, 6vw, 4.5rem);
+  right: clamp(1rem, 3vw, 2rem);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  pointer-events: auto;
+}
+
+.catHudButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.125rem;
+  padding: 0.35rem 0.85rem;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 9999px;
+  background: rgb(14 10 28 / 78%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #f3f1ff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 45%);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.catHudButton:hover {
+  background: rgb(22 16 42 / 92%);
+  border-color: rgb(255 255 255 / 45%);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 65%);
+}
+
+.catHudButton[data-playing="true"] {
+  border-color: #00e5ff;
+  background: rgb(6 28 44 / 85%);
+  color: #e0faff;
+  box-shadow: 0 0 16px rgb(0 229 255 / 35%), 0 4px 14px rgb(0 0 0 / 50%);
+}
+
+.catHudButton:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 2px;
+}
+
+.catHudButton:active {
+  transform: scale(0.97);
+}
+
+.catIcon {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.catLabel {
+  white-space: nowrap;
+}
+
+.catMuteButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  padding: 0;
+  border: 1px solid rgb(255 255 255 / 20%);
+  border-radius: 9999px;
+  background: rgb(14 10 28 / 78%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #f3f1ff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgb(0 0 0 / 45%);
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.catMuteButton:hover {
+  background: rgb(22 16 42 / 92%);
+  border-color: rgb(255 255 255 / 45%);
+}
+
+.catMuteButton:focus-visible {
+  outline: 2px solid #00e5ff;
+  outline-offset: 2px;
+}
+
+.catMuteButton:active {
+  transform: scale(0.95);
+}

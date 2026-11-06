@@ -7,6 +7,7 @@ import RoomUnavailable from "./RoomUnavailable";
 import { backCursorHintPosition, hotspotHintPosition, type RoomHotspot, type RoomHotspotHover } from "./roomHover";
 import styles from "./RoomPreview.module.css";
 import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
+import { oiiaAudio } from "./oiiaAudio";
 
 const RoomScene = lazy(() => import("./RoomScene"));
 
@@ -60,6 +61,15 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     }
   }
   const [openAppId, setOpenAppId] = useState<string | null>(null);
+  const [catAudioState, setCatAudioState] = useState(() => oiiaAudio.getState());
+  useEffect(() => {
+    return oiiaAudio.subscribe(setCatAudioState);
+  }, []);
+  useEffect(() => {
+    if (navigation.destination !== "room") {
+      oiiaAudio.reset();
+    }
+  }, [navigation.destination]);
   const focusedDestination: Exclude<RoomDestination, "room"> | null = navigation.destination === "room"
     ? null
     : navigation.destination;
@@ -223,12 +233,40 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           Go Back (ESC)
         </button>
       ) : (
-        <header className={styles.header}>
-          <div className={styles.headerTop}>
-            <span>AG / {portfolioContent.owner.role}</span>
-            <a href="#name">Read portfolio</a>
-          </div>
-        </header>
+        <>
+          <header className={styles.header}>
+            <div className={styles.headerTop}>
+              <span>AG / {portfolioContent.owner.role}</span>
+              <a href="#name">Read portfolio</a>
+            </div>
+          </header>
+          {!sceneFailed && (
+            <div className={styles.catHud} role="region" aria-label="Oiia Cat music controls">
+              <button
+                type="button"
+                className={styles.catHudButton}
+                data-playing={catAudioState.isPlaying}
+                onClick={() => oiiaAudio.toggle()}
+                aria-label={catAudioState.isPlaying ? "Pause Oiia Cat dance" : "Start Oiia Cat musical dance"}
+              >
+                <span className={styles.catIcon} aria-hidden="true">🐱</span>
+                <span className={styles.catLabel}>
+                  {catAudioState.isPlaying ? "Oiia Cat: Dancing 🎵" : "Oiia Cat: Dance"}
+                </span>
+              </button>
+              {catAudioState.isPlaying && (
+                <button
+                  type="button"
+                  className={styles.catMuteButton}
+                  onClick={() => oiiaAudio.toggleMute()}
+                  aria-label={catAudioState.isMuted ? "Unmute Oiia Cat audio" : "Mute Oiia Cat audio"}
+                >
+                  {catAudioState.isMuted ? "🔇" : "🔊"}
+                </button>
+              )}
+            </div>
+          )}
+        </>
       )}
       <div className={styles.scene}>
         <SceneBoundary onFailure={failScene}>

@@ -43,6 +43,7 @@ import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
 import RoomUnavailable from "./RoomUnavailable";
 import CoffeeMug from "./CoffeeMug";
 import BatmanFigure from "./BatmanFigure";
+import OiiaCat from "./OiiaCat";
 
 type Triple = [number, number, number];
 
@@ -804,6 +805,7 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         <CompactKeyboard />
         <ComputerMouse />
         <CoffeeMug active={destination === "room"} />
+        <OiiaCat destination={destination} />
         <BatmanFigure />
         <ArcadeCabinet arcadeRef={arcadeRef} onLoaded={setArcadeObjects} />
       </Suspense>

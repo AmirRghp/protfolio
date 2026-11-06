@@ -40,6 +40,36 @@ describe("RoomPreview component", () => {
 
     expect(html).toContain("Go Back (ESC)");
     expect(html).toContain("Focused on Monitor.");
+    expect(html).not.toContain("Oiia Cat music controls");
+  });
+
+  it("renders Oiia Cat HUD controls in room overview and reflects audio state", async () => {
+    const { oiiaAudio } = await import("./oiiaAudio");
+    oiiaAudio.reset();
+
+    const overviewNav: RoomNavigationState = { destination: "room" };
+    let html = renderToStaticMarkup(
+      <RoomPreview navigation={overviewNav} onNavigate={() => {}} />
+    );
+
+    expect(html).toContain("Oiia Cat music controls");
+    expect(html).toContain("Oiia Cat: Dance");
+    expect(html).toContain("Start Oiia Cat musical dance");
+    expect(html).not.toContain("Oiia Cat: Dancing");
+    expect(html).not.toContain("Mute Oiia Cat audio");
+
+    // Start playing
+    await oiiaAudio.play();
+    html = renderToStaticMarkup(
+      <RoomPreview navigation={overviewNav} onNavigate={() => {}} />
+    );
+
+    expect(html).toContain("Oiia Cat: Dancing 🎵");
+    expect(html).toContain("Pause Oiia Cat dance");
+    expect(html).toContain("Mute Oiia Cat audio");
+
+    // Reset audio back to clean state
+    oiiaAudio.reset();
   });
 
   it("renders the arcade panel and safe external link when focused on arcade", () => {
