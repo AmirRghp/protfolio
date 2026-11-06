@@ -41,6 +41,7 @@ import {
 import type { RoomDestination } from "./roomNavigation";
 import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
 import RoomUnavailable from "./RoomUnavailable";
+import CoffeeMug from "./CoffeeMug";
 
 type Triple = [number, number, number];
 
@@ -734,7 +735,8 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
   return null;
 }
 
-function Study({ onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
+function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
+  destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
   arcadeRef?: RefObject<HTMLDivElement | null>;
@@ -795,6 +797,7 @@ function Study({ onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
         <MousePad />
         <CompactKeyboard />
         <ComputerMouse />
+        <CoffeeMug active={destination === "room"} />
         <ArcadeCabinet arcadeRef={arcadeRef} onLoaded={setArcadeObjects} />
       </Suspense>
       <FocusHotspot destination="arcade" position={[4.495, 2.5, 1.65]} size={[3.1, 6.4]} onNavigate={onNavigate} />
@@ -881,6 +884,7 @@ export default function RoomScene({
         onUnavailable?.();
       }} />
       <Study
+        destination={destination}
         onNavigate={onNavigate}
         desktopRef={desktopRef}
         arcadeRef={arcadeRef}

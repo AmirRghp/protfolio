@@ -91,6 +91,11 @@ Changes: rotated to face the viewer, scaled and positioned in the cut-out space 
 edge of the desk so its upper body and control deck align with the workstation and its lower cabinet
 is clipped cleanly at the bottom boundary of the Hero section.
 
+## cup.glb
+
+“Cup” with custom emoji face and coffee surface, converted to standard glTF 2.0 PBR Metallic-Roughness.
+Positioned on the desk to the right of the mousepad with its emoji facing the camera and animated hot steam.
+
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright
