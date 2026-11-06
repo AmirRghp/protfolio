@@ -49,6 +49,11 @@ function RoomFurnishings() {
   const { scene } = useLoader(GLTFLoader, "/assets/models/room-furnishings.glb");
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
+    const emptyShelves = scene.getObjectByName("EmptyShelves");
+    if (emptyShelves) {
+      emptyShelves.position.set(-0.59, 0, 0);
+      emptyShelves.scale.set(0.86, 1, 1);
+    }
     scene.traverse((object) => {
       if (object instanceof Mesh) {
         object.castShadow = object.name !== "DeskTop";
@@ -773,10 +778,10 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
       <pointLight position={[2.4, 5.8, 3.2]} color="#38bdf8" intensity={4.5} distance={11} decay={2} />
 
       {/* Under-shelf neon LED illumination (cyan to magenta) */}
-      <pointLight position={[1.9, 4.05, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
-      <pointLight position={[3.2, 4.05, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
-      <pointLight position={[1.9, 5.30, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
-      <pointLight position={[3.2, 5.30, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[1.0, 4.05, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[2.2, 4.05, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[1.0, 5.30, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
+      <pointLight position={[2.2, 5.30, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
 
       <mesh position={[0, 3.2, -1.4]} receiveShadow>
         <planeGeometry args={[30, 24]} />
