@@ -10,8 +10,8 @@
 .ringWrapper {
   position: relative;
   flex: none;
-  width: clamp(140px, 18cqw, 210px);
-  height: clamp(140px, 18cqw, 210px);
+  width: clamp(170px, 21.8cqw, 254px);
+  height: clamp(170px, 21.8cqw, 254px);
   aspect-ratio: 1 / 1;
 }
 
