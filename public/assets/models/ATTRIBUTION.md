@@ -96,6 +96,10 @@ is clipped cleanly at the bottom boundary of the Hero section.
 “Cup” with custom emoji face and coffee surface, converted to standard glTF 2.0 PBR Metallic-Roughness.
 Positioned on the desk to the right of the mousepad with its emoji facing the camera and animated hot steam.
 
+## batman.glb
+
+“Batman Pop Vinyl” collectible figurine on the lower shelf, with satin vinyl PBR standard materials reflecting shelf illumination.
+
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright

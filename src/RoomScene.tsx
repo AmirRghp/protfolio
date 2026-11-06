@@ -42,6 +42,7 @@ import type { RoomDestination } from "./roomNavigation";
 import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
 import RoomUnavailable from "./RoomUnavailable";
 import CoffeeMug from "./CoffeeMug";
+import BatmanFigure from "./BatmanFigure";
 
 type Triple = [number, number, number];
 
@@ -803,6 +804,7 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         <CompactKeyboard />
         <ComputerMouse />
         <CoffeeMug active={destination === "room"} />
+        <BatmanFigure />
         <ArcadeCabinet arcadeRef={arcadeRef} onLoaded={setArcadeObjects} />
       </Suspense>
       <FocusHotspot destination="arcade" position={[4.495, 2.5, 1.65]} size={[3.1, 6.4]} onNavigate={onNavigate} />
