@@ -38,7 +38,7 @@
 
 - کاربر صریحاً انتخاب کرد که R05 فقط «پوستهٔ دسکتاپ» را تحویل دهد: پس‌زمینه، نوار وضعیت زنده، ستون آیکون خالی و اسکلت پنجره با جای‌گذاری و focus. آیکون `about-me.txt` و اپ‌های پروژه با قابلیت کشیدن در R06 و R07 می‌آیند.
 - `src/MonitorPanel.tsx` و `src/MonitorPanel.module.css` حذف شدند؛ مسیر modal تمام‌صفحه با دسکتاپ داخل نمایشگر جایگزین شد. محتوای معرفی تا R06 فقط در صفحهٔ زیر Hero در دسترس است و در R06 به فایل `about-me.txt` داخل دسکتاپ منتقل می‌شود.
-- طبق بازبینی کد، wallpaper دیگر با CSS دستی ساخته نمی‌شود: کامپوننت Gradient Waves از React Bits به TypeScript پورت شد (`src/GradientWaves.tsx`) با مقادیر `horizonColor="#1e3a8a"`, `waveColor="#38bdf8"`, `crestColor="#e0f2fe"`, `speed=0.5`, `amplitude=1.8`, `relief=1`, `lightAngle=150`, `waveScale=0.9`, `swell=25`, `turbulence=28`, `quality="low"` و تعامل pointer/click در حالت focus مانیتور. هیچ dependency جدیدی نصب نشد و notice کپی‌رایت در `THIRD_PARTY_NOTICES.md` و هدر فایل پورت‌شده نگه داشته شد.
+- طبق بازبینی کد، wallpaper دیگر با CSS دستی ساخته نمی‌شود: کامپوننت Gradient Waves از React Bits به TypeScript پورت شد (`src/GradientWaves.tsx`) با مقادیر `horizonColor="#1e3a8a"`, `waveColor="#38bdf8"`, `crestColor="#e0f2fe"`, `speed=0.5`, `amplitude=1.8`, `relief=1`, `lightAngle=150`, `waveScale=0.9`, `swell=25`, `turbulence=28`, `quality="low"` و تعامل pointer/click در حالت focus مانیتور. هیچ dependency جدیدی نصب نشد و notice کپی‌رایت در `docs/THIRD_PARTY_NOTICES.md` و هدر فایل پورت‌شده نگه داشته شد.
 - wallpaper یک نمونهٔ HTML واحد است که در overview و focus روی صفحهٔ فیزیکی تصویر می‌شود؛ CanvasTexture قدیمیِ نام و نقش مالک حذف شد و صفحهٔ فیزیکی فقط یک پنل تیرهٔ خنثی است. بنابراین در گذار focus هیچ تعویض تصویری رخ نمی‌دهد.
 - بدون وابستگی، state library، backend یا ساختار موازی جدید؛ state خانه/پنجره `useState` محلی در `MonitorDesktop` است.
 
@@ -76,7 +76,7 @@
 - تغییر `src/RoomPreview.tsx` و `src/RoomPreview.module.css` — لایهٔ overlay همیشه‌نما، focus رفت‌وبرگشت، گزارش خرابی صحنه و حذف modal.
 - حذف `src/MonitorPanel.tsx` و `src/MonitorPanel.module.css`.
 - تغییر `scripts/prepare-curved-monitor.mjs` و `public/assets/models/curved-monitor.glb` — آماده‌سازی مدل lowpoly پیوست‌شده.
-- تغییر `public/assets/models/ATTRIBUTION.md`، `THIRD_PARTY_NOTICES.md` و `README.md`.
+- تغییر `public/assets/models/ATTRIBUTION.md`، `docs/THIRD_PARTY_NOTICES.md` و `README.md`.
 - تغییر `src/monitorAsset.test.ts`، `tests/monitor.spec.ts`، `tests/room-navigation.spec.ts`، `tests/entry-page.spec.ts` و `tests/project-board.spec.ts` (انتخاب صریح canvas صحنه، چون wallpaper هم یک canvas دارد).
 
 ### بررسی‌ها و نتایج

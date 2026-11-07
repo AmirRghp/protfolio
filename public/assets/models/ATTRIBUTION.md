@@ -116,5 +116,5 @@ Original track used as internet meme soundtrack for non-commercial portfolio int
 ## Other third-party code
 
 The Gradient Waves wallpaper is a TypeScript port of the React Bits component. Its copyright
-and license notice are kept in `THIRD_PARTY_NOTICES.md` and in the header of
+and license notice are kept in `docs/THIRD_PARTY_NOTICES.md` and in the header of
 `src/GradientWaves.tsx`.
