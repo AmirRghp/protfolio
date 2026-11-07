@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import ProjectCarousel, { type CarouselProject } from "./ProjectCarousel";
 import styles from "./flatLanding.module.css";
 
-export type BranchData = {
+type BranchData = {
   id: string;
   name: string;
   color: string;
@@ -11,7 +11,7 @@ export type BranchData = {
   projects: CarouselProject[];
 };
 
-export const WORK_BRANCHES: BranchData[] = [
+const WORK_BRANCHES: BranchData[] = [
   {
     id: "applied-ai-rag",
     name: "Applied AI & RAG",

@@ -43,10 +43,14 @@ export default function LedButton({
     hover: 0,
     hot: 0,
     flash: 0,
-    ph: Math.random(),
+    ph: 0,
     last: 0,
     raf: 0,
   });
+
+  useEffect(() => {
+    stateRef.current.ph = Math.random();
+  }, []);
 
   useEffect(() => {
     const btn = btnRef.current;

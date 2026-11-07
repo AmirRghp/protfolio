@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import LedButton from "../exit/LedButton";
 import WorkAccordion from "./WorkAccordion";
 import { portfolioContent } from "../../content";
@@ -50,7 +50,6 @@ function StatCounter({ st, inView }: { st: StatItem; inView: boolean }) {
 
     const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduced) {
-      setDisplay(st.val);
       return;
     }
 
@@ -100,7 +99,7 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
   const [numbersInView, setNumbersInView] = useState(false);
   const runningAnimationsRef = useRef<Animation[]>([]);
 
-  const settle = () => {
+  const settle = useCallback(() => {
     for (const a of runningAnimationsRef.current) {
       try {
         a.commitStyles();
@@ -110,27 +109,10 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       a.cancel();
     }
     runningAnimationsRef.current = [];
-  };
-
-  // Mount canvas into shotBox
-  useEffect(() => {
-    const shotBox = shotBoxRef.current;
-    if (!shotBox) return;
-
-    if (snapshotCanvas) {
-      snapshotCanvas.style.position = "absolute";
-      snapshotCanvas.style.inset = "0";
-      snapshotCanvas.style.width = "100%";
-      snapshotCanvas.style.height = "100%";
-      snapshotCanvas.style.objectFit = "cover";
-      shotBox.replaceChildren(snapshotCanvas);
-    } else {
-      shotBox.replaceChildren();
-    }
-  }, [snapshotCanvas]);
+  }, []);
 
   // Compute frame clip
-  const frameClip = () => {
+  const frameClip = useCallback(() => {
     const media = mediaRef.current;
     const frame = frameRef.current;
     if (!media || !frame) return { clip: FULL, origin: "50% 50%" };
@@ -143,119 +125,10 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       clip: `inset(${Math.max(0, top)}px ${Math.max(0, m.width - left - r.width)}px ${Math.max(0, m.height - top - r.height)}px ${Math.max(0, left)}px round 6px)`,
       origin: `${left + r.width / 2}px ${top + r.height / 2}px`,
     };
-  };
-
-  // Open Transition
-  useEffect(() => {
-    if (!isOpen) {
-      if (transitionState === "open" || transitionState === "opening") {
-        handleReenter();
-      }
-      return;
-    }
-    if (transitionState === "open" || transitionState === "opening") return;
-
-    setTransitionState("opening");
-    setIsReady(false);
-
-    const root = rootRef.current;
-    const media = mediaRef.current;
-    const shotBox = shotBoxRef.current;
-    const veil = veilRef.current;
-    const frame = frameRef.current;
-    const reel = reelRef.current;
-    const nav = navRef.current;
-
-    if (!root || !media || !shotBox || !veil || !frame || !reel || !nav) {
-      setTransitionState("open");
-      setIsReady(true);
-      return;
-    }
-
-    root.scrollTop = 0;
-    setIsScrolled(false);
-    settle();
-
-    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || typeof root.animate !== "function") {
-      setTransitionState("open");
-      setIsReady(true);
-      return;
-    }
-
-    const { clip, origin } = frameClip();
-    shotBox.style.transformOrigin = origin;
-
-    const T = 150;
-    const D = 1050;
-
-    const a1 = root.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: "both", easing: "linear" });
-    const a2 = media.animate([{ clipPath: FULL }, { clipPath: clip }], { duration: D, delay: T, fill: "both", easing: EASE });
-    const a3 = shotBox.animate(
-      [
-        { filter: "blur(0px)", transform: "scale(1)" },
-        { filter: `blur(${BLUR}px)`, transform: "scale(1.08)" },
-      ],
-      { duration: D, delay: T, fill: "both", easing: EASE },
-    );
-    const a4 = veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: D, delay: T + 200, fill: "both", easing: OUT });
-    const a5 = nav.animate(
-      [
-        { opacity: 0, transform: "translateY(-10px)" },
-        { opacity: 1, transform: "none" },
-      ],
-      { duration: 700, delay: T + 600, fill: "both", easing: OUT },
-    );
-    const a6 = reel.animate(
-      [
-        { opacity: 0, transform: "translateY(40px) scale(.96)" },
-        { opacity: 1, transform: "none" },
-      ],
-      { duration: 900, delay: T + 780, fill: "both", easing: OUT },
-    );
-    runningAnimationsRef.current = [a1, a2, a3, a4, a5, a6];
-
-    Promise.all([a1.finished, a2.finished, a3.finished, a4.finished, a5.finished, a6.finished])
-      .then(() => {
-        settle();
-        setTransitionState("open");
-        setIsReady(true);
-      })
-      .catch(() => {
-        settle();
-        setTransitionState("open");
-        setIsReady(true);
-      });
-  }, [isOpen]);
-
-  // Window resize handler while open keeps snapshot frameClip dynamically updated
-  useEffect(() => {
-    if (transitionState !== "open") return;
-    const place = () => {
-      const { clip, origin } = frameClip();
-      if (mediaRef.current) mediaRef.current.style.clipPath = clip;
-      if (shotBoxRef.current) shotBoxRef.current.style.transformOrigin = origin;
-    };
-    window.addEventListener("resize", place);
-    return () => window.removeEventListener("resize", place);
-  }, [transitionState]);
-
-  // Global Escape key returns to room when at root flat landing
-  useEffect(() => {
-    if (transitionState !== "open") return;
-    const handleGlobalKeyDown = (e: KeyboardEvent) => {
-      const tag = document.activeElement?.tagName?.toLowerCase();
-      if (tag === "input" || tag === "textarea") return;
-      if (e.key === "Escape") {
-        handleReenter();
-      }
-    };
-    window.addEventListener("keydown", handleGlobalKeyDown);
-    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [transitionState]);
+  }, []);
 
   // Handle Close / Re-enter
-  const handleReenter = async () => {
+  const handleReenter = useCallback(async () => {
     if (transitionState === "closing" || transitionState === "closed") return;
     setTransitionState("closing");
     setIsReady(false);
@@ -327,7 +200,9 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       await fadeAnim.finished;
       try {
         fadeAnim.commitStyles();
-      } catch {}
+      } catch {
+        // commitStyles can throw if target node was disconnected
+      }
       fadeAnim.cancel();
     } catch {
       settle();
@@ -335,7 +210,128 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
 
     setTransitionState("closed");
     onReenter();
-  };
+  }, [transitionState, frameClip, onReenter, settle]);
+
+  // Mount canvas into shotBox
+  useEffect(() => {
+    const shotBox = shotBoxRef.current;
+    if (!shotBox) return;
+
+    if (snapshotCanvas) {
+      shotBox.replaceChildren(snapshotCanvas);
+    } else {
+      shotBox.replaceChildren();
+    }
+  }, [snapshotCanvas]);
+
+  // Open Transition
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    const root = rootRef.current;
+    const media = mediaRef.current;
+    const shotBox = shotBoxRef.current;
+    const veil = veilRef.current;
+    const frame = frameRef.current;
+    const reel = reelRef.current;
+    const nav = navRef.current;
+
+    if (!root || !media || !shotBox || !veil || !frame || !reel || !nav) {
+      setTransitionState("open");
+      setIsReady(true);
+      return;
+    }
+
+    root.scrollTop = 0;
+    setIsScrolled(false);
+    settle();
+
+    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced || typeof root.animate !== "function") {
+      setTransitionState("open");
+      setIsReady(true);
+      return;
+    }
+
+    const { clip, origin } = frameClip();
+    shotBox.style.transformOrigin = origin;
+
+    const T = 150;
+    const D = 1050;
+
+    const a1 = root.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: "both", easing: "linear" });
+    const a2 = media.animate([{ clipPath: FULL }, { clipPath: clip }], { duration: D, delay: T, fill: "both", easing: EASE });
+    const a3 = shotBox.animate(
+      [
+        { filter: "blur(0px)", transform: "scale(1)" },
+        { filter: `blur(${BLUR}px)`, transform: "scale(1.08)" },
+      ],
+      { duration: D, delay: T, fill: "both", easing: EASE },
+    );
+    const a4 = veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: D, delay: T + 200, fill: "both", easing: OUT });
+    const a5 = nav.animate(
+      [
+        { opacity: 0, transform: "translateY(-10px)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 700, delay: T + 600, fill: "both", easing: OUT },
+    );
+    const a6 = reel.animate(
+      [
+        { opacity: 0, transform: "translateY(40px) scale(.96)" },
+        { opacity: 1, transform: "none" },
+      ],
+      { duration: 900, delay: T + 780, fill: "both", easing: OUT },
+    );
+    runningAnimationsRef.current = [a1, a2, a3, a4, a5, a6];
+
+    let active = true;
+    Promise.all([a1.finished, a2.finished, a3.finished, a4.finished, a5.finished, a6.finished])
+      .then(() => {
+        if (!active) return;
+        settle();
+        setTransitionState("open");
+        setIsReady(true);
+      })
+      .catch(() => {
+        if (!active) return;
+        settle();
+        setTransitionState("open");
+        setIsReady(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isOpen, frameClip, settle]);
+
+  // Window resize handler while open keeps snapshot frameClip dynamically updated
+  useEffect(() => {
+    if (transitionState !== "open") return;
+    const place = () => {
+      const { clip, origin } = frameClip();
+      if (mediaRef.current) mediaRef.current.style.clipPath = clip;
+      if (shotBoxRef.current) shotBoxRef.current.style.transformOrigin = origin;
+    };
+    window.addEventListener("resize", place);
+    return () => window.removeEventListener("resize", place);
+  }, [transitionState, frameClip]);
+
+  // Global Escape key returns to room when at root flat landing
+  useEffect(() => {
+    if (transitionState !== "open") return;
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const tag = document.activeElement?.tagName?.toLowerCase();
+      if (tag === "input" || tag === "textarea") return;
+      if (e.key === "Escape") {
+        void handleReenter();
+      }
+    };
+    window.addEventListener("keydown", handleGlobalKeyDown);
+    return () => window.removeEventListener("keydown", handleGlobalKeyDown);
+  }, [transitionState, handleReenter]);
 
   // Scroll listener for nav glass styling & intersection observer for rise elements
   useEffect(() => {
