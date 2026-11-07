@@ -129,7 +129,7 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
 
   // Handle Close / Re-enter
   const handleReenter = useCallback(async () => {
-    if (transitionState === "closing" || transitionState === "closed") return;
+    if (transitionState !== "open") return;
     setTransitionState("closing");
     setIsReady(false);
 
@@ -138,6 +138,7 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     const shotBox = shotBoxRef.current;
     const veil = veilRef.current;
     const reel = reelRef.current;
+    const nav = navRef.current;
     const page = root?.querySelector(`.${styles.ldPage}`) as HTMLElement | null;
 
     if (!root || !media || !shotBox || !veil || !reel || !page) {
@@ -165,6 +166,8 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
 
     const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduced || typeof root.animate !== "function") {
+      page.removeAttribute("style");
+      root.removeAttribute("style");
       setTransitionState("closed");
       onReenter();
       return;
@@ -208,6 +211,16 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       settle();
     }
 
+    // Clean up all inline styles so re-entry or future opens start with a pristine state
+    page.removeAttribute("style");
+    root.removeAttribute("style");
+    media.removeAttribute("style");
+    shotBox.removeAttribute("style");
+    veil.removeAttribute("style");
+    reel.removeAttribute("style");
+    nav?.removeAttribute("style");
+    shotBox.replaceChildren();
+
     setTransitionState("closed");
     onReenter();
   }, [transitionState, frameClip, onReenter, settle]);
@@ -237,8 +250,9 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     const frame = frameRef.current;
     const reel = reelRef.current;
     const nav = navRef.current;
+    const page = root?.querySelector(`.${styles.ldPage}`) as HTMLElement | null;
 
-    if (!root || !media || !shotBox || !veil || !frame || !reel || !nav) {
+    if (!root || !media || !shotBox || !veil || !frame || !reel || !nav || !page) {
       setTransitionState("open");
       setIsReady(true);
       return;
@@ -248,8 +262,14 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     setIsScrolled(false);
     settle();
 
+    // Clean up any lingering inline styles so opening starts from a clean baseline
+    for (const el of [root, media, shotBox, veil, frame, reel, nav, page]) {
+      el.removeAttribute("style");
+    }
+
     const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (reduced || typeof root.animate !== "function") {
+      page.removeAttribute("style");
       setTransitionState("open");
       setIsReady(true);
       return;
@@ -285,19 +305,27 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       ],
       { duration: 900, delay: T + 780, fill: "both", easing: OUT },
     );
-    runningAnimationsRef.current = [a1, a2, a3, a4, a5, a6];
+    const aPage = page.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 400,
+      delay: T,
+      fill: "both",
+      easing: "linear",
+    });
+    runningAnimationsRef.current = [a1, a2, a3, a4, a5, a6, aPage];
 
     let active = true;
-    Promise.all([a1.finished, a2.finished, a3.finished, a4.finished, a5.finished, a6.finished])
+    Promise.all([a1.finished, a2.finished, a3.finished, a4.finished, a5.finished, a6.finished, aPage.finished])
       .then(() => {
         if (!active) return;
         settle();
+        page.removeAttribute("style");
         setTransitionState("open");
         setIsReady(true);
       })
       .catch(() => {
         if (!active) return;
         settle();
+        page.removeAttribute("style");
         setTransitionState("open");
         setIsReady(true);
       });

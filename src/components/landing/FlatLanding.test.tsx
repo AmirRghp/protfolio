@@ -98,4 +98,14 @@ describe("FlatLanding component", () => {
     expect(html).toContain("MUST · 2024–Present");
     expect(html).toContain("11th Int. Signal &amp; Intelligent Systems");
   });
+
+  it("renders with clean styles without lingering opacity: 0 on ldPage container", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).not.toContain('style="opacity: 0;"');
+    expect(html).toContain("ldPage");
+    expect(html).toContain("ldHero");
+  });
 });

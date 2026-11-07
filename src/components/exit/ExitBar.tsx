@@ -13,6 +13,7 @@ export type ExitBarProps = {
 
 export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
   const ctaRef = useRef<HTMLDivElement>(null);
+  const isExitingRef = useRef(false);
   const [width, setWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1200));
   const [btnSize, setBtnSize] = useState({ w: 200, h: 56 });
   const [lift, setLift] = useState(0);
@@ -125,6 +126,15 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
     `A${n(f)} ${n(f)} 0 0 0 ${n(xr + dx)} ${yS}` +
     `H${W}V${B}Z`;
 
+  const handleExitClick = () => {
+    if (isExitingRef.current) return;
+    isExitingRef.current = true;
+    onExit();
+    window.setTimeout(() => {
+      isExitingRef.current = false;
+    }, 1200);
+  };
+
   return (
     <div
       id="exitbar"
@@ -144,7 +154,7 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
         style={{ transform: `translate(-50%, ${(-lift).toFixed(2)}px)` }}
       >
         <TactileButton
-          onClick={onExit}
+          onClick={handleExitClick}
           onPointerEnter={() => setGoal(6)}
           onPointerLeave={() => setGoal(0)}
           onPointerDown={() => setGoal(-2)}
