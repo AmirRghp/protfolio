@@ -82,16 +82,24 @@ function createSurfaceOccluderMaterial(worldMinY: number, worldMaxY: number): Sh
         if (uGroupProgress <= 0.001) discard;
         float span = max(0.05, uMaxY - uMinY);
         float normY = clamp((vWorldPos.y - uMinY) / span, 0.0, 1.0);
-        float activeLimit = uGroupProgress * 1.15;
+        float activeLimit = uGroupProgress * 1.14;
         if (normY > activeLimit) discard;
 
-        float worldCoord = clamp(
-          (vWorldPos.x * 0.07 + vWorldPos.y * 0.10 - vWorldPos.z * 0.08) + 0.50,
-          0.02,
-          0.98
-        );
+        // Rising 3D laser construction slice right at the active extrusion front
+        float sliceDist = abs(normY - activeLimit);
+        float activeSlice = (uGroupProgress > 0.02 && uGroupProgress < 0.97)
+          ? smoothstep(0.09, 0.0, sliceDist)
+          : 0.0;
+        float laserLine = (uGroupProgress > 0.02 && uGroupProgress < 0.97)
+          ? smoothstep(0.024, 0.003, sliceDist) * 0.72
+          : 0.0;
 
-        gl_FragColor = vec4(0.0, uGroupProgress, worldCoord, 1.0);
+        // Radial 3D distance from the workspace focal hub (curved monitor & desk center)
+        vec3 focalHub = vec3(-1.15, 2.85, 0.45);
+        float radialDist = length((vWorldPos - focalHub) * vec3(0.11, 0.14, 0.11));
+        float worldCoord = clamp(radialDist * 0.75 + (vWorldPos.y * 0.04) + 0.12, 0.02, 0.98);
+
+        gl_FragColor = vec4(laserLine, max(uGroupProgress * 0.5, activeSlice), worldCoord, 1.0);
       }
     `,
     polygonOffset: true,
@@ -100,20 +108,24 @@ function createSurfaceOccluderMaterial(worldMinY: number, worldMaxY: number): Sh
   });
 }
 
-function createWireframeLineMaterial(worldMinY: number, worldMaxY: number): ShaderMaterial {
+function createWireframeLineMaterial(worldMinY: number, worldMaxY: number, depthBias: number = 0.0008): ShaderMaterial {
   return new ShaderMaterial({
     uniforms: {
       uGroupProgress: { value: 0 },
       uMinY: { value: worldMinY },
       uMaxY: { value: worldMaxY },
       uIntensity: { value: 1.0 },
+      uDepthBias: { value: depthBias },
     },
     vertexShader: `
+      uniform float uDepthBias;
       varying vec3 vWorldPos;
       void main() {
         vec4 worldPosition = modelMatrix * vec4(position, 1.0);
         vWorldPos = worldPosition.xyz;
-        gl_Position = projectionMatrix * viewMatrix * worldPosition;
+        vec4 clipPos = projectionMatrix * viewMatrix * worldPosition;
+        clipPos.z -= uDepthBias * clipPos.w;
+        gl_Position = clipPos;
       }
     `,
     fragmentShader: `
@@ -127,15 +139,19 @@ function createWireframeLineMaterial(worldMinY: number, worldMaxY: number): Shad
         if (uGroupProgress <= 0.001) discard;
         float span = max(0.05, uMaxY - uMinY);
         float normY = clamp((vWorldPos.y - uMinY) / span, 0.0, 1.0);
-        if (normY > uGroupProgress * 1.12) discard;
+        float activeLimit = uGroupProgress * 1.12;
+        if (normY > activeLimit) discard;
 
-        float worldCoord = clamp(
-          (vWorldPos.x * 0.07 + vWorldPos.y * 0.10 - vWorldPos.z * 0.08) + 0.50,
-          0.02,
-          0.98
-        );
+        float sliceDist = abs(normY - activeLimit);
+        float activeSlice = (uGroupProgress > 0.02 && uGroupProgress < 0.97)
+          ? smoothstep(0.12, 0.0, sliceDist)
+          : 0.0;
 
-        gl_FragColor = vec4(uIntensity, uGroupProgress, worldCoord, 1.0);
+        vec3 focalHub = vec3(-1.15, 2.85, 0.45);
+        float radialDist = length((vWorldPos - focalHub) * vec3(0.11, 0.14, 0.11));
+        float worldCoord = clamp(radialDist * 0.75 + (vWorldPos.y * 0.04) + 0.12, 0.02, 0.98);
+
+        gl_FragColor = vec4(uIntensity, max(uGroupProgress * 0.5, activeSlice), worldCoord, 1.0);
       }
     `,
     depthTest: true,
@@ -144,9 +160,10 @@ function createWireframeLineMaterial(worldMinY: number, worldMaxY: number): Shad
 }
 
 /**
- * Builds clean architectural & item contour lines for surfaces whose smooth bevels or
- * single-quad geometry need explicit CAD edges (back wall architectural panels,
- * desk top perimeter, under-shelf LED channels, and the neon-bordered mousepad).
+ * Builds bespoke 3D spatial calibration geometry tailored to the AI Engineer study room:
+ * - Precision desk drafting sub-grid + fiducial crosshairs (+) at y = 1.908
+ * - Back-wall horizon datum lines & angled neural vector rays from the monitor core
+ * - 3D target-lock corner brackets ([ ]) framing the Curved Monitor, Batman shelf, Mug, and Oiia Cat
  */
 function createSupplementaryCadGeometry(): {
   architectureGeo: BufferGeometry;
@@ -166,36 +183,102 @@ function createSupplementaryCadGeometry(): {
     arr.push(x1, y1, z1, x2, y2, z2);
   };
 
-  // Back wall architectural framing lines (matching basement.studio wall panel divisions)
-  const wallZ = -1.385;
-  for (const x of [-5.8, -2.9, 0.0, 2.96, 5.8]) {
-    pushSeg(archVerts, x, 1.8, wallZ, x, 7.5, wallZ);
+  const pushCrosshairXZ = (arr: number[], cx: number, y: number, cz: number, arm: number) => {
+    pushSeg(arr, cx - arm, y, cz, cx + arm, y, cz);
+    pushSeg(arr, cx, y, cz - arm, cx, y, cz + arm);
+  };
+
+  const pushCrosshairXY = (arr: number[], cx: number, cy: number, z: number, arm: number) => {
+    pushSeg(arr, cx - arm, cy, z, cx + arm, cy, z);
+    pushSeg(arr, cx, cy - arm, z, cx, cy + arm, z);
+  };
+
+  const pushCornerBrackets3D = (
+    arr: number[],
+    minX: number,
+    maxX: number,
+    minY: number,
+    maxY: number,
+    minZ: number,
+    maxZ: number,
+    len: number,
+  ) => {
+    const xs = [minX, maxX];
+    const ys = [minY, maxY];
+    const zs = [minZ, maxZ];
+    for (const x of xs) {
+      const dx = x === minX ? len : -len;
+      for (const y of ys) {
+        const dy = y === minY ? len : -len;
+        for (const z of zs) {
+          const dz = z === minZ ? len : -len;
+          pushSeg(arr, x, y, z, x + dx, y, z);
+          pushSeg(arr, x, y, z, x, y + dy, z);
+          pushSeg(arr, x, y, z, x, y, z + dz);
+        }
+      }
+    }
+  };
+
+  // 1. Back-wall architectural datum horizons & vertical axes with fiducial crosshairs (+)
+  const wallZ = -1.392;
+  for (const y of [1.91, 3.42, 4.20, 5.45]) {
+    pushSeg(archVerts, -5.9, y, wallZ, 5.9, y, wallZ);
   }
-  for (const y of [1.89, 4.2, 5.45, 7.2]) {
-    pushSeg(archVerts, -6.2, y, wallZ, 6.2, y, wallZ);
+  for (const x of [-3.85, -1.42, 0.42, 1.96, 2.95]) {
+    pushSeg(archVerts, x, 1.91, wallZ, x, 6.85, wallZ);
   }
 
-  // Crisp DeskTop perimeter and front apron edges
-  const deskTopY = 1.892;
+  // Wall fiducial crosshairs (+) at datum intersections
+  for (const [wx, wy] of [
+    [-3.85, 3.42],
+    [-3.85, 5.45],
+    [-1.42, 5.45],
+    [0.42, 3.42],
+    [0.42, 5.45],
+    [2.95, 5.45],
+  ]) {
+    pushCrosshairXY(archVerts, wx, wy, wallZ + 0.003, 0.11);
+  }
+
+  // 2. Crisp DeskTop perimeter, front apron, and precision tabletop drafting sub-grid (y = 1.912)
+  const deskTopY = 1.910;
   const deskBotY = 1.712;
-  // Back edge along wall
   pushSeg(archVerts, -5.78, deskTopY, -0.89, 2.95, deskTopY, -0.89);
-  // Front edge facing viewer
   pushSeg(archVerts, -5.74, deskTopY, 3.79, 2.94, deskTopY, 3.79);
   pushSeg(archVerts, -5.74, deskBotY, 3.79, 2.94, deskBotY, 3.79);
-  // Right-side cutout edge next to the Arcade Cabinet (x = 2.95)
   pushSeg(archVerts, 2.95, deskTopY, -0.89, 2.95, deskTopY, 3.79);
   pushSeg(archVerts, 2.95, deskBotY, -0.89, 2.95, deskBotY, 3.79);
   pushSeg(archVerts, 2.94, deskBotY, 3.79, 2.94, deskTopY, 3.79);
 
+  // Tabletop calibration grid lines & crosshairs (+) across the desk plane
+  const gridY = 1.912;
+  for (const z of [0.25, 1.35, 2.65, 3.42]) {
+    pushSeg(archVerts, -5.2, gridY, z, 2.88, gridY, z);
+  }
+  for (const x of [-4.1, -1.42, 0.32, 1.80, 2.62]) {
+    pushSeg(archVerts, x, gridY, -0.75, x, gridY, 3.68);
+  }
+  for (const [gx, gz] of [
+    [-4.1, 1.35],
+    [-4.1, 2.65],
+    [0.32, 0.25],
+    [0.32, 2.65],
+    [1.80, 0.25],
+    [1.80, 2.65],
+    [2.62, 1.35],
+    [2.62, 2.65],
+  ]) {
+    pushCrosshairXZ(archVerts, gx, gridY + 0.001, gz, 0.09);
+  }
+
   const architectureGeo = new BufferGeometry();
   architectureGeo.setAttribute("position", new BufferAttribute(new Float32Array(archVerts), 3));
 
-  // Wall shelves perimeter & under-shelf LED bar CAD lines
-  // EmptyShelves has position [-0.59, 0, 0] and scale [0.86, 1, 1] applied to shelves at x=2.55, w=2.8
+  // 3. Wall shelves perimeter & 3D Computer-Vision Target-Lock Brackets around Batman Figure
   const shelfVerts: number[] = [];
-  const sCenterX = -0.59 + 2.55 * 0.86; // ~1.603
-  const sHalfW = (2.8 * 0.86) / 2; // ~1.204
+  const sCenterX = -0.59 + 2.55 * 0.86;
+  const sHalfW = (2.8 * 0.86) / 2;
   const sLeft = sCenterX - sHalfW;
   const sRight = sCenterX + sHalfW;
   const sBackZ = -1.40;
@@ -211,13 +294,16 @@ function createSupplementaryCadGeometry(): {
     pushSeg(shelfVerts, sLeft, y - 0.075, sFrontZ, sLeft, y + 0.075, sFrontZ);
     pushSeg(shelfVerts, sRight, y - 0.075, sFrontZ, sRight, y + 0.075, sFrontZ);
   }
+  // 3D Target-Lock bounding brackets around the Batman Figure on the lower shelf ([0.92, 4.28, -1.12])
+  pushCornerBrackets3D(shelfVerts, 0.58, 1.26, 4.30, 5.24, -1.32, -0.88, 0.12);
+
   const shelvesGeo = new BufferGeometry();
   shelvesGeo.setAttribute("position", new BufferAttribute(new Float32Array(shelfVerts), 3));
 
-  // MousePad rounded CAD perimeter & inner border at [-1.55, 1.898, 1.76], rotY = 0.32
+  // 4. MousePad rounded CAD perimeter & 3D Target-Lock brackets for Mug ([0.72, 1.906, 1.35]) & Oiia Cat ([1.80, 1.906, 1.65])
   const periphVerts: number[] = [];
   const padCx = -1.55;
-  const padCy = 1.898;
+  const padCy = 1.911;
   const padCz = 1.76;
   const cosR = Math.cos(0.32);
   const sinR = Math.sin(0.32);
@@ -239,7 +325,11 @@ function createSupplementaryCadGeometry(): {
     }
   };
   addRectLoop(1.94, 0.94, 0.002);
-  addRectLoop(1.89, 0.89, 0.012);
+  addRectLoop(1.89, 0.89, 0.010);
+
+  // Target-lock 3D corner brackets around the Coffee Mug and Oiia Cat on the right side of the desk
+  pushCornerBrackets3D(periphVerts, 0.42, 1.06, 1.92, 2.52, 1.06, 1.64, 0.09);
+  pushCornerBrackets3D(periphVerts, 1.44, 2.16, 1.92, 2.52, 1.30, 2.00, 0.10);
 
   const peripheralsGeo = new BufferGeometry();
   peripheralsGeo.setAttribute("position", new BufferAttribute(new Float32Array(periphVerts), 3));
@@ -277,6 +367,7 @@ export class RoomBlueprintPipeline {
     this.blueprintScene = new Scene();
     this.blueprintScene.matrixWorldAutoUpdate = false;
     this.supplementaryGroup = new Group();
+    this.supplementaryGroup.renderOrder = 2;
     this.blueprintScene.add(this.supplementaryGroup);
     this.initSupplementaryCadLines();
   }
@@ -285,19 +376,22 @@ export class RoomBlueprintPipeline {
     const { architectureGeo, shelvesGeo, peripheralsGeo } = createSupplementaryCadGeometry();
     this.supplementaryGeos.push(architectureGeo, shelvesGeo, peripheralsGeo);
 
-    const archMat = createWireframeLineMaterial(1.6, 7.6);
-    archMat.uniforms.uIntensity.value = 0.88;
+    const archMat = createWireframeLineMaterial(1.6, 7.2, 0.00018);
+    archMat.uniforms.uIntensity.value = 0.56;
     const archLines = new LineSegments(architectureGeo, archMat);
+    archLines.renderOrder = 2;
     archLines.frustumCulled = false;
 
-    const shelvesMat = createWireframeLineMaterial(4.0, 5.6);
-    shelvesMat.uniforms.uIntensity.value = 0.95;
+    const shelvesMat = createWireframeLineMaterial(4.0, 5.6, 0.00025);
+    shelvesMat.uniforms.uIntensity.value = 0.88;
     const shelvesLines = new LineSegments(shelvesGeo, shelvesMat);
+    shelvesLines.renderOrder = 2;
     shelvesLines.frustumCulled = false;
 
-    const periphMat = createWireframeLineMaterial(1.85, 2.05);
-    periphMat.uniforms.uIntensity.value = 0.96;
+    const periphMat = createWireframeLineMaterial(1.85, 2.60, 0.00025);
+    periphMat.uniforms.uIntensity.value = 0.90;
     const periphLines = new LineSegments(peripheralsGeo, periphMat);
+    periphLines.renderOrder = 2;
     periphLines.frustumCulled = false;
 
     this.supplementaryGroup.add(archLines, shelvesLines, periphLines);
@@ -357,6 +451,7 @@ export class RoomBlueprintPipeline {
 
       const occluderMat = createSurfaceOccluderMaterial(0, 5);
       const occluder = new Mesh(mesh.geometry, occluderMat);
+      occluder.renderOrder = 0;
       occluder.matrixAutoUpdate = false;
       occluder.frustumCulled = false;
       this.blueprintScene.add(occluder);
@@ -372,8 +467,9 @@ export class RoomBlueprintPipeline {
               : 25;
         const edgesGeo = getCachedEdgesGeometry(mesh.geometry, threshold);
         if ((edgesGeo.attributes.position?.count ?? 0) > 0) {
-          wireMat = createWireframeLineMaterial(0, 5);
+          wireMat = createWireframeLineMaterial(0, 5, 0.00012);
           wireframe = new LineSegments(edgesGeo, wireMat);
+          wireframe.renderOrder = 1;
           wireframe.matrixAutoUpdate = false;
           wireframe.frustumCulled = false;
           this.blueprintScene.add(wireframe);
@@ -498,44 +594,64 @@ export function createRoomBuildShaderPass(blueprintTexture: WebGLRenderTarget["t
           return;
         }
 
-        // 1. Quantized square pixel block coordinates (matching basement.studio ~11px squares)
+        // 1. Quantized matrix cell coordinates with sub-cell micro-framing
         float cellPx = max(6.0, uPixelScale);
         vec2 cellCoord = floor(gl_FragCoord.xy / cellPx);
+        vec2 cellLocalUv = fract(gl_FragCoord.xy / cellPx);
         vec2 cellCenterUv = clamp((cellCoord + 0.5) * cellPx / uResolution, 0.001, 0.999);
 
+        // Micro-framed LED matrix cell shape: 1px dark technical gap around each tile + bright inner core
+        float borderGap = 1.0 / cellPx;
+        float tileMask = step(borderGap, cellLocalUv.x) * step(borderGap, cellLocalUv.y)
+                       * step(cellLocalUv.x, 1.0 - borderGap) * step(cellLocalUv.y, 1.0 - borderGap);
+        vec2 tileCenterDist = abs(cellLocalUv - 0.5);
+        float corePip = step(max(tileCenterDist.x, tileCenterDist.y), 0.22);
+
         vec4 cellBp = texture2D(tBlueprint, cellCenterUv);
-        float cellGroupProgress = cellBp.g;
-        float cellWorldCoord = cellBp.b;
+        float cellSliceEnergy = cellBp.g;
+        float cellWorldRadial = cellBp.b;
         float cellBuilt = cellBp.a;
 
         float cellHash = hash21(cellCoord);
-        float timeStep = floor(uTime * 8.0);
+        float timeStep = floor(uTime * 9.0);
         float cellShimmer = hash21(cellCoord + vec2(timeStep * 13.7, timeStep * 7.3));
 
-        // 2. Narrow, curved 3D surface pixelated grayscale dither wave ribbons (00:02 - 00:04)
+        // 2. Concentric 3D Spatial Sonar Pulse + Harmonic Interference Wave
         float aspect = uResolution.x / max(1.0, uResolution.y);
-        vec2 p = (cellCenterUv - 0.5) * vec2(aspect, 1.0);
+        vec2 p = (cellCenterUv - vec2(0.41, 0.52)) * vec2(aspect, 1.0);
+        float screenRadial = length(p);
 
-        float phase1 = cellWorldCoord * 16.0 + p.x * 3.8 - p.y * 2.6 - uTime * 3.4;
-        float phase2 = cellWorldCoord * 12.0 - p.x * 4.5 - p.y * 3.2 + uTime * 2.7;
-        // High exponent keeps the dither waves confined to sleek narrow ribbons like basement.studio
-        float ribbon1 = pow(max(0.0, sin(phase1)), 7.0);
-        float ribbon2 = pow(max(0.0, cos(phase2)), 8.0) * 0.85;
+        // Outward-expanding 3D spatial sonar rings from the monitor/desk hub
+        float sonarPhase1 = cellWorldRadial * 19.0 - uTime * 3.8 + sin(p.x * 4.5 + p.y * 3.0) * 0.55;
+        float sonarPhase2 = screenRadial * 14.0 - cellWorldRadial * 9.0 + uTime * 2.9;
+        float ring1 = pow(max(0.0, sin(sonarPhase1)), 6.0);
+        float ring2 = pow(max(0.0, cos(sonarPhase2)), 8.0) * 0.78;
 
-        // Focused construction wave right when an item group is actively drawing in
-        float buildCrest = (cellGroupProgress > 0.04 && cellGroupProgress < 0.92)
-          ? pow(sin(cellGroupProgress * 3.14159), 2.0) * 0.45
-          : 0.0;
+        // Active 3D-printing extrusion burst right along the rising item slice
+        float extrusionBurst = smoothstep(0.52, 0.98, cellSliceEnergy) * 0.85;
 
-        float waveEnvelope = (ribbon1 + ribbon2 + buildCrest) * step(0.02, cellBuilt) * uDitherStrength;
+        float waveEnvelope = (ring1 + ring2 + extrusionBurst) * step(0.02, cellBuilt) * uDitherStrength;
 
-        // Only cells inside the wave ribbon that pass the hash threshold light up as gray squares
-        float ditherMask = step(mix(0.32, 0.92, cellHash), waveEnvelope);
-        float rawShade = clamp((waveEnvelope - cellHash * 0.25) * 0.95 + cellShimmer * 0.2, 0.0, 1.0);
-        float quantizedGray = (floor(rawShade * 5.0) + 1.0) / 6.0 * 0.54 * ditherMask;
-        vec3 ditherBlockColor = vec3(quantizedGray);
+        // Matrix dither activation with quantized slate-to-cyan-to-orchid palette
+        float ditherMask = step(mix(0.30, 0.90, cellHash), waveEnvelope) * tileMask;
+        float rawShade = clamp((waveEnvelope - cellHash * 0.22) * 0.96 + cellShimmer * 0.22, 0.0, 1.0);
+        float qLevel = (floor(rawShade * 5.0) + 1.0) / 6.0;
 
-        // 3. Full-resolution 1px white CAD wireframe edges + GPU Sobel silhouette/crease edges
+        // Deep nocturnal void base (#020309) with bi-chromatic cyber-slate, ice-cyan, and electric-orchid dither tiles
+        vec3 voidBg = vec3(0.008, 0.012, 0.032);
+        vec3 slateTile = vec3(0.38, 0.45, 0.58);
+        vec3 cyanTile = vec3(0.32, 0.84, 0.98);
+        vec3 orchidTile = vec3(0.78, 0.50, 0.98);
+        float spectralMix = clamp(cellCenterUv.x * 0.65 + (1.0 - cellCenterUv.y) * 0.35 + sin(uTime * 1.6) * 0.15, 0.0, 1.0);
+        vec3 accentHue = mix(cyanTile, orchidTile, spectralMix);
+
+        // High-energy cells & rising construction slices shift toward glowing cyan/orchid with a bright center pip
+        float chromaFactor = clamp(smoothstep(0.55, 0.95, qLevel) * 0.55 + extrusionBurst * 0.65, 0.0, 1.0);
+        vec3 tileTint = mix(slateTile, accentHue, chromaFactor);
+        vec3 activeTileColor = tileTint * (qLevel * 0.68 + corePip * qLevel * 0.26);
+        vec3 ditherBlockColor = mix(voidBg, activeTileColor, ditherMask);
+
+        // 3. Full-resolution 1px CAD wireframe edges + GPU Sobel contours + 3D Laser Extrusion Slice
         vec4 bp = texture2D(tBlueprint, vUv);
         vec2 texel = 1.0 / uResolution;
 
@@ -558,33 +674,42 @@ export function createRoomBuildShaderPass(blueprintTexture: WebGLRenderTarget["t
         float wD = texture2D(tBlueprint, vUv + texel * vec2( 0.0,-1.0)).b;
         float depthEdge = smoothstep(0.015, 0.045, abs(wR - wL) + abs(wU - wD));
 
-        float propsMask = max(bp.a, smoothstep(0.32, 0.52, uProgress));
-        float combinedEdge = clamp(bp.r + max(lumaEdge * 0.85, depthEdge * 0.95) * propsMask, 0.0, 1.0);
+        // High-poly props (Batman, OiiaCat) fade in during the props window (0.35..0.56) inside their 3D target brackets
+        float lumaPropsGate = smoothstep(0.34, 0.56, uProgress) * bp.a;
+        float combinedEdge = clamp(bp.r + max(lumaEdge * 0.86 * lumaPropsGate, depthEdge * 0.95 * bp.a), 0.0, 1.0);
 
-        // 4. Sweeping pixelated dither materialization frontier (00:05 -> 00:06 in reference)
-        float spatialOrder = length(p * vec2(0.70, 0.92)) * 0.54 + (1.0 - cellCenterUv.y) * 0.32 + (1.0 - cellWorldCoord) * 0.14;
-        float waveFront = uRevealProgress * 1.46 - spatialOrder;
+        // Color the wireframe: crisp ice-white (#eef8ff) on built edges, glowing electric cyan/orchid on the active 3D laser slice
+        float pixelLaserCrest = smoothstep(0.55, 0.98, bp.g);
+        vec3 wireBaseColor = vec3(0.93, 0.97, 1.0);
+        vec3 wireLaserColor = mix(vec3(0.22, 0.86, 1.0), vec3(0.92, 0.48, 1.0), clamp(vUv.x * 0.8 + (1.0 - vUv.y) * 0.3, 0.0, 1.0));
+        vec3 wireColor = mix(wireBaseColor, wireLaserColor, pixelLaserCrest * 0.82);
+
+        // 4. Radial 3D Materialization Wave from Workspace Hub + Prismatic Matrix Frontier
+        float spatialOrder = screenRadial * 0.62 + cellWorldRadial * 0.38;
+        float waveFront = uRevealProgress * 1.48 - spatialOrder;
         float revealMetric = waveFront - (cellHash - 0.5) * 0.18;
 
-        // Wireframe dissolves cleanly into the incoming pixelated frontier band
+        // Wireframe dissolves cleanly into the expanding radial frontier
         float localWireFade = 1.0 - smoothstep(-0.22, -0.02, waveFront);
         float finalWireAlpha = combinedEdge * uWireframeStrength * localWireFade;
 
-        vec3 wireframeStageColor = mix(ditherBlockColor, vec3(0.97, 0.98, 1.0), finalWireAlpha);
+        vec3 wireframeStageColor = mix(ditherBlockColor, wireColor, finalWireAlpha);
 
         if (uRevealProgress <= 0.001) {
           gl_FragColor = vec4(wireframeStageColor, 1.0);
           return;
         }
 
-        // Narrow pixelated dither wave band right along the materialization frontier (frame 00:05)
-        float frontierBand = exp(-pow(waveFront * 6.5, 2.0));
-        float frontierCellOn = step(mix(0.25, 0.85, cellHash), frontierBand);
+        // Prismatic matrix frontier band where quantized tiles synthesize the room's neon lighting
+        float frontierBand = exp(-pow(waveFront * 6.2, 2.0));
+        float frontierCellOn = step(mix(0.22, 0.84, cellHash), frontierBand) * tileMask;
         vec3 cellLitColor = texture2D(tDiffuse, cellCenterUv).rgb;
-        float frontierGray = (floor(clamp(luma(cellLitColor) * 1.5 + cellShimmer * 0.25, 0.0, 1.0) * 5.0) + 1.0) / 6.0 * 0.68;
-        vec3 preRevealColor = mix(wireframeStageColor, vec3(frontierGray), frontierCellOn * frontierBand);
+        float cellLum = luma(cellLitColor);
+        float qFrontier = (floor(clamp(cellLum * 1.5 + cellShimmer * 0.25, 0.0, 1.0) * 5.0) + 1.0) / 6.0;
+        vec3 synthesizedTile = mix(accentHue * 0.65, cellLitColor * 1.45 + accentHue * 0.28, 0.65) * (qFrontier * 0.85 + corePip * 0.25);
+        vec3 preRevealColor = mix(wireframeStageColor, synthesizedTile, frontierCellOn * frontierBand);
 
-        // Behind the frontier (revealMetric >= 0.0), reveal the full-resolution lit 3D room
+        // Behind the frontier (revealMetric >= 0.0), lock in the full-resolution lit 3D room
         float isRevealed = step(0.0, revealMetric);
         vec3 finalColor = mix(preRevealColor, litColor.rgb, isRevealed);
 
