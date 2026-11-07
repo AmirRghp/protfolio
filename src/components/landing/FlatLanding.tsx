@@ -8,14 +8,12 @@ import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {
   isOpen: boolean;
-  snapshotCanvas: HTMLCanvasElement | null;
+  snapshotCanvas?: HTMLCanvasElement | null;
   onReenter: () => void;
 };
 
-const EASE = "cubic-bezier(.7,0,.2,1)";
-const OUT = "cubic-bezier(.2,.8,.2,1)";
+const EASE_DOCK = "cubic-bezier(0.22, 1, 0.36, 1)";
 const FULL = "inset(0px 0px 0px 0px round 0px)";
-const BLUR = 18;
 
 const CAPABILITIES = [
   "Applied AI & RAG",
@@ -84,11 +82,10 @@ function StatCounter({ st, inView }: { st: StatItem; inView: boolean }) {
   return <b data-count={st.num > 0 ? st.num : undefined}>{display}</b>;
 }
 
-export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatLandingProps) {
+export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const mediaRef = useRef<HTMLDivElement>(null);
-  const shotBoxRef = useRef<HTMLDivElement>(null);
-  const veilRef = useRef<HTMLDivElement>(null);
+  const transitionImgRef = useRef<HTMLImageElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const reelRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -139,13 +136,13 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
 
     const root = rootRef.current;
     const media = mediaRef.current;
-    const shotBox = shotBoxRef.current;
-    const veil = veilRef.current;
+    const transitionImg = transitionImgRef.current;
+    const frame = frameRef.current;
     const reel = reelRef.current;
     const nav = navRef.current;
     const page = root?.querySelector(`.${styles.ldPage}`) as HTMLElement | null;
 
-    if (!root || !media || !shotBox || !veil || !reel || !page) {
+    if (!root || !media || !transitionImg || !frame || !reel || !page) {
       setTransitionState("closed");
       onReenter();
       return;
@@ -178,68 +175,57 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     }
 
     const { clip } = frameClip();
-    const D = 900;
 
-    const r1 = reel.animate(
-      [
-        { opacity: 1 },
-        { opacity: 0 },
-      ],
-      { duration: 320, fill: "both", easing: "linear" },
-    );
-    const r2 = page.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, delay: 80, fill: "both", easing: "linear" });
-    const r3 = media.animate([{ clipPath: clip }, { clipPath: FULL }], { duration: D, delay: 220, fill: "both", easing: EASE });
-    const r4 = shotBox.animate(
-      [
-        { filter: `blur(${BLUR}px)`, transform: "scale(1.08)" },
-        { filter: "blur(0px)", transform: "scale(1)" },
-      ],
-      { duration: D, delay: 220, fill: "both", easing: EASE },
-    );
-    const r5 = veil.animate([{ opacity: 1 }, { opacity: 0 }], { duration: D * 0.8, delay: 220, fill: "both", easing: EASE });
-    runningAnimationsRef.current = [r1, r2, r3, r4, r5];
+    // Start media clipped to the hero frame at full opacity
+    media.style.clipPath = clip;
+    media.style.opacity = "1";
+
+    // 1. Page and nav fade out smoothly
+    const rPage = page.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 220, fill: "both", easing: "ease-out" });
+    const rNav = nav
+      ? nav.animate(
+          [
+            { opacity: 1, transform: "none" },
+            { opacity: 0, transform: "translateY(-10px)" },
+          ],
+          { duration: 180, fill: "both", easing: "ease-out" },
+        )
+      : null;
+
+    // 2. Media expands from the hero frame to full viewport
+    const rExpand = media.animate([{ clipPath: clip }, { clipPath: FULL }], {
+      duration: 450,
+      fill: "both",
+      easing: EASE_DOCK,
+    });
+
+    // 3. Once full-screen, ASCII dissolves back into the live 3D room
+    const rFade = media.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 220,
+      delay: 380,
+      fill: "both",
+      easing: "ease-out",
+    });
+
+    const anims = [rPage, rExpand, rFade];
+    if (rNav) anims.push(rNav);
+    runningAnimationsRef.current = anims;
 
     try {
-      await Promise.all([r1.finished, r2.finished, r3.finished, r4.finished, r5.finished]);
+      await Promise.all(anims.map((a) => a.finished));
       settle();
-      // Fade out root snapshot over the live scene underneath
-      const fadeAnim = root.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 240, fill: "both", easing: "linear" });
-      await fadeAnim.finished;
-      try {
-        fadeAnim.commitStyles();
-      } catch {
-        // commitStyles can throw if target node was disconnected
-      }
-      fadeAnim.cancel();
     } catch {
       settle();
     }
 
     // Clean up all inline styles so re-entry or future opens start with a pristine state
-    page.removeAttribute("style");
-    root.removeAttribute("style");
-    media.removeAttribute("style");
-    shotBox.removeAttribute("style");
-    veil.removeAttribute("style");
-    reel.removeAttribute("style");
-    nav?.removeAttribute("style");
-    shotBox.replaceChildren();
+    for (const el of [root, media, transitionImg, frame, reel, nav, page]) {
+      el?.removeAttribute("style");
+    }
 
     setTransitionState("closed");
     onReenter();
   }, [transitionState, frameClip, onReenter, settle]);
-
-  // Mount canvas into shotBox
-  useEffect(() => {
-    const shotBox = shotBoxRef.current;
-    if (!shotBox) return;
-
-    if (snapshotCanvas) {
-      shotBox.replaceChildren(snapshotCanvas);
-    } else {
-      shotBox.replaceChildren();
-    }
-  }, [snapshotCanvas]);
 
   // Open Transition
   useEffect(() => {
@@ -249,14 +235,13 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
 
     const root = rootRef.current;
     const media = mediaRef.current;
-    const shotBox = shotBoxRef.current;
-    const veil = veilRef.current;
+    const transitionImg = transitionImgRef.current;
     const frame = frameRef.current;
     const reel = reelRef.current;
     const nav = navRef.current;
     const page = root?.querySelector(`.${styles.ldPage}`) as HTMLElement | null;
 
-    if (!root || !media || !shotBox || !veil || !frame || !reel || !nav || !page) {
+    if (!root || !media || !transitionImg || !frame || !reel || !nav || !page) {
       setTransitionState("open");
       setIsReady(true);
       return;
@@ -267,8 +252,8 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     settle();
 
     // Clean up any lingering inline styles so opening starts from a clean baseline
-    for (const el of [root, media, shotBox, veil, frame, reel, nav, page]) {
-      el.removeAttribute("style");
+    for (const el of [root, media, transitionImg, frame, reel, nav, page]) {
+      el?.removeAttribute("style");
     }
 
     const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
@@ -279,49 +264,53 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       return;
     }
 
-    const { clip, origin } = frameClip();
-    shotBox.style.transformOrigin = origin;
+    const { clip } = frameClip();
 
-    const T = 150;
-    const D = 1050;
+    // 1. Root container appears
+    const a1 = root.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 80, fill: "both", easing: "linear" });
 
-    const a1 = root.animate([{ opacity: 0 }, { opacity: 1 }], { duration: T, fill: "both", easing: "linear" });
-    const a2 = media.animate([{ clipPath: FULL }, { clipPath: clip }], { duration: D, delay: T, fill: "both", easing: EASE });
-    const a3 = shotBox.animate(
-      [
-        { filter: "blur(0px)", transform: "scale(1)" },
-        { filter: `blur(${BLUR}px)`, transform: "scale(1.08)" },
-      ],
-      { duration: D, delay: T, fill: "both", easing: EASE },
-    );
-    const a4 = veil.animate([{ opacity: 0 }, { opacity: 1 }], { duration: D, delay: T + 200, fill: "both", easing: OUT });
-    const a5 = nav.animate(
+    // 2. Full-screen ASCII room crossfades in over the 3D room (the room converts to ASCII!)
+    const a2 = media.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 220, fill: "both", easing: "ease-out" });
+
+    // 3. Full-screen ASCII visual smoothly docks down into the hero frame
+    const a3 = media.animate([{ clipPath: FULL }, { clipPath: clip }], {
+      duration: 520,
+      delay: 180,
+      fill: "both",
+      easing: EASE_DOCK,
+    });
+
+    // 4. Page content, nav, and video reveal smoothly as it docks
+    const aNav = nav.animate(
       [
         { opacity: 0, transform: "translateY(-10px)" },
         { opacity: 1, transform: "none" },
       ],
-      { duration: 700, delay: T + 600, fill: "both", easing: OUT },
-    );
-    const a6 = reel.animate(
-      [
-        { opacity: 0 },
-        { opacity: 1 },
-      ],
-      { duration: 700, delay: T + 450, fill: "both", easing: "linear" },
+      { duration: 380, delay: 280, fill: "both", easing: "ease-out" },
     );
     const aPage = page.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: 400,
-      delay: T,
+      duration: 380,
+      delay: 220,
       fill: "both",
       easing: "linear",
     });
-    runningAnimationsRef.current = [a1, a2, a3, a4, a5, a6, aPage];
+    const aReel = reel.animate([{ opacity: 0 }, { opacity: 1 }], {
+      duration: 250,
+      delay: 420,
+      fill: "both",
+      easing: "linear",
+    });
+
+    runningAnimationsRef.current = [a1, a2, a3, aNav, aPage, aReel];
 
     let active = true;
-    Promise.all([a1.finished, a2.finished, a3.finished, a4.finished, a5.finished, a6.finished, aPage.finished])
+    Promise.all([a1.finished, a2.finished, a3.finished, aNav.finished, aPage.finished, aReel.finished])
       .then(() => {
         if (!active) return;
         settle();
+        if (mediaRef.current) {
+          mediaRef.current.style.opacity = "0";
+        }
         page.removeAttribute("style");
         setTransitionState("open");
         setIsReady(true);
@@ -329,6 +318,9 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       .catch(() => {
         if (!active) return;
         settle();
+        if (mediaRef.current) {
+          mediaRef.current.style.opacity = "0";
+        }
         page.removeAttribute("style");
         setTransitionState("open");
         setIsReady(true);
@@ -343,9 +335,8 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
   useEffect(() => {
     if (transitionState !== "open") return;
     const place = () => {
-      const { clip, origin } = frameClip();
+      const { clip } = frameClip();
       if (mediaRef.current) mediaRef.current.style.clipPath = clip;
-      if (shotBoxRef.current) shotBoxRef.current.style.transformOrigin = origin;
     };
     window.addEventListener("resize", place);
     return () => window.removeEventListener("resize", place);
@@ -460,8 +451,13 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       )}
 
       <div ref={mediaRef} className={styles.ldMedia} aria-hidden="true">
-        <div ref={shotBoxRef} className={styles.ldShot} />
-        <div ref={veilRef} className={styles.ldVeil} />
+        <img
+          ref={transitionImgRef}
+          className={styles.ldTransitionImg}
+          src={getAssetUrl("assets/ascii-room.webp")}
+          alt=""
+          aria-hidden="true"
+        />
       </div>
 
       <header ref={navRef} className={`${styles.ldNav} ${isScrolled ? styles.scrolled : ""}`}>

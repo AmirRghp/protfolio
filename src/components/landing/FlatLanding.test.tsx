@@ -127,4 +127,13 @@ describe("FlatLanding component", () => {
 
     expect(html).not.toContain("ldBackground");
   });
+
+  it("renders the transition image for the clean 3D room to ASCII conversion", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("ldTransitionImg");
+    expect(html).toContain("ascii-room.webp");
+  });
 });
