@@ -1,3 +1,4 @@
+import { getAssetUrl } from "./assetUrl";
 import { useEffect } from "react";
 import { useLoader, useThree } from "@react-three/fiber";
 import {
@@ -14,7 +15,7 @@ const BATMAN_RAW_OFFSET_Y = 0.62094 * BATMAN_SCALE;
 const BATMAN_RAW_OFFSET_Z = -1.43453 * BATMAN_SCALE;
 
 export default function BatmanFigure() {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/batman.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/batman.glb"));
   const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => {

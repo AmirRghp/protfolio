@@ -1,9 +1,10 @@
+import { getAssetUrl } from "./assetUrl";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import Lanyard from "./Lanyard";
 import { LANYARD_PULL_MIN_PX } from "./lanyardPull";
 import styles from "./LanyardIntro.module.css";
 
-const CARD_IMAGE_PATH = "/assets/lanyard-photo.webp";
+const CARD_IMAGE_PATH = getAssetUrl("assets/lanyard-photo.webp");
 const EXIT_DURATION_MS = 480;
 
 export type LanyardIntroProps = {

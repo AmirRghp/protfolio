@@ -1,3 +1,4 @@
+import { getAssetUrl } from "./assetUrl";
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
@@ -124,7 +125,7 @@ export function CoffeeSteam({ active = true }: { active?: boolean }) {
 }
 
 export default function CoffeeMug({ active = true }: { active?: boolean }) {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/cup.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/cup.glb"));
   const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => {

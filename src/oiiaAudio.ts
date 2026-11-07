@@ -1,3 +1,4 @@
+import { getAssetUrl } from "./assetUrl";
 export interface CatAudioState {
   isPlaying: boolean;
   currentTime: number;
@@ -38,7 +39,7 @@ export class OiiaAudioManager {
   private listeners = new Set<(state: CatAudioState) => void>();
 
   constructor(options: OiiaAudioOptions = {}) {
-    this.src = options.src ?? "/assets/audio/oiia-spinning-cat.mp3";
+    this.src = options.src ?? getAssetUrl("assets/audio/oiia-spinning-cat.mp3");
     this.duration = options.duration ?? 134.0;
     this.bpm = options.bpm ?? 160;
   }

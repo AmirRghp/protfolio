@@ -1,3 +1,4 @@
+import { getAssetUrl } from "./assetUrl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
@@ -144,7 +145,7 @@ export default function OiiaCat({
   destination?: RoomDestination;
   onLoaded?: (objs: Object3D[]) => void;
 }) {
-  const gltf = useLoader(GLTFLoader, "/assets/models/oiia-cat.glb");
+  const gltf = useLoader(GLTFLoader, getAssetUrl("assets/models/oiia-cat.glb"));
   const invalidate = useThree((state) => state.invalidate);
 
   const catGroupRef = useRef<Group>(null);

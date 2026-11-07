@@ -1,3 +1,4 @@
+import { getAssetUrl } from "./assetUrl";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
@@ -64,7 +65,7 @@ import OiiaCat from "./OiiaCat";
 type Triple = [number, number, number];
 
 function RoomFurnishings() {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/room-furnishings.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/room-furnishings.glb"));
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     const emptyShelves = scene.getObjectByName("EmptyShelves");
@@ -110,7 +111,7 @@ function ArcadeCabinet({
   arcadeRef?: RefObject<HTMLDivElement | null>;
   onLoaded?: (objs: Object3D[]) => void;
 }) {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/arcade-machine.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/arcade-machine.glb"));
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     scene.traverse((object) => {
@@ -172,7 +173,7 @@ function ArcadeOverlay({ arcadeRef }: { arcadeRef: RefObject<HTMLDivElement | nu
 }
 
 function MousePad() {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/mouse-pad.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/mouse-pad.glb"));
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     scene.traverse((object) => {
@@ -219,7 +220,7 @@ function MousePad() {
 }
 
 function CompactKeyboard() {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/compact-keyboard.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/compact-keyboard.glb"));
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     const createdMaterials: MeshStandardMaterial[] = [];
@@ -283,7 +284,7 @@ function CompactKeyboard() {
 }
 
 function ComputerMouse() {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/computer-mouse.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/computer-mouse.glb"));
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
     scene.traverse((object) => {
@@ -331,7 +332,7 @@ function Monitor({
   desktopRef: RefObject<HTMLDivElement | null>;
   onLoaded?: (objs: Object3D[]) => void;
 }) {
-  const { scene } = useLoader(GLTFLoader, "/assets/models/curved-monitor.glb");
+  const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/curved-monitor.glb"));
   const invalidate = useThree((state) => state.invalidate);
   const surface = useMemo(() => {
     scene.position.set(...MONITOR_SCENE_POSITION);

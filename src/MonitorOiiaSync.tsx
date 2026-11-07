@@ -1,3 +1,4 @@
+import { getAssetUrl } from "./assetUrl";
 import { useEffect, useRef } from "react";
 import {
   AmbientLight,
@@ -113,7 +114,7 @@ export default function MonitorOiiaSync({ active }: { active: boolean }) {
     // Load glTF cat model
     const loader = new GLTFLoader();
     loader.load(
-      "/assets/models/oiia-cat.glb",
+      getAssetUrl("assets/models/oiia-cat.glb"),
       (gltf) => {
         if (destroyed) {
           disposeSceneObjects(gltf.scene);
