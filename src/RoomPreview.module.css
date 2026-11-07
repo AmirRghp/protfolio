@@ -5,6 +5,13 @@
   background: #080614;
 }
 
+.preview[data-build-stage="idle"],
+.preview[data-build-stage="blackout"],
+.preview[data-build-stage="wireframe"],
+.preview[data-build-stage="materializing"] {
+  background: #000000;
+}
+
 .header {
   position: absolute;
   z-index: 3;

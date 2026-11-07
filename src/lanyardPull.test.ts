@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { LANYARD_PULL_MIN_PX, evaluatePullGesture, shouldSkipLanyardIntro } from "./lanyardPull";
+import {
+  LANYARD_PULL_MIN_PX,
+  evaluatePullGesture,
+  getInitialIntroPhaseFromSearch,
+  shouldSkipLanyardIntro,
+} from "./lanyardPull";
 
 describe("lanyard pull-down gesture evaluation", () => {
   it("keeps the minimum downward pull threshold within 50 to 100 pixels", () => {
@@ -43,4 +48,14 @@ describe("lanyard pull-down gesture evaluation", () => {
     expect(shouldSkipLanyardIntro("?destination=monitor")).toBe(true);
     expect(shouldSkipLanyardIntro("?destination=arcade")).toBe(true);
   });
+
+  it("resolves initial intro phase for normal load, build preview, and webdriver modes", () => {
+    expect(getInitialIntroPhaseFromSearch("", false)).toBe("active");
+    expect(getInitialIntroPhaseFromSearch("", true)).toBe("ready");
+    expect(getInitialIntroPhaseFromSearch("?intro=1", true)).toBe("active");
+    expect(getInitialIntroPhaseFromSearch("?build=1", false)).toBe("building");
+    expect(getInitialIntroPhaseFromSearch("?build=1", true)).toBe("building");
+    expect(getInitialIntroPhaseFromSearch("?autostart=1", false)).toBe("ready");
+  });
 });
+

@@ -1,9 +1,9 @@
-import { useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import LanyardIntro from "./LanyardIntro";
 import OwnerContent from "./OwnerContent";
 import RoomPreview from "./RoomPreview";
 import { portfolioContent } from "./content";
-import { shouldSkipLanyardIntro } from "./lanyardPull";
+import { getInitialIntroPhaseFromSearch, type IntroPhase } from "./lanyardPull";
 import { initialRoomNavigation, roomNavigationReducer, type RoomDestination, type RoomNavigationState } from "./roomNavigation";
 
 function getInitialNavigation(): RoomNavigationState {
@@ -16,22 +16,34 @@ function getInitialNavigation(): RoomNavigationState {
   return initialRoomNavigation;
 }
 
-function getInitialIntroPhase(): "active" | "revealing" | "ready" {
+function getInitialIntroPhase(): IntroPhase {
   if (typeof window !== "undefined") {
-    if (shouldSkipLanyardIntro(window.location.search)) {
-      return "ready";
-    }
-    const params = new URLSearchParams(window.location.search);
-    if (navigator.webdriver && params.get("intro") !== "1") {
-      return "ready";
-    }
+    return getInitialIntroPhaseFromSearch(
+      window.location.search,
+      Boolean(navigator.webdriver),
+    );
   }
   return "active";
 }
 
 export default function App() {
   const [navigation, dispatch] = useReducer(roomNavigationReducer, undefined, getInitialNavigation);
-  const [introPhase, setIntroPhase] = useState<"active" | "revealing" | "ready">(getInitialIntroPhase);
+  const [introPhase, setIntroPhase] = useState<IntroPhase>(getInitialIntroPhase);
+  const [lanyardDismissed, setLanyardDismissed] = useState<boolean>(
+    () => getInitialIntroPhase() !== "active",
+  );
+
+  const handleLanyardEnter = useCallback(() => {
+    setIntroPhase((prev) => (prev === "active" ? "building" : prev));
+  }, []);
+
+  const handleLanyardDismissed = useCallback(() => {
+    setLanyardDismissed(true);
+  }, []);
+
+  const handleBuildComplete = useCallback(() => {
+    setIntroPhase("ready");
+  }, []);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
@@ -47,16 +59,18 @@ export default function App() {
 
   return (
     <>
-      {introPhase !== "ready" && (
+      {!lanyardDismissed && (
         <LanyardIntro
-          onEnter={() => setIntroPhase("revealing")}
-          onDismissed={() => setIntroPhase("ready")}
+          onEnter={handleLanyardEnter}
+          onDismissed={handleLanyardDismissed}
         />
       )}
       <div className="site-shell" data-intro-phase={introPhase}>
         <RoomPreview
           navigation={navigation}
           onNavigate={(destination) => dispatch({ type: "navigate", destination })}
+          introPhase={introPhase}
+          onBuildComplete={handleBuildComplete}
         />
         <main className="intro" aria-labelledby="name">
           <OwnerContent />
@@ -79,4 +93,5 @@ export default function App() {
     </>
   );
 }
+
 

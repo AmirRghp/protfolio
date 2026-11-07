@@ -25,9 +25,18 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import { calculateRaveLightingState } from "./oiiaCatLogic";
 import { oiiaAudio } from "./oiiaAudio";
 import { detectSoftwareGl } from "./webglUtils";
+import { RoomBlueprintPipeline, createRoomBuildShaderPass } from "./RoomBuildEffect";
+import {
+  LANYARD_EXIT_LEAD_MS,
+  ROOM_BUILD_DURATION_MS,
+  evaluateRoomBuildState,
+  type RoomBuildStage,
+} from "./roomBuildAnimation";
+import type { IntroPhase } from "./lanyardPull";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "./arcadeProjection";
 import {
@@ -647,15 +656,46 @@ function CameraFocus({ destination, onHotspotHover }: {
   return null;
 }
 
-function HotspotOutlinePass({ selectedObjects }: { selectedObjects: Object3D[] }) {
+function readFrozenBuildProgress(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = new URLSearchParams(window.location.search).get("buildProgress");
+  if (raw === null) return null;
+  const parsed = Number.parseFloat(raw);
+  if (Number.isNaN(parsed)) return null;
+  return Math.max(0, Math.min(1, parsed));
+}
+
+function HotspotOutlinePass({
+  selectedObjects,
+  introPhase,
+  modelsReady,
+  onBuildStageChange,
+  onDesktopOpacityChange,
+  onBuildComplete,
+}: {
+  selectedObjects: Object3D[];
+  introPhase: IntroPhase;
+  modelsReady: boolean;
+  onBuildStageChange?: (stage: RoomBuildStage) => void;
+  onDesktopOpacityChange?: (opacity: number) => void;
+  onBuildComplete?: () => void;
+}) {
   const { gl, scene, camera, size, invalidate } = useThree();
+  const elapsedMsRef = useRef(0);
+  const completedCalledRef = useRef(introPhase === "ready");
+  const reportedStageRef = useRef<RoomBuildStage>(introPhase === "ready" ? "complete" : "idle");
+  const reportedOpacityRef = useRef<number>(introPhase === "ready" ? 1 : 0);
+  const softwareTimerRef = useRef<number>(0);
 
   const passesRef = useRef<{
     composer: EffectComposer;
     outlinePass: OutlinePass;
+    blueprintPipeline: RoomBlueprintPipeline;
+    buildPass: ShaderPass;
   } | null>(null);
 
   if (passesRef.current == null) {
+    const pr = gl.getPixelRatio();
     const composer = new EffectComposer(gl);
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
@@ -676,16 +716,34 @@ function HotspotOutlinePass({ selectedObjects }: { selectedObjects: Object3D[] }
     const outputPass = new OutputPass();
     composer.addPass(outputPass);
 
-    passesRef.current = { composer, outlinePass };
+    const blueprintPipeline = new RoomBlueprintPipeline(
+      Math.max(1, Math.round(size.width * pr)),
+      Math.max(1, Math.round(size.height * pr)),
+    );
+    const buildPass = createRoomBuildShaderPass(blueprintPipeline.target.texture);
+    buildPass.uniforms.uResolution.value.set(
+      Math.max(1, Math.round(size.width * pr)),
+      Math.max(1, Math.round(size.height * pr)),
+    );
+    buildPass.uniforms.uPixelScale.value = Math.max(6, Math.round(10.5 * pr));
+    buildPass.enabled = introPhase !== "ready";
+    composer.addPass(buildPass);
+
+    passesRef.current = { composer, outlinePass, blueprintPipeline, buildPass };
   }
 
   useEffect(() => {
     const passes = passesRef.current;
     if (!passes) return;
     const pr = gl.getPixelRatio();
+    const pixelW = Math.max(1, Math.round(size.width * pr));
+    const pixelH = Math.max(1, Math.round(size.height * pr));
     passes.composer.setPixelRatio(pr);
     passes.composer.setSize(size.width, size.height);
-    passes.outlinePass.resolution.set(size.width * pr, size.height * pr);
+    passes.outlinePass.resolution.set(pixelW, pixelH);
+    passes.blueprintPipeline.setSize(pixelW, pixelH);
+    passes.buildPass.uniforms.uResolution.value.set(pixelW, pixelH);
+    passes.buildPass.uniforms.uPixelScale.value = Math.max(6, Math.round(10.5 * pr));
     invalidate();
   }, [size.width, size.height, gl, invalidate]);
 
@@ -697,14 +755,137 @@ function HotspotOutlinePass({ selectedObjects }: { selectedObjects: Object3D[] }
   }, [selectedObjects, invalidate]);
 
   useEffect(() => {
+    if (introPhase === "building") {
+      completedCalledRef.current = false;
+      invalidate();
+    } else if (introPhase === "ready") {
+      if (reportedStageRef.current !== "complete") {
+        reportedStageRef.current = "complete";
+        onBuildStageChange?.("complete");
+      }
+      if (reportedOpacityRef.current !== 1) {
+        reportedOpacityRef.current = 1;
+        onDesktopOpacityChange?.(1);
+      }
+      invalidate();
+    }
+  }, [introPhase, modelsReady, invalidate, onBuildStageChange, onDesktopOpacityChange]);
+
+  useEffect(() => {
     return () => {
+      if (softwareTimerRef.current) {
+        window.clearTimeout(softwareTimerRef.current);
+      }
+      passesRef.current?.blueprintPipeline.dispose();
       passesRef.current?.composer.dispose();
       passesRef.current = null;
     };
   }, []);
 
-  useFrame(() => {
-    passesRef.current?.composer.render();
+  useFrame((_, delta) => {
+    const passes = passesRef.current;
+    if (!passes) return;
+
+    const frozenProgress = readFrozenBuildProgress();
+    if (frozenProgress !== null) {
+      const frozenElapsed = LANYARD_EXIT_LEAD_MS + frozenProgress * ROOM_BUILD_DURATION_MS;
+      const state = evaluateRoomBuildState(frozenElapsed, false);
+      passes.buildPass.enabled = state.stage !== "complete";
+      if (passes.buildPass.enabled) {
+        passes.blueprintPipeline.render(gl, scene, camera, state);
+        passes.buildPass.uniforms.uTime.value = frozenElapsed * 0.001;
+        passes.buildPass.uniforms.uProgress.value = state.progress;
+        passes.buildPass.uniforms.uWireframeStrength.value = state.wireframeStrength;
+        passes.buildPass.uniforms.uDitherStrength.value = state.ditherWaveStrength;
+        passes.buildPass.uniforms.uRevealProgress.value = state.revealProgress;
+      }
+      if (reportedStageRef.current !== state.stage) {
+        reportedStageRef.current = state.stage;
+        onBuildStageChange?.(state.stage);
+      }
+      if (Math.abs(reportedOpacityRef.current - state.desktopOverlayOpacity) > 0.01) {
+        reportedOpacityRef.current = state.desktopOverlayOpacity;
+        onDesktopOpacityChange?.(state.desktopOverlayOpacity);
+      }
+      passes.composer.render();
+      return;
+    }
+
+    if (introPhase === "ready") {
+      passes.buildPass.enabled = false;
+      passes.composer.render();
+      return;
+    }
+
+    if (introPhase === "active") {
+      elapsedMsRef.current = 0;
+      passes.buildPass.enabled = true;
+      passes.buildPass.uniforms.uTime.value = 0;
+      passes.buildPass.uniforms.uProgress.value = 0;
+      passes.buildPass.uniforms.uWireframeStrength.value = 0;
+      passes.buildPass.uniforms.uDitherStrength.value = 0;
+      passes.buildPass.uniforms.uRevealProgress.value = 0;
+      passes.composer.render();
+      return;
+    }
+
+    // introPhase === "building"
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+
+    if (!modelsReady) {
+      elapsedMsRef.current = Math.min(elapsedMsRef.current + 16, LANYARD_EXIT_LEAD_MS * 0.8);
+    } else {
+      const stepMs = isSoftwareGl
+        ? Math.max(85, Math.min(delta * 1000, 140))
+        : Math.max(8, Math.min(delta * 1000, 90));
+      elapsedMsRef.current += stepMs;
+    }
+
+    const state = evaluateRoomBuildState(elapsedMsRef.current, reducedMotion);
+
+    if (reportedStageRef.current !== state.stage) {
+      reportedStageRef.current = state.stage;
+      onBuildStageChange?.(state.stage);
+    }
+    if (
+      Math.abs(reportedOpacityRef.current - state.desktopOverlayOpacity) > 0.02 ||
+      state.desktopOverlayOpacity === 1
+    ) {
+      reportedOpacityRef.current = state.desktopOverlayOpacity;
+      onDesktopOpacityChange?.(state.desktopOverlayOpacity);
+    }
+
+    if (state.stage === "complete") {
+      passes.buildPass.enabled = false;
+      passes.composer.render();
+      if (!completedCalledRef.current) {
+        completedCalledRef.current = true;
+        onBuildComplete?.();
+      }
+      return;
+    }
+
+    passes.buildPass.enabled = true;
+    passes.blueprintPipeline.render(gl, scene, camera, state);
+    passes.buildPass.uniforms.uTime.value = elapsedMsRef.current * 0.001;
+    passes.buildPass.uniforms.uProgress.value = state.progress;
+    passes.buildPass.uniforms.uWireframeStrength.value = state.wireframeStrength;
+    passes.buildPass.uniforms.uDitherStrength.value = state.ditherWaveStrength;
+    passes.buildPass.uniforms.uRevealProgress.value = state.revealProgress;
+    passes.composer.render();
+
+    if (isSoftwareGl) {
+      if (softwareTimerRef.current) {
+        window.clearTimeout(softwareTimerRef.current);
+      }
+      softwareTimerRef.current = window.setTimeout(() => {
+        invalidate();
+      }, 16);
+    } else {
+      invalidate();
+    }
   }, 1);
 
   return null;
@@ -908,29 +1089,46 @@ function ContextGuard({ onLost }: { onLost: () => void }) {
   return null;
 }
 
-function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHotspot }: {
+function Study({
+  destination,
+  onNavigate,
+  desktopRef,
+  arcadeRef,
+  highlightedHotspot,
+  introPhase,
+  onBuildStageChange,
+  onDesktopOpacityChange,
+  onBuildComplete,
+}: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
   desktopRef: RefObject<HTMLDivElement | null>;
   arcadeRef?: RefObject<HTMLDivElement | null>;
   highlightedHotspot: RoomHotspot | null;
+  introPhase: IntroPhase;
+  onBuildStageChange?: (stage: RoomBuildStage) => void;
+  onDesktopOpacityChange?: (opacity: number) => void;
+  onBuildComplete?: () => void;
 }) {
   const [monitorObjects, setMonitorObjects] = useState<Object3D[]>([]);
   const [arcadeObjects, setArcadeObjects] = useState<Object3D[]>([]);
   const [catObjects, setCatObjects] = useState<Object3D[]>([]);
 
+  const modelsReady = monitorObjects.length > 0 && arcadeObjects.length > 0 && catObjects.length > 0;
+
   const selectedObjects = useMemo<Object3D[]>(() => {
+    if (introPhase !== "ready") return [];
     if (highlightedHotspot === "monitor") return monitorObjects;
     if (highlightedHotspot === "arcade") return arcadeObjects;
     if (highlightedHotspot === "cat") return catObjects;
     return [];
-  }, [highlightedHotspot, monitorObjects, arcadeObjects, catObjects]);
+  }, [introPhase, highlightedHotspot, monitorObjects, arcadeObjects, catObjects]);
 
   return (
     <>
       <RoomLighting destination={destination} />
 
-      <mesh position={[0, 3.2, -1.4]} receiveShadow>
+      <mesh name="BackWall" position={[0, 3.2, -1.4]} receiveShadow>
         <planeGeometry args={[30, 24]} />
         <meshStandardMaterial color="#120e24" roughness={0.92} metalness={0.02} />
       </mesh>
@@ -940,7 +1138,9 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         position={monitorHotspotPosition}
         rotation={[0, MONITOR_YAW, 0]}
         size={[4.231, 2.136]}
-        onSelect={() => onNavigate("monitor")}
+        onSelect={() => {
+          if (introPhase === "ready") onNavigate("monitor");
+        }}
       />
 
       <Suspense fallback={null}>
@@ -949,7 +1149,7 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         <MousePad />
         <CompactKeyboard />
         <ComputerMouse />
-        <CoffeeMug active={destination === "room"} />
+        <CoffeeMug active={destination === "room" && introPhase === "ready"} />
         <OiiaCat destination={destination} onLoaded={setCatObjects} />
         <BatmanFigure />
         <ArcadeCabinet arcadeRef={arcadeRef} onLoaded={setArcadeObjects} />
@@ -960,7 +1160,7 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         position={[1.80, 2.38, 1.65]}
         size={[0.68, 0.95]}
         onSelect={() => {
-          if (destination === "room") {
+          if (destination === "room" && introPhase === "ready") {
             oiiaAudio.toggle();
           }
         }}
@@ -970,10 +1170,19 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         destination="arcade"
         position={[4.495, 2.5, 1.65]}
         size={[3.1, 6.4]}
-        onSelect={() => onNavigate("arcade")}
+        onSelect={() => {
+          if (introPhase === "ready") onNavigate("arcade");
+        }}
       />
 
-      <HotspotOutlinePass selectedObjects={selectedObjects} />
+      <HotspotOutlinePass
+        selectedObjects={selectedObjects}
+        introPhase={introPhase}
+        modelsReady={modelsReady}
+        onBuildStageChange={onBuildStageChange}
+        onDesktopOpacityChange={onDesktopOpacityChange}
+        onBuildComplete={onBuildComplete}
+      />
     </>
   );
 }
@@ -987,6 +1196,10 @@ export default function RoomScene({
   desktopRef,
   arcadeRef,
   onUnavailable,
+  introPhase = "ready",
+  onBuildStageChange,
+  onDesktopOpacityChange,
+  onBuildComplete,
 }: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
@@ -994,22 +1207,26 @@ export default function RoomScene({
   desktopRef: RefObject<HTMLDivElement | null>;
   arcadeRef?: RefObject<HTMLDivElement | null>;
   onUnavailable?: () => void;
+  introPhase?: IntroPhase;
+  onBuildStageChange?: (stage: RoomBuildStage) => void;
+  onDesktopOpacityChange?: (opacity: number) => void;
+  onBuildComplete?: () => void;
 }) {
   const [contextLost, setContextLost] = useState(false);
   const [highlightedHotspot, setHighlightedHotspot] = useState<RoomHotspot | null>(null);
   const highlightedHotspotRef = useRef<RoomHotspot | null>(null);
   const reportHotspotHover = useCallback((hover: RoomHotspotHover | null) => {
-    const next = hover?.destination ?? null;
+    const next = introPhase === "ready" ? (hover?.destination ?? null) : null;
     if (highlightedHotspotRef.current !== next) {
       highlightedHotspotRef.current = next;
       setHighlightedHotspot(next);
     }
-    onHotspotHover(hover);
-  }, [onHotspotHover]);
+    onHotspotHover(introPhase === "ready" ? hover : null);
+  }, [introPhase, onHotspotHover]);
 
   useEffect(() => {
-    if (destination !== "room") reportHotspotHover(null);
-  }, [destination, reportHotspotHover]);
+    if (destination !== "room" || introPhase !== "ready") reportHotspotHover(null);
+  }, [destination, introPhase, reportHotspotHover]);
 
   if (contextLost) return <RoomUnavailable />;
   return (
@@ -1046,7 +1263,11 @@ export default function RoomScene({
         onNavigate={onNavigate}
         desktopRef={desktopRef}
         arcadeRef={arcadeRef}
-        highlightedHotspot={destination === "room" ? highlightedHotspot : null}
+        highlightedHotspot={destination === "room" && introPhase === "ready" ? highlightedHotspot : null}
+        introPhase={introPhase}
+        onBuildStageChange={onBuildStageChange}
+        onDesktopOpacityChange={onDesktopOpacityChange}
+        onBuildComplete={onBuildComplete}
       />
     </Canvas>
   );

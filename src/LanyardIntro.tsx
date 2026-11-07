@@ -4,7 +4,7 @@ import { LANYARD_PULL_MIN_PX } from "./lanyardPull";
 import styles from "./LanyardIntro.module.css";
 
 const CARD_IMAGE_PATH = "/assets/lanyard-photo.webp";
-const EXIT_DURATION_MS = 820;
+const EXIT_DURATION_MS = 480;
 
 export type LanyardIntroProps = {
   onEnter: () => void;

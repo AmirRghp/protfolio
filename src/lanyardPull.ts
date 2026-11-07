@@ -36,6 +36,8 @@ export function evaluatePullGesture(
   };
 }
 
+export type IntroPhase = "active" | "building" | "ready";
+
 /**
  * Checks whether URL query parameters request skipping the intro overlay
  * (e.g. `?autostart=1` or direct deep-link `?destination=monitor|arcade`).
@@ -51,3 +53,24 @@ export function shouldSkipLanyardIntro(search: string): boolean {
   }
   return false;
 }
+
+/**
+ * Resolves the initial intro phase from URL query parameters and environment.
+ */
+export function getInitialIntroPhaseFromSearch(
+  search: string,
+  isWebDriver: boolean = false,
+): IntroPhase {
+  const params = new URLSearchParams(search);
+  if (params.get("build") === "1") {
+    return "building";
+  }
+  if (shouldSkipLanyardIntro(search)) {
+    return "ready";
+  }
+  if (isWebDriver && params.get("intro") !== "1") {
+    return "ready";
+  }
+  return "active";
+}
+

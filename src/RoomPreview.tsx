@@ -13,6 +13,8 @@ import {
 } from "./roomHover";
 import styles from "./RoomPreview.module.css";
 import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
+import type { IntroPhase } from "./lanyardPull";
+import type { RoomBuildStage } from "./roomBuildAnimation";
 import { oiiaAudio } from "./oiiaAudio";
 
 const RoomScene = lazy(() => import("./RoomScene"));
@@ -36,6 +38,8 @@ class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => vo
 type RoomPreviewProps = {
   navigation: RoomNavigationState;
   onNavigate: (destination: RoomDestination) => void;
+  introPhase?: IntroPhase;
+  onBuildComplete?: () => void;
 };
 
 const destinationLabels: Record<Exclude<RoomDestination, "room">, string> = {
@@ -45,7 +49,12 @@ const destinationLabels: Record<Exclude<RoomDestination, "room">, string> = {
 
 const hotspotLabels = ROOM_HOTSPOT_LABELS;
 
-export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps) {
+export default function RoomPreview({
+  navigation,
+  onNavigate,
+  introPhase = "ready",
+  onBuildComplete,
+}: RoomPreviewProps) {
   const desktopRef = useRef<HTMLDivElement>(null);
   const arcadeRef = useRef<HTMLDivElement>(null);
   const previewRef = useRef<HTMLElement>(null);
@@ -56,6 +65,12 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
   const returnFocusDestination = useRef<Exclude<RoomDestination, "room"> | null>(null);
   const [sceneFailed, setSceneFailed] = useState(false);
   const [outsideHover, setOutsideHover] = useState(false);
+  const [buildStage, setBuildStage] = useState<RoomBuildStage>(
+    introPhase === "ready" ? "complete" : "idle",
+  );
+  const [desktopOpacity, setDesktopOpacity] = useState<number>(
+    introPhase === "ready" ? 1 : 0,
+  );
   const [prevDestination, setPrevDestination] = useState(navigation.destination);
   if (prevDestination !== navigation.destination) {
     setPrevDestination(navigation.destination);
@@ -153,6 +168,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     hideBackHint();
     setSceneFailed(true);
     setOpenAppId(null);
+    onBuildComplete?.();
   };
 
   useEffect(() => {
@@ -201,6 +217,9 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
   // When in room overview, 1/M focuses Monitor and 2/A focuses Arcade; when focused, Escape returns to room.
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
+      if (introPhase !== "ready") {
+        return;
+      }
       if (focusedDestination) {
         if (event.key === "Escape") {
           returnToRoom(focusedDestination);
@@ -233,7 +252,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [focusedDestination, returnToRoom, hideHotspotHint, hideBackHint, onNavigate]);
+  }, [introPhase, focusedDestination, returnToRoom, hideHotspotHint, hideBackHint, onNavigate]);
 
   // The desktop is the monitor destination. When the scene is unavailable its hidden layer must
   // not take the focus, so the preview container keeps it instead.
@@ -246,8 +265,17 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     desktopRef.current?.focus({ preventScroll: true });
   }, [navigation.destination, sceneFailed]);
 
+  const effectiveBuildStage: RoomBuildStage = introPhase === "ready" ? "complete" : buildStage;
+  const effectiveDesktopOpacity = introPhase === "ready" ? 1 : desktopOpacity;
+
   return (
-    <section ref={previewRef} className={styles.preview} tabIndex={-1} aria-label="Study room overview">
+    <section
+      ref={previewRef}
+      className={styles.preview}
+      data-build-stage={effectiveBuildStage}
+      tabIndex={-1}
+      aria-label="Study room overview"
+    >
       {focusedDestination ? (
         <button
           type="button"
@@ -276,14 +304,19 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
               onNavigate={(destination) => {
                 navigate(destination);
               }}
+              introPhase={introPhase}
+              onBuildStageChange={setBuildStage}
+              onDesktopOpacityChange={setDesktopOpacity}
+              onBuildComplete={onBuildComplete}
             />
           </Suspense>
         </SceneBoundary>
         <div
           className={styles.desktopLayer}
-          data-active={navigation.destination === "monitor" && !sceneFailed}
+          data-active={navigation.destination === "monitor" && !sceneFailed && introPhase === "ready"}
           data-outside-hover={outsideHover && navigation.destination === "monitor" && !sceneFailed}
-          inert={navigation.destination !== "monitor" || sceneFailed}
+          style={{ opacity: effectiveDesktopOpacity }}
+          inert={navigation.destination !== "monitor" || sceneFailed || introPhase !== "ready"}
           onPointerMove={handleLayerPointerMove}
           onPointerLeave={hideBackHint}
           onPointerDown={handleLayerPointerDown}
@@ -292,7 +325,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           <MonitorDesktop
             ref={desktopRef}
             apps={desktopApps}
-            active={navigation.destination === "monitor" && !sceneFailed}
+            active={navigation.destination === "monitor" && !sceneFailed && introPhase === "ready"}
             outsideHover={outsideHover && navigation.destination === "monitor" && !sceneFailed}
             openAppId={openAppId}
             onOpenAppChange={setOpenAppId}
@@ -304,6 +337,7 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
           data-active={navigation.destination === "arcade"}
           data-outside-hover={outsideHover && navigation.destination === "arcade"}
           data-scene-failed={sceneFailed}
+          style={{ opacity: navigation.destination === "arcade" ? 1 : effectiveDesktopOpacity }}
           inert={navigation.destination !== "arcade"}
           onPointerMove={handleLayerPointerMove}
           onPointerLeave={hideBackHint}

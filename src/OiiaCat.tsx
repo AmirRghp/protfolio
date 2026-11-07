@@ -27,6 +27,9 @@ import {
   createLoafShadowTexture,
 } from "./oiiaCatLogic";
 import type { RoomDestination } from "./roomNavigation";
+import { detectSoftwareGl } from "./webglUtils";
+
+const isSoftwareGl = detectSoftwareGl();
 
 export const DESK_SURFACE_Y = 1.906;
 export const CAT_SCALE = 1.40;
@@ -377,7 +380,7 @@ export default function OiiaCat({
         }
 
         // Very subtle idle breathing when fully resting
-        if (!reducedMotion && currentMorphRef.current < 0.05) {
+        if (!reducedMotion && !isSoftwareGl && currentMorphRef.current < 0.05) {
           const breathe = Math.sin(state.clock.getElapsedTime() * 2.2) * 0.004;
           modelGroupRef.current.scale.set(1 + breathe * 0.5, 1 + breathe, 1 + breathe * 0.5);
           needsInvalidate = true;
