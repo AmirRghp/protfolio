@@ -1,8 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { backCursorHintPosition, hotspotHintPosition } from "./roomHover";
+import {
+  backCursorHintPosition,
+  hotspotHintPosition,
+  ROOM_HOTSPOT_LABELS,
+  type RoomHotspot,
+} from "./roomHover";
 
 const tooltip = { width: 120, height: 28 };
 const viewport = { width: 1440, height: 900 };
+
+describe("room hotspot labels", () => {
+  it("defines the expected interactive hotspot labels including oiia cat", () => {
+    expect(ROOM_HOTSPOT_LABELS.monitor).toBe("USE COMPUTER");
+    expect(ROOM_HOTSPOT_LABELS.arcade).toBe("USE ARCADE");
+    expect(ROOM_HOTSPOT_LABELS.cat).toBe("oiia ?");
+  });
+
+  it("covers every RoomHotspot destination with a non-empty string", () => {
+    const hotspots: RoomHotspot[] = ["monitor", "arcade", "cat"];
+    for (const spot of hotspots) {
+      expect(typeof ROOM_HOTSPOT_LABELS[spot]).toBe("string");
+      expect(ROOM_HOTSPOT_LABELS[spot].length).toBeGreaterThan(0);
+    }
+  });
+});
 
 describe("hotspot hint placement", () => {
   it("places the label below and to the right of the cursor", () => {

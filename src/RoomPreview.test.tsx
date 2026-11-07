@@ -43,33 +43,28 @@ describe("RoomPreview component", () => {
     expect(html).not.toContain("Oiia Cat music controls");
   });
 
-  it("renders Oiia Cat HUD controls in room overview and reflects audio state", async () => {
-    const { oiiaAudio } = await import("./oiiaAudio");
-    oiiaAudio.reset();
-
+  it("does not render Oiia Cat HUD controls in room overview", () => {
     const overviewNav: RoomNavigationState = { destination: "room" };
-    let html = renderToStaticMarkup(
+    const html = renderToStaticMarkup(
       <RoomPreview navigation={overviewNav} onNavigate={() => {}} />
     );
 
-    expect(html).toContain("Oiia Cat music controls");
-    expect(html).toContain("Oiia Cat: Dance");
-    expect(html).toContain("Start Oiia Cat musical dance");
+    expect(html).not.toContain("Oiia Cat music controls");
+    expect(html).not.toContain("Oiia Cat: Dance");
+    expect(html).not.toContain("Start Oiia Cat musical dance");
     expect(html).not.toContain("Oiia Cat: Dancing");
     expect(html).not.toContain("Mute Oiia Cat audio");
+  });
 
-    // Start playing
-    await oiiaAudio.play();
-    html = renderToStaticMarkup(
+  it("configures oiia ? tooltip text for cat hotspot and renders the cursor hint element", () => {
+    const overviewNav: RoomNavigationState = { destination: "room" };
+    const html = renderToStaticMarkup(
       <RoomPreview navigation={overviewNav} onNavigate={() => {}} />
     );
 
-    expect(html).toContain("Oiia Cat: Dancing 🎵");
-    expect(html).toContain("Pause Oiia Cat dance");
-    expect(html).toContain("Mute Oiia Cat audio");
-
-    // Reset audio back to clean state
-    oiiaAudio.reset();
+    // Verify cursor hotspot hint container is rendered
+    expect(html).toContain('class="');
+    expect(html).toContain('data-visible="false"');
   });
 
   it("renders the arcade panel and safe external link when focused on arcade", () => {

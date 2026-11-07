@@ -1,6 +1,10 @@
-import type { RoomDestination } from "./roomNavigation";
+export type RoomHotspot = "monitor" | "arcade" | "cat";
 
-export type RoomHotspot = Exclude<RoomDestination, "room">;
+export const ROOM_HOTSPOT_LABELS: Record<RoomHotspot, string> = {
+  monitor: "USE COMPUTER",
+  arcade: "USE ARCADE",
+  cat: "oiia ?",
+};
 
 export type RoomHotspotHover = {
   destination: RoomHotspot;

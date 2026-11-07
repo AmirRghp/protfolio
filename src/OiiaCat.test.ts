@@ -7,11 +7,15 @@ import {
   calculateHoverHeight,
   calculateMorphInfluence,
   calculatePartyLight,
+  calculateRaveLightingState,
   calculateShadowProperties,
   calculateShortestAngleDiff,
   calculateSpinVelocity,
+  createLoafShadowTexture,
+  PARTY_COLORS,
 } from "./oiiaCatLogic";
 import {
+  CAT_MODEL_OFFSET_X,
   CAT_MODEL_OFFSET_Y,
   CAT_MODEL_OFFSET_Z,
   CAT_REST_ROTATION_Y,
@@ -79,8 +83,8 @@ describe("OiiaCat 3D asset structure", () => {
 
     // Scaled dimensions on desk:
     const scaledHeight = size.y * CAT_SCALE;
-    expect(scaledHeight).toBeGreaterThan(0.40);
-    expect(scaledHeight).toBeLessThan(0.55);
+    expect(scaledHeight).toBeGreaterThan(0.85);
+    expect(scaledHeight).toBeLessThan(1.05);
 
     // Raw model bounding min y
     expect(bounds.min.y).toBeLessThan(0.05);
@@ -92,24 +96,37 @@ describe("OiiaCat 3D asset structure", () => {
 
     // Construct the exact scene hierarchy used in OiiaCat.tsx
     const rootGroup = new Group();
-    rootGroup.position.set(1.85, DESK_SURFACE_Y, 1.25);
+    rootGroup.position.set(1.80, DESK_SURFACE_Y, 1.65);
 
     const modelGroup = new Group();
     modelGroup.rotation.set(0, CAT_REST_ROTATION_Y, 0);
     rootGroup.add(modelGroup);
 
     const model = gltf.scene;
-    model.position.set(0, CAT_MODEL_OFFSET_Y, CAT_MODEL_OFFSET_Z);
+    model.position.set(CAT_MODEL_OFFSET_X, CAT_MODEL_OFFSET_Y, CAT_MODEL_OFFSET_Z);
     model.scale.set(CAT_SCALE, CAT_SCALE, CAT_SCALE);
     modelGroup.add(model);
 
     rootGroup.updateMatrixWorld(true);
 
-    const worldBounds = new Box3().setFromObject(model);
+    let catMesh: Mesh | null = null;
+    gltf.scene.traverse((obj) => {
+      if (obj instanceof Mesh) catMesh = obj;
+    });
+    catMesh!.morphTargetInfluences![0] = 0;
 
-    // The bottom of the cat's paws must touch DESK_SURFACE_Y (1.906) within 0.005 units
-    expect(worldBounds.min.y).toBeCloseTo(DESK_SURFACE_Y, 2);
-    expect(worldBounds.min.y).toBeGreaterThanOrEqual(DESK_SURFACE_Y - 0.005);
+    const pos = catMesh!.geometry.attributes.position;
+    let minY = Infinity;
+    const v = new Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      v.fromBufferAttribute(pos, i);
+      catMesh!.localToWorld(v);
+      if (v.y < minY) minY = v.y;
+    }
+
+    // The bottom of the cat's paws must touch DESK_SURFACE_Y (1.906) with sub-millimeter precision
+    expect(minY).toBeCloseTo(DESK_SURFACE_Y, 2);
+    expect(minY).toBeGreaterThanOrEqual(DESK_SURFACE_Y - 0.005);
   });
 });
 
@@ -168,19 +185,89 @@ describe("OiiaCat animation and dance logic", () => {
     const idleBounce = calculateCatBounce(1.0, 0.5, false, false, false);
     expect(idleBounce.bounceY).toBe(0);
     expect(idleBounce.tiltX).toBe(0);
+    expect(idleBounce.tiltZ).toBe(0);
 
     const reducedBounce = calculateCatBounce(1.0, 0.5, true, true, true);
     expect(reducedBounce.bounceY).toBe(0);
+    expect(reducedBounce.tiltX).toBe(0);
+    expect(reducedBounce.tiltZ).toBe(0);
 
-    // On-beat bounce during normal dance
+    // On-beat bounce during normal dance: strictly vertical, zero off-axis wobble
     const beatPeriod = 60 / 160; // 0.375s
     const midBeat = beatPeriod * 0.5; // Sine wave peaks at mid phase (PI/2)
     const bounceMid = calculateCatBounce(midBeat, 0.8, false, true, false);
     expect(bounceMid.bounceY).toBeGreaterThan(0.02);
+    expect(bounceMid.tiltX).toBe(0);
+    expect(bounceMid.tiltZ).toBe(0);
 
-    // Drop phase bounce is higher
+    // Drop phase bounce is higher: strictly vertical, zero off-axis wobble
     const dropBounce = calculateCatBounce(midBeat, 0.8, true, true, false);
     expect(dropBounce.bounceY).toBeGreaterThan(bounceMid.bounceY);
+    expect(dropBounce.tiltX).toBe(0);
+    expect(dropBounce.tiltZ).toBe(0);
+  });
+
+  it("generates an elongated loaf contact shadow texture with smooth AO gradient", () => {
+    const texture = createLoafShadowTexture();
+    expect(texture).toBeDefined();
+    expect(texture.image.width).toBe(128);
+    expect(texture.image.height).toBe(256);
+
+    expect(texture.image.data).toBeDefined();
+    const data = texture.image.data!;
+    const width = 128;
+    const height = 256;
+
+    const getPixel = (x: number, y: number) => {
+      const idx = (y * width + x) * 4;
+      return {
+        r: data[idx],
+        g: data[idx + 1],
+        b: data[idx + 2],
+        a: data[idx + 3],
+      };
+    };
+
+    // Center core: dense dark ambient occlusion
+    const core = getPixel(64, 128);
+    expect(core.r).toBe(9);
+    expect(core.g).toBe(7);
+    expect(core.b).toBe(6);
+    expect(core.a).toBe(255);
+
+    // Spine along loaf length: remains dense at y=88 and y=168
+    const topSpine = getPixel(64, 88);
+    const bottomSpine = getPixel(64, 168);
+    expect(topSpine.a).toBeGreaterThan(200);
+    expect(bottomSpine.a).toBeGreaterThan(200);
+
+    // Boundary decay: reaches 0 outside the capsule
+    expect(getPixel(0, 128).a).toBe(0);
+    expect(getPixel(127, 128).a).toBe(0);
+    expect(getPixel(64, 0).a).toBe(0);
+    expect(getPixel(64, 255).a).toBe(0);
+
+    // Measure non-zero span along X (width) and Y (length)
+    let minX = width;
+    let maxX = 0;
+    let minY = height;
+    let maxY = 0;
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (getPixel(x, y).a > 0) {
+          if (x < minX) minX = x;
+          if (x > maxX) maxX = x;
+          if (y < minY) minY = y;
+          if (y > maxY) maxY = y;
+        }
+      }
+    }
+    const spanX = maxX - minX;
+    const spanY = maxY - minY;
+
+    // Conforms to elongated loaf footprint (aspect ratio > 1.8), not a flat circle
+    expect(spanY / spanX).toBeGreaterThan(1.8);
+    texture.dispose();
   });
 
   it("adapts contact shadow scale and opacity dynamically based on hover", () => {
@@ -213,6 +300,30 @@ describe("OiiaCat animation and dance logic", () => {
     expect(dropLight.intensity).toBeGreaterThan(normalLight.intensity);
   });
 
+  it("calculates full-room disco rave lighting with neon color cycling and kick pulses", () => {
+    // Normal kick pulse at beat 0
+    const raveBeat0 = calculateRaveLightingState(0.0, 0.8);
+    expect(PARTY_COLORS).toContain(raveBeat0.wallLeftColor);
+    expect(PARTY_COLORS).toContain(raveBeat0.wallRightColor);
+    expect(raveBeat0.wallLeftColor).not.toBe(raveBeat0.wallRightColor);
+    expect(raveBeat0.wallIntensity).toBeGreaterThan(4.5);
+    expect(raveBeat0.shelf1LIntensity).toBeGreaterThan(5.5);
+    expect(raveBeat0.backgroundColor).toBe("#160b2e"); // Hard kick > 0.5 triggers neon background flash
+
+    // Soft kick (< 0.5) retains default nocturnal background
+    const raveSoftKick = calculateRaveLightingState(0.0, 0.2);
+    expect(raveSoftKick.backgroundColor).toBe("#080614");
+
+    // Colors cycle across 160 BPM beats (beat period = 0.375s)
+    const raveBeat1 = calculateRaveLightingState(0.38, 0.8);
+    expect(raveBeat1.wallLeftColor).not.toBe(raveBeat0.wallLeftColor);
+
+    // Shelf LEDs alternate on 320 BPM sub-beats (sub-beat period = 0.1875s)
+    const subBeat0 = calculateRaveLightingState(0.05, 0.8);
+    const subBeat1 = calculateRaveLightingState(0.05 + 0.19, 0.8);
+    expect(subBeat0.shelf1LColor).not.toBe(subBeat1.shelf1LColor);
+  });
+
   it("calculates shortest-path angular difference avoiding 360-degree reverse spins", () => {
     // Current at 6.20 rad (close to 2*PI), target at -0.15 rad (or 6.133 rad)
     // Shortest path is only ~ -0.067 rad, not -6.35 rad!
@@ -234,7 +345,10 @@ describe("OiiaCat animation and dance logic", () => {
 
   it("defines standard desk placement constants", () => {
     expect(DESK_SURFACE_Y).toBe(1.906);
-    expect(CAT_SCALE).toBe(0.70);
-    expect(CAT_REST_ROTATION_Y).toBe(-0.15);
+    expect(CAT_SCALE).toBe(1.40);
+    expect(CAT_REST_ROTATION_Y).toBe(0.45);
+    expect(CAT_MODEL_OFFSET_X).toBeCloseTo(0.006 * 1.40);
+    expect(CAT_MODEL_OFFSET_Y).toBeCloseTo(0.01101 * 1.40);
+    expect(CAT_MODEL_OFFSET_Z).toBeCloseTo(-0.059 * 1.40);
   });
 });

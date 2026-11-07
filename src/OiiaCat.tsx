@@ -9,6 +9,7 @@ import {
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
+  Object3D,
   PointLight,
   Points,
   PointsMaterial,
@@ -23,14 +24,16 @@ import {
   calculateShadowProperties,
   calculateShortestAngleDiff,
   calculateSpinVelocity,
+  createLoafShadowTexture,
 } from "./oiiaCatLogic";
 import type { RoomDestination } from "./roomNavigation";
 
 export const DESK_SURFACE_Y = 1.906;
-export const CAT_SCALE = 0.70;
-export const CAT_REST_ROTATION_Y = -0.15;
-export const CAT_MODEL_OFFSET_Y = 0.1594 * CAT_SCALE;
-export const CAT_MODEL_OFFSET_Z = 0.084 * CAT_SCALE;
+export const CAT_SCALE = 1.40;
+export const CAT_REST_ROTATION_Y = 0.45;
+export const CAT_MODEL_OFFSET_X = 0.006 * CAT_SCALE;
+export const CAT_MODEL_OFFSET_Y = 0.01101 * CAT_SCALE;
+export const CAT_MODEL_OFFSET_Z = -0.059 * CAT_SCALE;
 
 function CatSparkles({ active }: { active: boolean }) {
   const pointsRef = useRef<Points>(null);
@@ -133,14 +136,17 @@ function CatPartyLight({
 
 export default function OiiaCat({
   destination = "room",
+  onLoaded,
 }: {
   destination?: RoomDestination;
+  onLoaded?: (objs: Object3D[]) => void;
 }) {
   const gltf = useLoader(GLTFLoader, "/assets/models/oiia-cat.glb");
   const invalidate = useThree((state) => state.invalidate);
 
   const catGroupRef = useRef<Group>(null);
   const modelGroupRef = useRef<Group>(null);
+  const shadowGroupRef = useRef<Group>(null);
   const shadowMeshRef = useRef<Mesh>(null);
   const shadowMatRef = useRef<MeshBasicMaterial>(null);
   const catMeshRef = useRef<Mesh | null>(null);
@@ -150,13 +156,23 @@ export default function OiiaCat({
   const danceTimeRef = useRef(0);
   const [isPlaying, setIsPlaying] = useState(false);
 
+  // Soft ambient occlusion contact shadow texture conforming to loaf footprint
+  const shadowTexture = useMemo(() => createLoafShadowTexture(), []);
+  useEffect(() => {
+    return () => {
+      shadowTexture.dispose();
+    };
+  }, [shadowTexture]);
+
   // Clone scene so morph targets and instances stay isolated
   const clonedScene = useMemo(() => gltf.scene.clone(true), [gltf.scene]);
 
   useEffect(() => {
+    const catMeshes: Object3D[] = [];
     let foundMesh: Mesh | null = null;
     clonedScene.traverse((child) => {
       if (child instanceof Mesh) {
+        catMeshes.push(child);
         child.castShadow = false;
         child.receiveShadow = true;
         if (child.material instanceof MeshStandardMaterial) {
@@ -173,8 +189,9 @@ export default function OiiaCat({
       }
     });
     catMeshRef.current = foundMesh;
+    onLoaded?.(catMeshes.length > 0 ? catMeshes : [clonedScene]);
     invalidate();
-  }, [clonedScene, invalidate]);
+  }, [clonedScene, invalidate, onLoaded]);
 
   // Subscribe to audio state
   useEffect(() => {
@@ -207,9 +224,12 @@ export default function OiiaCat({
         modelGroupRef.current.rotation.set(0, CAT_REST_ROTATION_Y, 0);
         modelGroupRef.current.scale.set(1, 1, 1);
       }
+      if (shadowGroupRef.current) {
+        shadowGroupRef.current.rotation.y = CAT_REST_ROTATION_Y;
+      }
       if (shadowMeshRef.current && shadowMatRef.current) {
-        shadowMeshRef.current.scale.set(1, 1.45, 1);
-        shadowMatRef.current.opacity = 0.44;
+        shadowMeshRef.current.scale.set(1, 1, 1);
+        shadowMatRef.current.opacity = 0.55;
       }
       invalidate();
     }
@@ -241,9 +261,12 @@ export default function OiiaCat({
         modelGroupRef.current.rotation.set(0, CAT_REST_ROTATION_Y, 0);
         modelGroupRef.current.scale.set(1, 1, 1);
       }
+      if (shadowGroupRef.current) {
+        shadowGroupRef.current.rotation.y = CAT_REST_ROTATION_Y;
+      }
       if (shadowMeshRef.current && shadowMatRef.current) {
-        shadowMeshRef.current.scale.set(1, 1.45, 1);
-        shadowMatRef.current.opacity = 0.44;
+        shadowMeshRef.current.scale.set(1, 1, 1);
+        shadowMatRef.current.opacity = 0.46;
       }
       return;
     }
@@ -264,7 +287,7 @@ export default function OiiaCat({
         catMeshRef.current.morphTargetInfluences[0] = morph;
       }
 
-      // 2. Spin velocity and rotation
+      // 2. Spin velocity and rotation around vertical center of mass
       const spinVel = calculateSpinVelocity(
         danceTimeRef.current,
         audioState.isDrop,
@@ -274,15 +297,18 @@ export default function OiiaCat({
       if (modelGroupRef.current) {
         modelGroupRef.current.rotation.y = spinAngleRef.current;
       }
+      if (shadowGroupRef.current) {
+        shadowGroupRef.current.rotation.y = spinAngleRef.current;
+      }
 
-      // 3. Hover elevation and rhythmic bounce
+      // 3. Hover elevation and rhythmic bounce (pure vertical, no off-axis tilts)
       const hoverY = calculateHoverHeight(
         danceTimeRef.current,
         audioState.isDrop,
         true,
         reducedMotion,
       );
-      const { bounceY, tiltX, tiltZ } = calculateCatBounce(
+      const { bounceY } = calculateCatBounce(
         audioState.currentTime,
         audioState.bassEnergy,
         audioState.isDrop,
@@ -292,14 +318,14 @@ export default function OiiaCat({
 
       if (catGroupRef.current) {
         catGroupRef.current.position.y = DESK_SURFACE_Y + hoverY + bounceY;
-        catGroupRef.current.rotation.x = tiltX;
-        catGroupRef.current.rotation.z = tiltZ;
+        catGroupRef.current.rotation.x = 0;
+        catGroupRef.current.rotation.z = 0;
       }
 
       // 4. Contact shadow adaptation
       const { scale, opacity } = calculateShadowProperties(hoverY + bounceY);
       if (shadowMeshRef.current && shadowMatRef.current) {
-        shadowMeshRef.current.scale.set(scale, scale * 1.45, scale);
+        shadowMeshRef.current.scale.set(scale, scale, 1);
         shadowMatRef.current.opacity = opacity;
       }
 
@@ -326,11 +352,11 @@ export default function OiiaCat({
           needsInvalidate = true;
         }
         if (Math.abs(catGroupRef.current.rotation.x) > 0.001) {
-          catGroupRef.current.rotation.x *= 0.85;
+          catGroupRef.current.rotation.x = 0;
           needsInvalidate = true;
         }
         if (Math.abs(catGroupRef.current.rotation.z) > 0.001) {
-          catGroupRef.current.rotation.z *= 0.85;
+          catGroupRef.current.rotation.z = 0;
           needsInvalidate = true;
         }
       }
@@ -358,11 +384,15 @@ export default function OiiaCat({
         } else {
           modelGroupRef.current.scale.set(1, 1, 1);
         }
+
+        if (shadowGroupRef.current) {
+          shadowGroupRef.current.rotation.y = modelGroupRef.current.rotation.y;
+        }
       }
 
       if (shadowMeshRef.current && shadowMatRef.current) {
-        shadowMeshRef.current.scale.set(1, 1.45, 1);
-        shadowMatRef.current.opacity = 0.44;
+        shadowMeshRef.current.scale.set(1, 1, 1);
+        shadowMatRef.current.opacity = 0.55;
       }
 
       if (needsInvalidate) {
@@ -375,39 +405,28 @@ export default function OiiaCat({
     <group
       ref={catGroupRef}
       name="OiiaCat"
-      position={[1.85, DESK_SURFACE_Y, 1.25]}
-      onClick={(e) => {
-        if (destination === "room") {
-          e.stopPropagation();
-          oiiaAudio.toggle();
-        }
-      }}
-      onPointerOver={(e) => {
-        if (destination === "room") {
-          e.stopPropagation();
-          document.body.style.cursor = "pointer";
-        }
-      }}
-      onPointerOut={() => {
-        document.body.style.cursor = "auto";
-      }}
+      position={[1.80, DESK_SURFACE_Y, 1.65]}
     >
-      {/* Ground contact shadow on desk surface */}
-      <mesh
-        ref={shadowMeshRef}
-        position={[0, 0.002, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={[1, 1.45, 1]}
+      {/* Ground contact shadow conforming to elongated loaf footprint */}
+      <group
+        ref={shadowGroupRef}
+        position={[0, 0.002, -0.05]}
+        rotation={[0, CAT_REST_ROTATION_Y, 0]}
       >
-        <circleGeometry args={[0.26, 24]} />
-        <meshBasicMaterial
-          ref={shadowMatRef}
-          color="#090706"
-          transparent
-          opacity={0.44}
-          depthWrite={false}
-        />
-      </mesh>
+        <mesh
+          ref={shadowMeshRef}
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry args={[0.54, 0.76]} />
+          <meshBasicMaterial
+            ref={shadowMatRef}
+            map={shadowTexture}
+            transparent
+            opacity={0.55}
+            depthWrite={false}
+          />
+        </mesh>
+      </group>
 
       {/* Model container with center-of-mass pivot offset */}
       <group
@@ -417,7 +436,7 @@ export default function OiiaCat({
       >
         <primitive
           object={clonedScene}
-          position={[0, CAT_MODEL_OFFSET_Y, CAT_MODEL_OFFSET_Z]}
+          position={[CAT_MODEL_OFFSET_X, CAT_MODEL_OFFSET_Y, CAT_MODEL_OFFSET_Z]}
           scale={[CAT_SCALE, CAT_SCALE, CAT_SCALE]}
         />
       </group>

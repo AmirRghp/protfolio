@@ -2,14 +2,18 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, use
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
   ACESFilmicToneMapping,
+  AmbientLight,
+  Color,
   DoubleSide,
   FrontSide,
+  HemisphereLight,
   Mesh,
   MeshBasicMaterial,
   MeshStandardMaterial,
   Object3D,
   PerspectiveCamera,
   PMREMGenerator,
+  PointLight,
   Raycaster,
   SRGBColorSpace,
   Vector2,
@@ -21,6 +25,8 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { calculateRaveLightingState } from "./oiiaCatLogic";
+import { oiiaAudio } from "./oiiaAudio";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "./arcadeProjection";
 import {
@@ -453,7 +459,7 @@ function destinationPose(destination: RoomDestination, aspect: number) {
 }
 
 function isRoomHotspot(value: unknown): value is RoomHotspot {
-  return value === "monitor" || value === "arcade";
+  return value === "monitor" || value === "arcade" || value === "cat";
 }
 
 function CameraFocus({ destination, onHotspotHover }: {
@@ -703,12 +709,12 @@ function HotspotOutlinePass({ selectedObjects }: { selectedObjects: Object3D[] }
   return null;
 }
 
-function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, onNavigate }: {
+function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, onSelect }: {
   destination: RoomHotspot;
   position: Triple;
   rotation?: Triple;
   size: [number, number];
-  onNavigate: (destination: RoomDestination) => void;
+  onSelect?: () => void;
 }) {
   const meshRef = useRef<Mesh>(null);
 
@@ -724,12 +730,171 @@ function FocusHotspot({ destination, position, rotation = [0, 0, 0], size, onNav
         ref={meshRef}
         name="focus-hotspot"
         userData={{ destination }}
-        onClick={(event) => { event.stopPropagation(); onNavigate(destination); }}
+        onClick={(event) => { event.stopPropagation(); onSelect?.(); }}
       >
         <planeGeometry args={size} />
         <meshBasicMaterial transparent opacity={0} depthWrite={false} side={DoubleSide} />
       </mesh>
     </group>
+  );
+}
+
+const DEFAULT_AMBIENT_COLOR = "#1b1532";
+const DEFAULT_AMBIENT_INTENSITY = 0.38;
+const DEFAULT_HEMI_SKY = "#38bdf8";
+const DEFAULT_HEMI_GROUND = "#120e24";
+const DEFAULT_HEMI_INTENSITY = 0.45;
+const DEFAULT_WALL_LEFT_COLOR = "#c084fc";
+const DEFAULT_WALL_RIGHT_COLOR = "#38bdf8";
+const DEFAULT_WALL_INTENSITY = 4.5;
+const DEFAULT_SHELF_LEFT_COLOR = "#00e5ff";
+const DEFAULT_SHELF_RIGHT_COLOR = "#d946ef";
+const DEFAULT_SHELF_INTENSITY = 5.5;
+const DEFAULT_BG_COLOR = "#080614";
+
+function RoomLighting({ destination }: { destination: RoomDestination }) {
+  const { scene, invalidate } = useThree();
+  const ambientRef = useRef<AmbientLight>(null);
+  const hemiRef = useRef<HemisphereLight>(null);
+  const leftWallRef = useRef<PointLight>(null);
+  const rightWallRef = useRef<PointLight>(null);
+  const shelf1LRef = useRef<PointLight>(null);
+  const shelf1RRef = useRef<PointLight>(null);
+  const shelf2LRef = useRef<PointLight>(null);
+  const shelf2RRef = useRef<PointLight>(null);
+  const wasRaveRef = useRef(false);
+
+  useEffect(() => {
+    return () => {
+      if (scene.background instanceof Color) {
+        scene.background.set(DEFAULT_BG_COLOR);
+      }
+    };
+  }, [scene]);
+
+  useFrame(() => {
+    const isRoom = destination === "room";
+    const audioState = oiiaAudio.getState();
+    const isDrop = isRoom && audioState.isPlaying && audioState.isDrop;
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (isDrop && !reducedMotion) {
+      wasRaveRef.current = true;
+      const rave = calculateRaveLightingState(audioState.currentTime, audioState.bassEnergy, {
+        wallIntensity: DEFAULT_WALL_INTENSITY,
+        shelfIntensity: DEFAULT_SHELF_INTENSITY,
+        ambientIntensity: DEFAULT_AMBIENT_INTENSITY,
+        hemiIntensity: DEFAULT_HEMI_INTENSITY,
+        defaultBg: DEFAULT_BG_COLOR,
+      });
+
+      if (leftWallRef.current) {
+        leftWallRef.current.color.set(rave.wallLeftColor);
+        leftWallRef.current.intensity = rave.wallIntensity;
+      }
+      if (rightWallRef.current) {
+        rightWallRef.current.color.set(rave.wallRightColor);
+        rightWallRef.current.intensity = rave.wallIntensity;
+      }
+      if (shelf1LRef.current) {
+        shelf1LRef.current.color.set(rave.shelf1LColor);
+        shelf1LRef.current.intensity = rave.shelf1LIntensity;
+      }
+      if (shelf1RRef.current) {
+        shelf1RRef.current.color.set(rave.shelf1RColor);
+        shelf1RRef.current.intensity = rave.shelf1RIntensity;
+      }
+      if (shelf2LRef.current) {
+        shelf2LRef.current.color.set(rave.shelf2LColor);
+        shelf2LRef.current.intensity = rave.shelf2LIntensity;
+      }
+      if (shelf2RRef.current) {
+        shelf2RRef.current.color.set(rave.shelf2RColor);
+        shelf2RRef.current.intensity = rave.shelf2RIntensity;
+      }
+      if (ambientRef.current) {
+        ambientRef.current.color.set(rave.ambientColor);
+        ambientRef.current.intensity = rave.ambientIntensity;
+      }
+      if (hemiRef.current) {
+        hemiRef.current.color.set(rave.hemiColor);
+        hemiRef.current.intensity = rave.hemiIntensity;
+      }
+      if (scene.background instanceof Color) {
+        scene.background.set(rave.backgroundColor);
+      }
+      invalidate();
+    } else if (wasRaveRef.current) {
+      wasRaveRef.current = false;
+      if (leftWallRef.current) {
+        leftWallRef.current.color.set(DEFAULT_WALL_LEFT_COLOR);
+        leftWallRef.current.intensity = DEFAULT_WALL_INTENSITY;
+      }
+      if (rightWallRef.current) {
+        rightWallRef.current.color.set(DEFAULT_WALL_RIGHT_COLOR);
+        rightWallRef.current.intensity = DEFAULT_WALL_INTENSITY;
+      }
+      if (shelf1LRef.current) {
+        shelf1LRef.current.color.set(DEFAULT_SHELF_LEFT_COLOR);
+        shelf1LRef.current.intensity = DEFAULT_SHELF_INTENSITY;
+      }
+      if (shelf1RRef.current) {
+        shelf1RRef.current.color.set(DEFAULT_SHELF_RIGHT_COLOR);
+        shelf1RRef.current.intensity = DEFAULT_SHELF_INTENSITY;
+      }
+      if (shelf2LRef.current) {
+        shelf2LRef.current.color.set(DEFAULT_SHELF_LEFT_COLOR);
+        shelf2LRef.current.intensity = DEFAULT_SHELF_INTENSITY;
+      }
+      if (shelf2RRef.current) {
+        shelf2RRef.current.color.set(DEFAULT_SHELF_RIGHT_COLOR);
+        shelf2RRef.current.intensity = DEFAULT_SHELF_INTENSITY;
+      }
+      if (ambientRef.current) {
+        ambientRef.current.color.set(DEFAULT_AMBIENT_COLOR);
+        ambientRef.current.intensity = DEFAULT_AMBIENT_INTENSITY;
+      }
+      if (hemiRef.current) {
+        hemiRef.current.color.set(DEFAULT_HEMI_SKY);
+        hemiRef.current.groundColor.set(DEFAULT_HEMI_GROUND);
+        hemiRef.current.intensity = DEFAULT_HEMI_INTENSITY;
+      }
+      if (scene.background instanceof Color) {
+        scene.background.set(DEFAULT_BG_COLOR);
+      }
+      invalidate();
+    }
+  });
+
+  return (
+    <>
+      <color attach="background" args={[DEFAULT_BG_COLOR]} />
+      <ambientLight ref={ambientRef} intensity={DEFAULT_AMBIENT_INTENSITY} color={DEFAULT_AMBIENT_COLOR} />
+      <hemisphereLight ref={hemiRef} args={[DEFAULT_HEMI_SKY, DEFAULT_HEMI_GROUND, DEFAULT_HEMI_INTENSITY]} />
+      <directionalLight
+        position={[1.8, 7.5, 6.2]}
+        intensity={1.4}
+        color="#dbeafe"
+        castShadow
+        shadow-mapSize={[1024, 1024]}
+        shadow-bias={-0.0005}
+        shadow-normalBias={0.02}
+        shadow-camera-left={-7}
+        shadow-camera-right={7}
+        shadow-camera-top={6}
+        shadow-camera-bottom={-4}
+      />
+      <pointLight ref={leftWallRef} position={[-2.4, 5.8, 3.2]} color={DEFAULT_WALL_LEFT_COLOR} intensity={DEFAULT_WALL_INTENSITY} distance={11} decay={2} />
+      <pointLight ref={rightWallRef} position={[2.4, 5.8, 3.2]} color={DEFAULT_WALL_RIGHT_COLOR} intensity={DEFAULT_WALL_INTENSITY} distance={11} decay={2} />
+
+      {/* Under-shelf neon LED illumination (cyan to magenta) */}
+      <pointLight ref={shelf1LRef} position={[1.0, 4.05, -1.0]} color={DEFAULT_SHELF_LEFT_COLOR} intensity={DEFAULT_SHELF_INTENSITY} distance={6} decay={2} />
+      <pointLight ref={shelf1RRef} position={[2.2, 4.05, -1.0]} color={DEFAULT_SHELF_RIGHT_COLOR} intensity={DEFAULT_SHELF_INTENSITY} distance={6} decay={2} />
+      <pointLight ref={shelf2LRef} position={[1.0, 5.30, -1.0]} color={DEFAULT_SHELF_LEFT_COLOR} intensity={DEFAULT_SHELF_INTENSITY} distance={6} decay={2} />
+      <pointLight ref={shelf2RRef} position={[2.2, 5.30, -1.0]} color={DEFAULT_SHELF_RIGHT_COLOR} intensity={DEFAULT_SHELF_INTENSITY} distance={6} decay={2} />
+    </>
   );
 }
 
@@ -751,39 +916,18 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
 }) {
   const [monitorObjects, setMonitorObjects] = useState<Object3D[]>([]);
   const [arcadeObjects, setArcadeObjects] = useState<Object3D[]>([]);
+  const [catObjects, setCatObjects] = useState<Object3D[]>([]);
 
   const selectedObjects = useMemo<Object3D[]>(() => {
     if (highlightedHotspot === "monitor") return monitorObjects;
     if (highlightedHotspot === "arcade") return arcadeObjects;
+    if (highlightedHotspot === "cat") return catObjects;
     return [];
-  }, [highlightedHotspot, monitorObjects, arcadeObjects]);
+  }, [highlightedHotspot, monitorObjects, arcadeObjects, catObjects]);
 
   return (
     <>
-      <color attach="background" args={["#080614"]} />
-      <ambientLight intensity={0.38} color="#1b1532" />
-      <hemisphereLight args={["#38bdf8", "#120e24", 0.45]} />
-      <directionalLight
-        position={[1.8, 7.5, 6.2]}
-        intensity={1.4}
-        color="#dbeafe"
-        castShadow
-        shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0005}
-        shadow-normalBias={0.02}
-        shadow-camera-left={-7}
-        shadow-camera-right={7}
-        shadow-camera-top={6}
-        shadow-camera-bottom={-4}
-      />
-      <pointLight position={[-2.4, 5.8, 3.2]} color="#c084fc" intensity={4.5} distance={11} decay={2} />
-      <pointLight position={[2.4, 5.8, 3.2]} color="#38bdf8" intensity={4.5} distance={11} decay={2} />
-
-      {/* Under-shelf neon LED illumination (cyan to magenta) */}
-      <pointLight position={[1.0, 4.05, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
-      <pointLight position={[2.2, 4.05, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
-      <pointLight position={[1.0, 5.30, -1.0]} color="#00e5ff" intensity={5.5} distance={6} decay={2} />
-      <pointLight position={[2.2, 5.30, -1.0]} color="#d946ef" intensity={5.5} distance={6} decay={2} />
+      <RoomLighting destination={destination} />
 
       <mesh position={[0, 3.2, -1.4]} receiveShadow>
         <planeGeometry args={[30, 24]} />
@@ -795,7 +939,7 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         position={monitorHotspotPosition}
         rotation={[0, MONITOR_YAW, 0]}
         size={[4.231, 2.136]}
-        onNavigate={onNavigate}
+        onSelect={() => onNavigate("monitor")}
       />
 
       <Suspense fallback={null}>
@@ -805,11 +949,28 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
         <CompactKeyboard />
         <ComputerMouse />
         <CoffeeMug active={destination === "room"} />
-        <OiiaCat destination={destination} />
+        <OiiaCat destination={destination} onLoaded={setCatObjects} />
         <BatmanFigure />
         <ArcadeCabinet arcadeRef={arcadeRef} onLoaded={setArcadeObjects} />
       </Suspense>
-      <FocusHotspot destination="arcade" position={[4.495, 2.5, 1.65]} size={[3.1, 6.4]} onNavigate={onNavigate} />
+
+      <FocusHotspot
+        destination="cat"
+        position={[1.80, 2.38, 1.65]}
+        size={[0.68, 0.95]}
+        onSelect={() => {
+          if (destination === "room") {
+            oiiaAudio.toggle();
+          }
+        }}
+      />
+
+      <FocusHotspot
+        destination="arcade"
+        position={[4.495, 2.5, 1.65]}
+        size={[3.1, 6.4]}
+        onSelect={() => onNavigate("arcade")}
+      />
 
       <HotspotOutlinePass selectedObjects={selectedObjects} />
     </>
