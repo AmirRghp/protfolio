@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { TactileButton } from "tactile-glass-ui";
+import LiquidGrid from "./LiquidGrid";
 import WorkAccordion from "./WorkAccordion";
 import { portfolioContent } from "../../content";
 import styles from "./flatLanding.module.css";
@@ -425,6 +426,23 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
       className={`${styles.ld} ${isElementVisible ? styles.open : ""} ${isReady ? styles.ready : ""}`}
       aria-label="Amirreza Gholipour Flat Portfolio"
     >
+      {isElementVisible && (
+        <div className={styles.ldBackground} aria-hidden="true">
+          <LiquidGrid
+            mode="dots"
+            background="#000000"
+            lineColor="#FFFFFF1A"
+            glowColor="#2F2F2F"
+            cellSize={16}
+            lineWidth={1}
+            radius={58}
+            intensity={10}
+            collide={true}
+            clickRipple={true}
+          />
+        </div>
+      )}
+
       <div ref={mediaRef} className={styles.ldMedia} aria-hidden="true">
         <div ref={shotBoxRef} className={styles.ldShot} />
         <div ref={veilRef} className={styles.ldVeil} />

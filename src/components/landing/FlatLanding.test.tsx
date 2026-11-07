@@ -108,4 +108,21 @@ describe("FlatLanding component", () => {
     expect(html).toContain("ldPage");
     expect(html).toContain("ldHero");
   });
+
+  it("renders the interactive LiquidGrid background container when open", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("ldBackground");
+    expect(html).toContain("<canvas");
+  });
+
+  it("does not render the LiquidGrid background container when closed", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={false} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).not.toContain("ldBackground");
+  });
 });
