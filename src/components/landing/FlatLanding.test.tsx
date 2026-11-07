@@ -128,12 +128,16 @@ describe("FlatLanding component", () => {
     expect(html).not.toContain("ldBackground");
   });
 
-  it("renders the transition image for the clean 3D room to ASCII conversion", () => {
+  it("renders the unified live-video portal with transition image backing and digital scanline overlay inside the hero reel", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
     );
 
     expect(html).toContain("ldTransitionImg");
     expect(html).toContain("ascii-room.webp");
+    expect(html).toContain("ldReelVideo");
+    expect(html).toContain("ldPortalFx");
+    expect(html).toContain("ldMatrixGrid");
+    expect(html).toContain("ldScanCrest");
   });
 });
