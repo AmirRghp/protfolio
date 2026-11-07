@@ -238,32 +238,7 @@ export const portfolioContent: PortfolioContent = {
         duration: "2 months",
       },
     ],
-    academicProjects: [
-      {
-        title: "Project Management Kanban Board with an AI Assistant",
-        year: "2026",
-        category: "AI Product Engineering",
-        summary: "Interactive project management Kanban workspace integrated with an AI assistant for task breakdown and workflow automation.",
-      },
-      {
-        title: "Cryptocurrency & Global Gold Price Forecasting",
-        year: "2025",
-        category: "Time-Series Forecasting",
-        summary: "Predictive machine learning models for forecasting cryptocurrency markets and global gold prices.",
-      },
-      {
-        title: "AI-Powered Telegram Bot for Social Media Analysis",
-        year: "2025",
-        category: "NLP & Bot Automation",
-        summary: "Telegram bot connected to AI models for automated social media trend and content analysis.",
-      },
-      {
-        title: "AI-Based Image Recognition for KYC Identity Verification",
-        year: "2025",
-        category: "Computer Vision & Security",
-        summary: "Automated image recognition pipeline designed for Know Your Customer (KYC) identity verification.",
-      },
-    ],
+    academicProjects: [],
     volunteer: [
       {
         role: "Executive Committee Member",
