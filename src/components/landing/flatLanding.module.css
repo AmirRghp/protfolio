@@ -204,6 +204,7 @@
   pointer-events: none;
   overflow: hidden;
   border-radius: inherit;
+  container-type: size;
   opacity: 0;
   will-change: opacity;
 }
@@ -241,7 +242,7 @@
   right: 0;
   top: 0;
   height: 140px;
-  transform: translate3d(0, -110%, 0);
+  transform: translate3d(0, -140px, 0);
   will-change: transform;
   background: linear-gradient(
     180deg,

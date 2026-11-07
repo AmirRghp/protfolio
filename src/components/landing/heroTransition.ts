@@ -22,32 +22,31 @@ export type HeroPortalGeometry = {
   dockedClipPath: string;
 };
 
-export const EASE_PORTAL_DOCK = "cubic-bezier(0.16, 1, 0.3, 1)";
+export const EASE_PORTAL_DOCK = "cubic-bezier(0.22, 1, 0.36, 1)";
 export const EASE_PORTAL_EXPAND = "cubic-bezier(0.22, 1, 0.36, 1)";
-export const EASE_CRISP_OUT = "cubic-bezier(0.23, 1, 0.32, 1)";
+export const EASE_SCAN_SWEEP = "cubic-bezier(0.35, 0, 0.25, 1)";
+export const EASE_CRISP_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 export const HERO_OPEN_TIMING = {
-  quantizeFadeDuration: 220,
-  scanSweepDuration: 420,
-  dockDelay: 40,
-  dockDuration: 600,
-  backdropDelay: 60,
-  backdropDuration: 380,
-  navDelay: 200,
-  navDuration: 360,
-  contentDelay: 180,
-  contentDuration: 400,
+  quantizeFadeDuration: 180,
+  scanSweepDuration: 650,
+  dockDelay: 0,
+  dockDuration: 650,
+  backdropDelay: 80,
+  backdropDuration: 420,
+  navDelay: 220,
+  navDuration: 380,
+  contentDelay: 200,
+  contentDuration: 420,
 } as const;
 
 export const HERO_CLOSE_TIMING = {
   contentFadeDuration: 200,
   navFadeDuration: 180,
-  backdropFadeDuration: 260,
-  expandDuration: 440,
-  scanSweepDelay: 240,
-  scanSweepDuration: 340,
+  backdropFadeDuration: 280,
+  expandDuration: 500,
   dissolveDelay: 320,
-  dissolveDuration: 260,
+  dissolveDuration: 280,
 } as const;
 
 function fmtPx(value: number): string {

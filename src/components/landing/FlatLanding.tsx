@@ -7,6 +7,7 @@ import {
   EASE_CRISP_OUT,
   EASE_PORTAL_DOCK,
   EASE_PORTAL_EXPAND,
+  EASE_SCAN_SWEEP,
   HERO_CLOSE_TIMING,
   HERO_OPEN_TIMING,
 } from "./heroTransition";
@@ -182,8 +183,6 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     const root = rootRef.current;
     const backdrop = backdropRef.current;
     const frame = frameRef.current;
-    const portalFx = portalFxRef.current;
-    const scanCrest = scanCrestRef.current;
     const nav = navRef.current;
     const wrap = wrapRef.current;
 
@@ -274,35 +273,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
       },
     );
 
-    // 3. Reverse upward cyber-scanline & matrix grid bridge as the full-screen ASCII portal dissolves into the 3D room
-    const rPortalFx = portalFx
-      ? portalFx.animate(
-          [{ opacity: 0 }, { opacity: 0.88, offset: 0.45 }, { opacity: 0 }],
-          {
-            duration: HERO_CLOSE_TIMING.scanSweepDuration,
-            delay: HERO_CLOSE_TIMING.scanSweepDelay,
-            fill: "both",
-            easing: "ease-out",
-          },
-        )
-      : null;
-
-    const rScanCrest = scanCrest
-      ? scanCrest.animate(
-          [
-            { transform: "translate3d(0, 112%, 0)" },
-            { transform: "translate3d(0, -110%, 0)" },
-          ],
-          {
-            duration: HERO_CLOSE_TIMING.scanSweepDuration,
-            delay: HERO_CLOSE_TIMING.scanSweepDelay,
-            fill: "both",
-            easing: EASE_PORTAL_EXPAND,
-          },
-        )
-      : null;
-
-    // 4. Full-screen live ASCII video dissolves directly into the live 3D room
+    // 3. Full-screen live ASCII video dissolves directly into the live 3D room
     const rDissolve = frame.animate([{ opacity: 1 }, { opacity: 0 }], {
       duration: HERO_CLOSE_TIMING.dissolveDuration,
       delay: HERO_CLOSE_TIMING.dissolveDelay,
@@ -313,8 +284,6 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     const anims: Animation[] = [rWrap, rExpand, rDissolve];
     if (rNav) anims.push(rNav);
     if (rBackdrop) anims.push(rBackdrop);
-    if (rPortalFx) anims.push(rPortalFx);
-    if (rScanCrest) anims.push(rScanCrest);
     runningAnimationsRef.current = anims;
 
     try {
@@ -400,12 +369,12 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
       },
     );
 
-    // 3. Digital matrix cell grid & bi-chromatic laser scan crest bridge the 3D-to-ASCII conversion
+    // 3. Digital matrix cell grid & bi-chromatic laser scan crest bridge the 3D-to-ASCII conversion across full frame height
     const aPortalFx = portalFx
       ? portalFx.animate(
-          [{ opacity: 0 }, { opacity: 0.92, offset: 0.3 }, { opacity: 0.52, offset: 0.68 }, { opacity: 0 }],
+          [{ opacity: 0 }, { opacity: 0.68, offset: 0.35 }, { opacity: 0.35, offset: 0.75 }, { opacity: 0 }],
           {
-            duration: HERO_OPEN_TIMING.dockDelay + HERO_OPEN_TIMING.dockDuration,
+            duration: HERO_OPEN_TIMING.dockDuration,
             fill: "both",
             easing: "ease-out",
           },
@@ -415,13 +384,13 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     const aScanCrest = scanCrest
       ? scanCrest.animate(
           [
-            { transform: "translate3d(0, -110%, 0)" },
-            { transform: "translate3d(0, 112%, 0)" },
+            { transform: "translate3d(0, -140px, 0)" },
+            { transform: "translate3d(0, calc(100cqh + 40px), 0)" },
           ],
           {
             duration: HERO_OPEN_TIMING.scanSweepDuration,
             fill: "both",
-            easing: EASE_PORTAL_DOCK,
+            easing: EASE_SCAN_SWEEP,
           },
         )
       : null;
