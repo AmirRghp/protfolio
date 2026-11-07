@@ -14,14 +14,16 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Re-enter");
   });
 
-  it("renders hero frame with featured showreel for OmniDoc RAG", () => {
+  it("renders hero frame with looping ASCII room video and without featured card badge", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
     );
 
-    expect(html).toContain("OmniDoc RAG");
-    expect(html).toContain("Featured");
-    expect(html).toContain("href=\"https://github.com/AmirRghp/omnidoc-rag\"");
+    expect(html).toContain("<video");
+    expect(html).toContain("ascii-room.webm");
+    expect(html).toContain("ascii-room.webp");
+    expect(html).toContain('aria-label="Nocturnal Room ASCII Loop"');
+    expect(html).not.toContain("ldReelCap");
   });
 
   it("renders semantic h1 with owner name and full bio", () => {

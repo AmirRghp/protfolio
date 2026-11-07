@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Mous
 import { TactileButton } from "tactile-glass-ui";
 import LiquidGrid from "./LiquidGrid";
 import WorkAccordion from "./WorkAccordion";
+import { getAssetUrl } from "../../assetUrl";
 import { portfolioContent } from "../../content";
 import styles from "./flatLanding.module.css";
 
@@ -90,6 +91,7 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
   const veilRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
   const reelRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
   const navRef = useRef<HTMLElement>(null);
 
   const [transitionState, setTransitionState] = useState<"closed" | "opening" | "open" | "closing">(
@@ -133,6 +135,7 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     if (transitionState !== "open") return;
     setTransitionState("closing");
     setIsReady(false);
+    videoRef.current?.pause();
 
     const root = rootRef.current;
     const media = mediaRef.current;
@@ -179,10 +182,10 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
 
     const r1 = reel.animate(
       [
-        { opacity: 1, transform: "none" },
-        { opacity: 0, transform: "translateY(30px) scale(.97)" },
+        { opacity: 1 },
+        { opacity: 0 },
       ],
-      { duration: 380, fill: "both", easing: "cubic-bezier(.5,0,.75,0)" },
+      { duration: 320, fill: "both", easing: "linear" },
     );
     const r2 = page.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 320, delay: 80, fill: "both", easing: "linear" });
     const r3 = media.animate([{ clipPath: clip }, { clipPath: FULL }], { duration: D, delay: 220, fill: "both", easing: EASE });
@@ -301,10 +304,10 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     );
     const a6 = reel.animate(
       [
-        { opacity: 0, transform: "translateY(40px) scale(.96)" },
-        { opacity: 1, transform: "none" },
+        { opacity: 0 },
+        { opacity: 1 },
       ],
-      { duration: 900, delay: T + 780, fill: "both", easing: OUT },
+      { duration: 700, delay: T + 450, fill: "both", easing: "linear" },
     );
     const aPage = page.animate([{ opacity: 0 }, { opacity: 1 }], {
       duration: 400,
@@ -347,6 +350,20 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     window.addEventListener("resize", place);
     return () => window.removeEventListener("resize", place);
   }, [transitionState, frameClip]);
+
+  // Video playback management
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (isOpen) {
+      const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      if (!reduced) {
+        video.play().catch(() => {});
+      }
+    } else {
+      video.pause();
+    }
+  }, [isOpen]);
 
   // Global Escape key returns to room when at root flat landing
   useEffect(() => {
@@ -416,7 +433,6 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
     }
   };
 
-  const featured = portfolioContent.projects.find((p) => p.id === "omnidoc-rag") || portfolioContent.projects[0];
   const isElementVisible = isOpen || transitionState !== "closed";
 
   return (
@@ -491,21 +507,19 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
         <div className={styles.ldPage}>
         <section className={styles.ldHero} id="ld-top">
           <div ref={frameRef} className={styles.ldFrame}>
-            <div ref={reelRef} className={styles.ldReel} aria-label="Featured Showreel">
-              <div className={styles.ldReelTex} />
-              <a
-                className={styles.ldReelCap}
-                href={featured.githubUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <i />
-                <span>Featured</span>
-                <b>{featured.title} — Enterprise CRAG</b>
-                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M5.5 4.5h6v6M11.5 4.5 4.5 11.5" />
-                </svg>
-              </a>
+            <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
+              <video
+                ref={videoRef}
+                className={styles.ldReelVideo}
+                src={getAssetUrl("assets/ascii-room.webm")}
+                poster={getAssetUrl("assets/ascii-room.webp")}
+                autoPlay
+                loop
+                muted
+                playsInline
+                preload="auto"
+                aria-label="Nocturnal Room ASCII Loop"
+              />
             </div>
           </div>
         </section>
