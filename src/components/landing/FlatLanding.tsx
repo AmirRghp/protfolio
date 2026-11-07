@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
-import LedButton from "../exit/LedButton";
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
+import { TactileButton } from "tactile-glass-ui";
 import WorkAccordion from "./WorkAccordion";
 import { portfolioContent } from "../../content";
 import styles from "./flatLanding.module.css";
@@ -427,7 +427,17 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
         </nav>
 
         <div className={styles.ldNavCta}>
-          <LedButton label="Re-enter" size="sm" onClick={handleReenter} />
+          <TactileButton
+            onClick={handleReenter}
+            style={{
+              "--btn-h": "38px",
+              "--btn-pad-h": "18px",
+              "--btn-radius": "999px",
+              fontSize: "13px",
+            } as CSSProperties}
+          >
+            Re-enter
+          </TactileButton>
         </div>
       </header>
 
@@ -622,7 +632,9 @@ export default function FlatLanding({ isOpen, snapshotCanvas, onReenter }: FlatL
             </nav>
 
             <div className={`${styles.ldFootCta} ${styles.ldRise}`}>
-              <LedButton label="Enter The Room" onClick={handleReenter} />
+              <TactileButton onClick={handleReenter}>
+                Enter The Room
+              </TactileButton>
             </div>
 
             <div className={styles.ldFootRow}>

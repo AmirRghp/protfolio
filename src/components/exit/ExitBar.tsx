@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import LedButton from "./LedButton";
+import { TactileButton } from "tactile-glass-ui";
 import styles from "./exitBar.module.css";
 
 const STRIP = 30; // height of the side strips
@@ -12,9 +12,9 @@ export type ExitBarProps = {
 };
 
 export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
-  const btnRef = useRef<HTMLButtonElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1200));
-  const [btnSize, setBtnSize] = useState({ w: 196, h: 44 });
+  const [btnSize, setBtnSize] = useState({ w: 200, h: 56 });
   const [lift, setLift] = useState(0);
   const [goal, setGoal] = useState(0);
 
@@ -36,10 +36,11 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
   }, []);
 
   useEffect(() => {
-    const btn = btnRef.current;
-    if (!btn) return;
+    const cta = ctaRef.current;
+    if (!cta) return;
     const updateSize = () => {
-      if (btn.offsetWidth && btn.offsetHeight) {
+      const btn = cta.querySelector("button") || (cta.firstElementChild as HTMLElement);
+      if (btn && btn.offsetWidth && btn.offsetHeight) {
         setBtnSize({ w: btn.offsetWidth, h: btn.offsetHeight });
       }
     };
@@ -50,7 +51,8 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
     let ro: ResizeObserver | null = null;
     if (typeof ResizeObserver !== "undefined") {
       ro = new ResizeObserver(updateSize);
-      ro.observe(btn);
+      const target = cta.querySelector("button") || cta;
+      ro.observe(target);
     }
     return () => ro?.disconnect();
   }, []);
@@ -137,18 +139,19 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
         <path d={pathD} />
       </svg>
       <div
+        ref={ctaRef}
         className={styles.ebCta}
         style={{ transform: `translate(-50%, ${(-lift).toFixed(2)}px)` }}
       >
-        <LedButton
-          label="Exit The Room"
-          buttonRef={btnRef}
+        <TactileButton
           onClick={onExit}
-          onPointerEnter={() => setGoal(5)}
+          onPointerEnter={() => setGoal(6)}
           onPointerLeave={() => setGoal(0)}
           onPointerDown={() => setGoal(-2)}
-          onPointerUp={() => setGoal(5)}
-        />
+          onPointerUp={() => setGoal(6)}
+        >
+          Exit The Room
+        </TactileButton>
       </div>
     </div>
   );

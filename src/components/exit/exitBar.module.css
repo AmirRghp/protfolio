@@ -1,112 +1,3 @@
-@property --led-a {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
-.led {
-  position: relative;
-  display: inline-flex;
-  isolation: isolate;
-}
-
-.ledAura {
-  position: absolute;
-  inset: -2px;
-  z-index: -1;
-  border-radius: 999px;
-  pointer-events: none;
-  background: conic-gradient(from var(--led-a, 0deg), #8b5cf6, #ec4899, #22d3ee, #fbbf24, #8b5cf6);
-  filter: blur(9px);
-  opacity: 0.36;
-  transition: opacity 0.35s ease, inset 0.35s ease;
-  animation: ledSpin 7s linear infinite;
-}
-
-.led.hot .ledAura,
-.hot .ledAura {
-  opacity: 0.72;
-  inset: -4px;
-}
-
-@keyframes ledSpin {
-  to {
-    --led-a: 360deg;
-  }
-}
-
-.ledBtn {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 44px;
-  padding: 0 22px;
-  border: 0;
-  border-radius: 999px;
-  overflow: hidden;
-  cursor: pointer;
-  background: #09090b;
-  color: #fff;
-  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 1;
-  letter-spacing: -0.005em;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.09),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.35);
-  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-  -webkit-tap-highlight-color: transparent;
-}
-
-.ledBtn:active {
-  transform: scale(0.97);
-}
-
-.ledBtn:focus-visible {
-  outline: 2px solid #8b5cf6;
-  outline-offset: 3px;
-}
-
-.ledBtn canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-
-.ledLabel {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;
-  text-shadow: 0 0 14px rgba(255, 255, 255, 0.35);
-  user-select: none;
-}
-
-.ledStar {
-  width: 13px;
-  height: 13px;
-  fill: currentColor;
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.6));
-}
-
-.ledSm .ledBtn {
-  height: 34px;
-  padding: 0 15px;
-  font-size: 13px;
-}
-
-.ledSm .ledStar {
-  width: 11px;
-  height: 11px;
-}
-
-/* ExitBar styles */
 .exitbar {
   position: fixed;
   left: 0;
@@ -137,11 +28,11 @@
   height: 100%;
   overflow: visible;
   pointer-events: none;
-  filter: drop-shadow(0 -1px 0 rgba(0, 0, 0, 0.05)) drop-shadow(0 -8px 22px rgba(0, 0, 0, 0.16));
+  filter: drop-shadow(0 -1px 0 rgba(255, 255, 255, 0.08)) drop-shadow(0 -8px 24px rgba(0, 0, 0, 0.85));
 }
 
 .ebShape path {
-  fill: #f4f2ec;
+  fill: #000000;
   pointer-events: auto;
 }
 
