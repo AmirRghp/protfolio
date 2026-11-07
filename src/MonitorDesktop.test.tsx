@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import MonitorDesktop, { DesktopWindow, type DesktopApp } from "./MonitorDesktop";
+import { oiiaAudio } from "./oiiaAudio";
 
 const aboutMe: DesktopApp = {
   id: "about-me",
@@ -135,5 +136,28 @@ describe("monitor desktop", () => {
     expect(html).toContain("Round the year contribution graph");
     expect(html).toContain("CONTRIBUTIONS");
     expect(html).toContain("STREAK");
+  });
+
+  it("shows the Oiia Cat drop sync overlay and hides desktop items during drop rave", () => {
+    const originalGetState = oiiaAudio.getState.bind(oiiaAudio);
+    oiiaAudio.getState = () => ({
+      isPlaying: true,
+      currentTime: 35.0,
+      duration: 134.0,
+      bassEnergy: 0.8,
+      overallEnergy: 0.9,
+      isDrop: true,
+      isMuted: false,
+      volume: 0.85,
+    });
+
+    try {
+      const html = renderToStaticMarkup(<MonitorDesktop apps={[aboutMe]} openAppId="about-me" />);
+      expect(html).toContain("oiiaDropSyncOverlay");
+      expect(html).toContain("hiddenDuringDrop");
+      expect(html).not.toContain("monitor-window-title");
+    } finally {
+      oiiaAudio.getState = originalGetState;
+    }
   });
 });

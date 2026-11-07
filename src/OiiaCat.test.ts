@@ -5,6 +5,7 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import {
   calculateCatBounce,
   calculateHoverHeight,
+  calculateMonitorRaveColor,
   calculateMorphInfluence,
   calculatePartyLight,
   calculateRaveLightingState,
@@ -350,5 +351,20 @@ describe("OiiaCat animation and dance logic", () => {
     expect(CAT_MODEL_OFFSET_X).toBeCloseTo(0.006 * 1.40);
     expect(CAT_MODEL_OFFSET_Y).toBeCloseTo(0.01101 * 1.40);
     expect(CAT_MODEL_OFFSET_Z).toBeCloseTo(-0.059 * 1.40);
+  });
+
+  it("calculates solid monitor rave background color synchronized with beats", () => {
+    // At beat 0 (0.0s)
+    const color0 = calculateMonitorRaveColor(0.0);
+    expect(PARTY_COLORS).toContain(color0);
+
+    // At beat 1 (0.38s)
+    const color1 = calculateMonitorRaveColor(0.38);
+    expect(PARTY_COLORS).toContain(color1);
+    expect(color1).not.toBe(color0);
+
+    // Reduced motion returns steady deep color
+    expect(calculateMonitorRaveColor(0.0, true)).toBe("#1e1b4b");
+    expect(calculateMonitorRaveColor(0.38, true)).toBe("#1e1b4b");
   });
 });

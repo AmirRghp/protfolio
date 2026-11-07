@@ -378,3 +378,31 @@
   transition: box-shadow 180ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Oiia Cat Drop Sync Rave Overlay */
+.oiiaDropSyncOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.08s ease-out;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.oiiaDropSyncCanvas {
+  width: 720px;
+  height: 720px;
+  max-width: 95%;
+  max-height: 95%;
+  display: block;
+}
+
+.hiddenDuringDrop {
+  opacity: 0 !important;
+  pointer-events: none !important;
+  visibility: hidden !important;
+}
+
+

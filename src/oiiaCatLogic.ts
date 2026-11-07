@@ -260,3 +260,18 @@ export function calculateRaveLightingState(
     backgroundColor: bassEnergy > 0.5 ? "#160b2e" : defaultBg,
   };
 }
+
+/**
+ * Calculates a solid background color for the computer monitor during the fast drop rave.
+ * Changes on every beat (160 BPM => beat every 0.375s), perfectly synchronizing with
+ * the wall rave lights.
+ */
+export function calculateMonitorRaveColor(
+  currentTime: number,
+  reducedMotion = false,
+): string {
+  if (reducedMotion) return "#1e1b4b";
+  const beatIndex = Math.floor(currentTime * (160 / 60));
+  return PARTY_COLORS[beatIndex % PARTY_COLORS.length] ?? PARTY_COLORS[0];
+}
+

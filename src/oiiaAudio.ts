@@ -58,6 +58,13 @@ export class OiiaAudioManager {
       this.audio.addEventListener("timeupdate", () => {
         if (this.audio && !Number.isNaN(this.audio.currentTime)) {
           this.currentTime = this.audio.currentTime;
+          const inDrop =
+            (this.currentTime >= 33.0 && this.currentTime <= 57.0) ||
+            (this.currentTime >= 81.0 && this.currentTime <= 105.0);
+          if (this.isDrop !== inDrop) {
+            this.isDrop = inDrop;
+            this.notifyListeners();
+          }
         }
       });
 
@@ -170,6 +177,21 @@ export class OiiaAudioManager {
     this.notifyListeners();
   }
 
+  public seek(time: number): void {
+    this.currentTime = Math.max(0, Math.min(this.duration, time));
+    this.isDrop =
+      (this.currentTime >= 33.0 && this.currentTime <= 57.0) ||
+      (this.currentTime >= 81.0 && this.currentTime <= 105.0);
+    if (this.audio) {
+      try {
+        this.audio.currentTime = this.currentTime;
+      } catch {
+        // Ignored
+      }
+    }
+    this.notifyListeners();
+  }
+
   public setVolume(vol: number): void {
     this.volume = Math.max(0, Math.min(1, vol));
     if (this.audio) {
@@ -226,7 +248,11 @@ export class OiiaAudioManager {
       const inDrop =
         (this.currentTime >= 33.0 && this.currentTime <= 57.0) ||
         (this.currentTime >= 81.0 && this.currentTime <= 105.0);
+      const dropChanged = this.isDrop !== inDrop;
       this.isDrop = inDrop;
+      if (dropChanged) {
+        this.notifyListeners();
+      }
 
       // Extract real audio frequency if analyser is active
       let realBass = 0;
@@ -295,3 +321,8 @@ export class OiiaAudioManager {
 }
 
 export const oiiaAudio = new OiiaAudioManager();
+
+if (typeof window !== "undefined") {
+  (window as unknown as { __oiiaAudio: OiiaAudioManager }).__oiiaAudio = oiiaAudio;
+}
+

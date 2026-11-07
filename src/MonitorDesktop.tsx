@@ -16,6 +16,8 @@ import {
 } from "./desktopDrag";
 import GradientWaves from "./GradientWaves";
 import ContributionRing from "./ContributionRing";
+import MonitorOiiaSync from "./MonitorOiiaSync";
+import { oiiaAudio } from "./oiiaAudio";
 import styles from "./MonitorDesktop.module.css";
 
 export type DesktopApp = {
@@ -86,12 +88,12 @@ function CloseIcon() {
   );
 }
 
-function StatusBar({ ref }: { ref?: Ref<HTMLElement> }) {
+function StatusBar({ ref, className }: { ref?: Ref<HTMLElement>; className?: string }) {
   const now = useLiveClock();
   const timestamp = formatStatusTimestamp(now);
 
   return (
-    <header className={styles.statusBar} ref={ref}>
+    <header className={`${styles.statusBar} ${className ?? ""}`.trim()} ref={ref}>
       <span className={styles.workspace}>Amirreza Workspace</span>
       <span className={styles.statusMeta}>
         <WifiIcon />
@@ -282,6 +284,17 @@ export default function MonitorDesktop({
   const [windowBounds, setWindowBounds] = useState<DesktopBounds>({ width: 0, height: 0, top: 0 });
   const [movingAppId, setMovingAppId] = useState<string | null>(null);
   const [draggingWindow, setDraggingWindow] = useState(false);
+  const [isDropRave, setIsDropRave] = useState(() => {
+    const s = oiiaAudio.getState();
+    return s.isPlaying && s.isDrop;
+  });
+
+  useEffect(() => {
+    return oiiaAudio.subscribe((state) => {
+      const nextDrop = state.isPlaying && state.isDrop;
+      setIsDropRave((prev) => (prev !== nextDrop ? nextDrop : prev));
+    });
+  }, []);
   const opener = useRef<HTMLButtonElement | null>(null);
   const lastActivation = useRef<Activation | null>(null);
   const drag = useRef<DragState | null>(null);
@@ -696,7 +709,7 @@ export default function MonitorDesktop({
         onExit?.();
       }}
     >
-      <div className={styles.wallpaper} aria-hidden="true">
+      <div className={`${styles.wallpaper} ${isDropRave ? styles.hiddenDuringDrop : ""}`.trim()} aria-hidden="true">
         <GradientWaves
           horizonColor="#1e3a8a"
           waveColor="#38bdf8"
@@ -705,18 +718,18 @@ export default function MonitorDesktop({
           amplitude={1.8}
           relief={1}
           lightAngle={150}
-          mouseInteraction={active}
-          swellOnClick={active}
+          mouseInteraction={active && !isDropRave}
+          swellOnClick={active && !isDropRave}
           waveScale={0.9}
           swell={25}
           turbulence={28}
           quality="low"
           intro={false}
-          paused={!active}
+          paused={!active || isDropRave}
         />
       </div>
-      <StatusBar ref={statusBar} />
-      <ul className={styles.icons} ref={iconList} inert={moving}>
+      <StatusBar ref={statusBar} className={isDropRave ? styles.hiddenDuringDrop : undefined} />
+      <ul className={`${styles.icons} ${isDropRave ? styles.hiddenDuringDrop : ""}`.trim()} ref={iconList} inert={moving || isDropRave}>
         {apps.map((app) => {
           const needsDoubleClick = app.activation === "double-click";
           const hintId = `${app.id}-activation-hint`;
@@ -765,10 +778,10 @@ export default function MonitorDesktop({
           );
         })}
       </ul>
-      <div className={styles.contributionWidget} inert={moving}>
-        <ContributionRing autoPlay={active} />
+      <div className={`${styles.contributionWidget} ${isDropRave ? styles.hiddenDuringDrop : ""}`.trim()} inert={moving || isDropRave}>
+        <ContributionRing autoPlay={active && !isDropRave} />
       </div>
-      {openApp && (
+      {openApp && !isDropRave && (
         <DesktopWindow
           key={openApp.id}
           title={openApp.title}
@@ -793,6 +806,7 @@ export default function MonitorDesktop({
           {openApp.content}
         </DesktopWindow>
       )}
+      {isDropRave && <MonitorOiiaSync active={isDropRave} />}
       {moving && (
         <div
           className={styles.moveLayer}
