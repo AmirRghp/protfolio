@@ -1,0 +1,101 @@
+import { renderToStaticMarkup } from "react-dom/server";
+import { describe, expect, it } from "vitest";
+import FlatLanding from "./FlatLanding";
+import { portfolioContent } from "../../content";
+
+describe("FlatLanding component", () => {
+  it("renders the sticky header with Re-enter button and logo", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("AG");
+    expect(html).toContain("AI Engineer");
+    expect(html).toContain("Re-enter");
+  });
+
+  it("renders hero frame with featured showreel for OmniDoc RAG", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("OmniDoc RAG");
+    expect(html).toContain("Featured");
+    expect(html).toContain("href=\"https://github.com/AmirRghp/omnidoc-rag\"");
+  });
+
+  it("renders semantic h1 with owner name and full bio", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain('<main class="intro" aria-labelledby="name">');
+    expect(html).toContain('id="name"');
+    expect(html).toContain(portfolioContent.owner.name);
+    expect(html).toContain(portfolioContent.owner.role);
+    expect(html).toContain(portfolioContent.owner.headline.replaceAll("&", "&amp;"));
+  });
+
+  it("renders capabilities strip with all 6 disciplines", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("Applied AI &amp; RAG");
+    expect(html).toContain("Deep Learning &amp; PyTorch");
+    expect(html).toContain("Computer Vision");
+    expect(html).toContain("Autonomous Agents");
+    expect(html).toContain("FastAPI &amp; MLOps");
+    expect(html).toContain("Product Management");
+  });
+
+  it("renders the four work branches and all project cards", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("Applied AI &amp; RAG");
+    expect(html).toContain("Computer Vision");
+    expect(html).toContain("Autonomous Agents");
+    expect(html).toContain("Pipelines &amp; Fine-tuning");
+
+    for (const project of portfolioContent.projects) {
+      expect(html).toContain(project.title);
+      expect(html).toContain(`href="${project.githubUrl}"`);
+    }
+  });
+
+  it("renders experience, education, and footer with Enter The Room button", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    for (const exp of portfolioContent.owner.experience) {
+      expect(html).toContain(exp.company);
+      expect(html).toContain(exp.title);
+      expect(html).toContain(exp.period);
+    }
+
+    for (const edu of portfolioContent.owner.education) {
+      expect(html).toContain(edu.institution);
+      expect(html).toContain(edu.degree);
+    }
+
+    expect(html).toContain("Enter The Room");
+    expect(html).toContain(portfolioContent.owner.email);
+    expect(html).toContain(portfolioContent.owner.githubUrl);
+  });
+
+  it("renders key metrics in the numbers section with data-count for numeric metrics", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain('data-count="9"');
+    expect(html).toContain('data-count="2025"');
+    expect(html).toContain("M.Sc.");
+    expect(html).toContain("Daraei360");
+    expect(html).toContain("MUST · 2024–Present");
+    expect(html).toContain("11th Int. Signal &amp; Intelligent Systems");
+  });
+});

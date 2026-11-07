@@ -1,0 +1,205 @@
+.wc {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  overflow: hidden;
+}
+
+.wcTrack {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+
+.wcTrack:active {
+  cursor: grabbing;
+}
+
+.wcSlot {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  will-change: transform, filter, opacity;
+}
+
+.wcCard {
+  display: block;
+  width: 100%;
+  max-width: 480px;
+  pointer-events: auto;
+  overflow: hidden;
+  background: rgba(13, 14, 16, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #f3f3f1;
+  text-decoration: none;
+  box-shadow:
+    0 28px 60px -26px rgba(0, 0, 0, 0.75),
+    0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.wcSlot.on .wcCard {
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.wcMedia {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0c0c0e;
+}
+
+.tex {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 100% at 25% 15%, color-mix(in oklab, var(--paint, #3b82f6) 65%, #fff 10%), transparent 70%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+    color-mix(in oklab, var(--paint, #3b82f6) 40%, #0b0b0d);
+}
+
+.texNoise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.3) 1px, transparent 0);
+  background-size: 8px 8px;
+}
+
+.wcMediaIcon {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: rgba(10, 10, 12, 0.65);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.wcMediaIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wcBody {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px 18px;
+  text-align: left;
+}
+
+.wcTop {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wcTop b {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: #f4f2ec;
+}
+
+.wcTop em {
+  padding: 3px 7px;
+  border-radius: 4px;
+  background: #f4f2ec;
+  color: #0b0b0d;
+  font-family: ui-monospace, Menlo, monospace;
+  font-weight: 600;
+  font-size: 10px;
+  line-height: 1;
+  font-style: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.wcTag {
+  font-family: ui-monospace, Menlo, monospace;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.wcBody p {
+  margin: 2px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.72);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wcCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  line-height: 1;
+  color: #fff;
+}
+
+.wcCta svg {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.25s ease;
+}
+
+.wcSlot.on .wcCard:hover .wcCta svg {
+  transform: translate(2px, -2px);
+}
+
+.wcSlot.on .wcCard:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Progressive blur edges */
+.wcPb {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 22%;
+  z-index: 120;
+  pointer-events: none;
+}
+
+.wcPbTop {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(15, 15, 17, 0.95) 0%, rgba(15, 15, 17, 0.4) 60%, transparent 100%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
+}
+
+.wcPbBottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(15, 15, 17, 0.95) 0%, rgba(15, 15, 17, 0.4) 60%, transparent 100%);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
+}

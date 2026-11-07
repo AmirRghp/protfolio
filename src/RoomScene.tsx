@@ -1236,6 +1236,7 @@ export default function RoomScene({
       frameloop="demand"
       dpr={isSoftwareGl ? 1 : [1, 1.5]}
       camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }}
+      gl={{ preserveDrawingBuffer: true }}
       onCreated={({ gl, scene, invalidate }) => {
         gl.outputColorSpace = SRGBColorSpace;
         gl.toneMapping = ACESFilmicToneMapping;

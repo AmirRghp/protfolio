@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import LanyardIntro from "./LanyardIntro";
-import OwnerContent from "./OwnerContent";
 import RoomPreview from "./RoomPreview";
-import { portfolioContent } from "./content";
+import FlatLanding from "./components/landing/FlatLanding";
+import { captureSceneSnapshot } from "./components/landing/sceneSnapshot";
 import { getInitialIntroPhaseFromSearch, type IntroPhase } from "./lanyardPull";
+import { oiiaAudio } from "./oiiaAudio";
 import { initialRoomNavigation, roomNavigationReducer, type RoomDestination, type RoomNavigationState } from "./roomNavigation";
 
 function getInitialNavigation(): RoomNavigationState {
@@ -26,12 +27,22 @@ function getInitialIntroPhase(): IntroPhase {
   return "active";
 }
 
+function getInitialViewMode(): "room" | "flat" {
+  if (typeof window !== "undefined" && window.location.hash === "#portfolio") {
+    return "flat";
+  }
+  return "room";
+}
+
 export default function App() {
   const [navigation, dispatch] = useReducer(roomNavigationReducer, undefined, getInitialNavigation);
   const [introPhase, setIntroPhase] = useState<IntroPhase>(getInitialIntroPhase);
   const [lanyardDismissed, setLanyardDismissed] = useState<boolean>(
     () => getInitialIntroPhase() !== "active",
   );
+  const [viewMode, setViewMode] = useState<"room" | "flat">(getInitialViewMode);
+  const [snapshotCanvas, setSnapshotCanvas] = useState<HTMLCanvasElement | null>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
 
   const handleLanyardEnter = useCallback(() => {
     setIntroPhase((prev) => (prev === "active" ? "building" : prev));
@@ -45,17 +56,52 @@ export default function App() {
     setIntroPhase("ready");
   }, []);
 
+  const handleExitToFlat = useCallback(() => {
+    oiiaAudio.reset();
+    const snapshot = captureSceneSnapshot(previewContainerRef.current);
+    setSnapshotCanvas(snapshot);
+    setViewMode("flat");
+    if (typeof window !== "undefined") {
+      try {
+        window.history.pushState(null, "", "#portfolio");
+      } catch {
+        // Safe fallback in restricted environments
+      }
+    }
+  }, []);
+
+  const handleReenterRoom = useCallback(() => {
+    setViewMode("room");
+    if (typeof window !== "undefined") {
+      try {
+        window.history.pushState(null, "", "#room");
+      } catch {
+        // Safe fallback
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      if (window.location.hash === "#portfolio") {
+        setViewMode("flat");
+      } else if (window.location.hash === "#room" || window.location.hash === "") {
+        setViewMode("room");
+      }
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
-    if (introPhase === "active") {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
+    document.body.classList.toggle("away", viewMode === "flat");
+    document.body.style.overflow = "hidden";
     return () => {
+      document.body.classList.remove("away");
       document.body.style.overflow = "";
     };
-  }, [introPhase]);
+  }, [viewMode]);
 
   return (
     <>
@@ -65,33 +111,29 @@ export default function App() {
           onDismissed={handleLanyardDismissed}
         />
       )}
-      <div className="site-shell" data-intro-phase={introPhase}>
-        <RoomPreview
-          navigation={navigation}
-          onNavigate={(destination) => dispatch({ type: "navigate", destination })}
-          introPhase={introPhase}
-          onBuildComplete={handleBuildComplete}
+      <div className="site-shell" data-intro-phase={introPhase} data-view-mode={viewMode}>
+        <div
+          ref={previewContainerRef}
+          aria-hidden={viewMode === "flat"}
+          style={{
+            pointerEvents: viewMode === "flat" ? "none" : "auto",
+            userSelect: viewMode === "flat" ? "none" : "auto",
+          }}
+        >
+          <RoomPreview
+            navigation={navigation}
+            onNavigate={(destination) => dispatch({ type: "navigate", destination })}
+            introPhase={introPhase}
+            onBuildComplete={handleBuildComplete}
+            onExitToFlat={handleExitToFlat}
+          />
+        </div>
+        <FlatLanding
+          isOpen={viewMode === "flat"}
+          snapshotCanvas={snapshotCanvas}
+          onReenter={handleReenterRoom}
         />
-        <main className="intro" aria-labelledby="name">
-          <OwnerContent />
-          <section className="projects" aria-labelledby="projects-heading">
-            <h2 id="projects-heading">Selected projects</h2>
-            <ul>
-              {portfolioContent.projects.map((project) => (
-                <li className="project" key={project.id}>
-                  <h3>{project.title}</h3>
-                  <p>{project.brief}</p>
-                  <a href={project.githubUrl} aria-label={`View ${project.title} on GitHub`}>
-                    View on GitHub
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </main>
       </div>
     </>
   );
 }
-
-

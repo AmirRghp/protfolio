@@ -4,7 +4,7 @@ import RoomPreview from "./RoomPreview";
 import type { RoomNavigationState } from "./roomNavigation";
 
 describe("RoomPreview component", () => {
-  it("renders the room header with role and read portfolio link without destination buttons in overview", () => {
+  it("renders the room header with role, without Read portfolio link, and renders Exit The Room button in overview", () => {
     const navigation: RoomNavigationState = {
       destination: "room",
     };
@@ -16,17 +16,19 @@ describe("RoomPreview component", () => {
       />,
     );
 
-    expect(html).toContain("Read portfolio");
+    expect(html).not.toContain("Read portfolio");
+    expect(html).toContain("AG / AI Engineer");
+    expect(html).toContain("Exit The Room");
     expect(html).toContain("Study room overview");
     expect(html).not.toContain('id="destination-monitor"');
     expect(html).not.toContain('id="destination-board"');
     expect(html).not.toContain('id="destination-arcade"');
     expect(html).not.toContain("Project board");
     expect(html).not.toContain("Go Back (ESC)");
-    expect(html).toContain("Study overview · Select the monitor or arcade in the room.");
+    expect(html).not.toContain("Study overview · Select the monitor or arcade in the room.");
   });
 
-  it("renders the Go Back button when focused on a destination", () => {
+  it("renders the Go Back button and hides Exit The Room when focused on monitor", () => {
     const navigation: RoomNavigationState = {
       destination: "monitor",
     };
@@ -39,8 +41,8 @@ describe("RoomPreview component", () => {
     );
 
     expect(html).toContain("Go Back (ESC)");
-    expect(html).toContain("Focused on Monitor.");
     expect(html).not.toContain("Oiia Cat music controls");
+    expect(html).not.toContain("Study overview · Select the monitor or arcade in the room.");
   });
 
   it("does not render Oiia Cat HUD controls in room overview", () => {
@@ -85,6 +87,5 @@ describe("RoomPreview component", () => {
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain("Go Back (ESC)");
-    expect(html).toContain("Focused on Arcade.");
   });
 });

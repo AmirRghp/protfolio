@@ -16,6 +16,7 @@ import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
 import type { IntroPhase } from "./lanyardPull";
 import type { RoomBuildStage } from "./roomBuildAnimation";
 import { oiiaAudio } from "./oiiaAudio";
+import ExitBar from "./components/exit/ExitBar";
 
 const RoomScene = lazy(() => import("./RoomScene"));
 
@@ -40,11 +41,7 @@ type RoomPreviewProps = {
   onNavigate: (destination: RoomDestination) => void;
   introPhase?: IntroPhase;
   onBuildComplete?: () => void;
-};
-
-const destinationLabels: Record<Exclude<RoomDestination, "room">, string> = {
-  monitor: "Monitor",
-  arcade: "Arcade",
+  onExitToFlat?: () => void;
 };
 
 const hotspotLabels = ROOM_HOTSPOT_LABELS;
@@ -54,6 +51,7 @@ export default function RoomPreview({
   onNavigate,
   introPhase = "ready",
   onBuildComplete,
+  onExitToFlat,
 }: RoomPreviewProps) {
   const desktopRef = useRef<HTMLDivElement>(null);
   const arcadeRef = useRef<HTMLDivElement>(null);
@@ -288,7 +286,6 @@ export default function RoomPreview({
         <header className={styles.header}>
           <div className={styles.headerTop}>
             <span>AG / {portfolioContent.owner.role}</span>
-            <a href="#name">Read portfolio</a>
           </div>
         </header>
       )}
@@ -356,15 +353,10 @@ export default function RoomPreview({
           [Go Back]
         </div>
       </div>
-      <p
-        className={styles.caption}
-        data-focused={navigation.destination !== "room"}
-        aria-live="polite"
-      >
-        {navigation.destination === "room"
-          ? "Study overview · Select the monitor or arcade in the room."
-          : `Focused on ${destinationLabels[navigation.destination] ?? navigation.destination}.`}
-      </p>
+      <ExitBar
+        onExit={() => onExitToFlat?.()}
+        visible={navigation.destination === "room" && introPhase === "ready"}
+      />
     </section>
   );
 }
