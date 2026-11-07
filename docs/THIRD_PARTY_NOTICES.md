@@ -50,6 +50,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 The full license text is published at
 https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md.
 
+## Liquid Grid (OriginKit)
+
+`src/components/landing/LiquidGrid.tsx` is an integrated, strongly-typed React 19 component based on Liquid Grid (https://www.originkit.dev/components/liquid-grid) published by OriginKit. It provides an interactive 2D canvas water ripple simulation with damping and absorption algorithms, customized for the dark nocturnal portfolio background.
+
+## Tactile Glass UI
+
+`tactile-glass-ui` provides optical glass buttons with WebGL2 refractive shaders, chromatic dispersion, and click shockwaves. It powers `TactileButton` in `ExitBar` and `FlatLanding`.
+
 ## 3D models
 
 The 3D assets used in the room workstation and scene are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
