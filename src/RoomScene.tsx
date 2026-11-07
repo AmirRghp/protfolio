@@ -27,6 +27,7 @@ import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { calculateRaveLightingState } from "./oiiaCatLogic";
 import { oiiaAudio } from "./oiiaAudio";
+import { detectSoftwareGl } from "./webglUtils";
 import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
 import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "./arcadeProjection";
 import {
@@ -977,20 +978,7 @@ function Study({ destination, onNavigate, desktopRef, arcadeRef, highlightedHots
   );
 }
 
-const isSoftwareGl = (() => {
-  if (typeof document === "undefined") return false;
-  try {
-    const gl = document.createElement("canvas").getContext("webgl2");
-    if (!gl) return true;
-    const ext = gl.getExtension("WEBGL_debug_renderer_info");
-    const param = ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER;
-    const gpu = String(gl.getParameter(param));
-    gl.getExtension("WEBGL_lose_context")?.loseContext();
-    return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
-  } catch {
-    return false;
-  }
-})();
+const isSoftwareGl = detectSoftwareGl();
 
 export default function RoomScene({
   destination,

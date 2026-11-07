@@ -299,7 +299,7 @@ class TetrisAudioEngine {
   // --- Background Chiptune Music (Theme A) ---
 
   public startMusic(): void {
-    if (this.isMusicPlaying) return;
+    if (this.isMuted || this.isMusicPlaying) return;
     this.isMusicPlaying = true;
     this.currentNoteIndex = 0;
     this.scheduleNextNote();

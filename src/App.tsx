@@ -17,8 +17,14 @@ function getInitialNavigation(): RoomNavigationState {
 }
 
 function getInitialIntroPhase(): "active" | "revealing" | "ready" {
-  if (typeof window !== "undefined" && shouldSkipLanyardIntro(window.location.search)) {
-    return "ready";
+  if (typeof window !== "undefined") {
+    if (shouldSkipLanyardIntro(window.location.search)) {
+      return "ready";
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (navigator.webdriver && params.get("intro") !== "1") {
+      return "ready";
+    }
   }
   return "active";
 }

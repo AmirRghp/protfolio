@@ -43,6 +43,10 @@ export class OiiaAudioManager {
     this.bpm = options.bpm ?? 160;
   }
 
+  private static isDropWindow(time: number): boolean {
+    return (time >= 33.0 && time <= 57.0) || (time >= 81.0 && time <= 105.0);
+  }
+
   private initAudio() {
     if (this.audio || typeof window === "undefined" || typeof Audio === "undefined") {
       return;
@@ -58,9 +62,7 @@ export class OiiaAudioManager {
       this.audio.addEventListener("timeupdate", () => {
         if (this.audio && !Number.isNaN(this.audio.currentTime)) {
           this.currentTime = this.audio.currentTime;
-          const inDrop =
-            (this.currentTime >= 33.0 && this.currentTime <= 57.0) ||
-            (this.currentTime >= 81.0 && this.currentTime <= 105.0);
+          const inDrop = OiiaAudioManager.isDropWindow(this.currentTime);
           if (this.isDrop !== inDrop) {
             this.isDrop = inDrop;
             this.notifyListeners();
@@ -179,9 +181,7 @@ export class OiiaAudioManager {
 
   public seek(time: number): void {
     this.currentTime = Math.max(0, Math.min(this.duration, time));
-    this.isDrop =
-      (this.currentTime >= 33.0 && this.currentTime <= 57.0) ||
-      (this.currentTime >= 81.0 && this.currentTime <= 105.0);
+    this.isDrop = OiiaAudioManager.isDropWindow(this.currentTime);
     if (this.audio) {
       try {
         this.audio.currentTime = this.currentTime;
@@ -245,9 +245,7 @@ export class OiiaAudioManager {
       }
 
       // Check drop sections: 33s-57s and 81s-105s
-      const inDrop =
-        (this.currentTime >= 33.0 && this.currentTime <= 57.0) ||
-        (this.currentTime >= 81.0 && this.currentTime <= 105.0);
+      const inDrop = OiiaAudioManager.isDropWindow(this.currentTime);
       const dropChanged = this.isDrop !== inDrop;
       this.isDrop = inDrop;
       if (dropChanged) {

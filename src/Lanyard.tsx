@@ -8,6 +8,7 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import * as THREE from "three";
 import { LANYARD_PULL_MIN_PX, evaluatePullGesture } from "./lanyardPull";
+import { detectSoftwareGl, parseColor } from "./webglUtils";
 import styles from "./Lanyard.module.css";
 
 export type LanyardOrientation = "portrait" | "landscape";
@@ -262,42 +263,10 @@ const METALS: Record<LanyardMetal, { color: string; roughness: number }> = {
   graphite: { color: "#4d4f55", roughness: 0.28 },
 };
 
-const isSoftwareGl = (() => {
-  if (typeof document === "undefined") return false;
-  try {
-    const gl = document.createElement("canvas").getContext("webgl2");
-    if (!gl) return true;
-    const ext = gl.getExtension("WEBGL_debug_renderer_info");
-    const param = ext ? ext.UNMASKED_RENDERER_WEBGL : gl.RENDERER;
-    const gpu = String(gl.getParameter(param));
-    gl.getExtension("WEBGL_lose_context")?.loseContext();
-    return /SwiftShader|llvmpipe|softpipe|Software|Basic Render/i.test(gpu);
-  } catch {
-    return false;
-  }
-})();
+const isSoftwareGl = detectSoftwareGl();
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
-
-const parseColor = (value: string, fallback: [number, number, number]): [number, number, number] => {
-  try {
-    const ctx = document.createElement("canvas").getContext("2d");
-    if (!ctx) return fallback;
-    ctx.fillStyle = "#000000";
-    ctx.fillStyle = value;
-    const resolved = ctx.fillStyle;
-    if (resolved.startsWith("#")) {
-      const n = Number.parseInt(resolved.slice(1), 16);
-      return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
-    }
-    const parts = resolved.match(/[\d.]+/g);
-    if (!parts || parts.length < 3) return fallback;
-    return [Number(parts[0]) / 255, Number(parts[1]) / 255, Number(parts[2]) / 255];
-  } catch {
-    return fallback;
-  }
-};
 
 const luminance = (rgb: [number, number, number]) => 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
 const toCss = (rgb: [number, number, number], alpha = 1) =>

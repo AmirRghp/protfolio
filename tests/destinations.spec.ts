@@ -205,40 +205,42 @@ test("reduced motion keeps the preserved window and every return control usable"
   await expect(page.getByLabel("Study room overview")).toBeFocused();
 });
 
-test("arcade menu displays 4 games, allows switching selection, and shows coming soon for unplayable games", async ({ page }, testInfo) => {
+test("arcade menu displays 6 playable games and allows switching selection via keyboard and click", async ({ page }, testInfo) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto("/?destination=arcade", { waitUntil: "networkidle" });
 
   const screen = page.getByRole("region", { name: "Crash Bandicoot arcade screen" });
   await expect(screen).toBeVisible();
 
-  // Verify all 4 games exist in the list
+  // Verify all 6 games exist in the list
   await expect(page.getByRole("option", { name: /Crash Bandicoot/i })).toBeVisible();
-  await expect(page.getByRole("option", { name: /Pixel Tetris/i })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Pixel Run/i })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Cyber Tetris/i })).toBeVisible();
   await expect(page.getByRole("option", { name: /Snake Grid/i })).toBeVisible();
   await expect(page.getByRole("option", { name: /Deparkanoid/i })).toBeVisible();
+  await expect(page.getByRole("option", { name: /Cyber Flappy/i })).toBeVisible();
 
   // Crash Bandicoot is initially selected and playable
   await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
 
-  // Pressing ArrowDown moves exactly ONE step to Pixel Tetris (does not skip to Snake Grid)
+  // Pressing ArrowDown moves one step to Pixel Run
+  await page.keyboard.press("ArrowDown");
+  await expect(page.getByText("Cyber Runner · 1989")).toBeVisible();
+  await expect(page.getByRole("option", { name: /Pixel Run/i })).toHaveAttribute("data-selected", "true");
+
+  // Pressing ArrowDown again moves to Cyber Tetris
   await page.keyboard.press("ArrowDown");
   await expect(page.getByText("Arcade Puzzle · 1984")).toBeVisible();
-  await expect(page.getByRole("option", { name: /Pixel Tetris/i })).toHaveAttribute("data-selected", "true");
+  await expect(page.getByRole("option", { name: /Cyber Tetris/i })).toHaveAttribute("data-selected", "true");
 
-  // Pressing ArrowDown again moves to Snake Grid
-  await page.keyboard.press("ArrowDown");
-  await expect(page.getByText("Retro Arcade · 1997")).toBeVisible();
-  await expect(page.getByRole("option", { name: /Snake Grid/i })).toHaveAttribute("data-selected", "true");
-
-  // Pressing ArrowUp moves back to Pixel Tetris
+  // Pressing ArrowUp moves back to Pixel Run
   await page.keyboard.press("ArrowUp");
-  await expect(page.getByText("Arcade Puzzle · 1984")).toBeVisible();
-  await expect(page.getByRole("option", { name: /Pixel Tetris/i })).toHaveAttribute("data-selected", "true");
+  await expect(page.getByText("Cyber Runner · 1989")).toBeVisible();
+  await expect(page.getByRole("option", { name: /Pixel Run/i })).toHaveAttribute("data-selected", "true");
 
-  // Click on Pixel Tetris
-  await page.getByRole("option", { name: /Pixel Tetris/i }).click();
-  await expect(page.getByRole("button", { name: "Play game" })).toHaveCount(0);
+  // Click on Cyber Tetris
+  await page.getByRole("option", { name: /Cyber Tetris/i }).click();
+  await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
   await expect(page.getByText("Arcade Puzzle · 1984")).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath("arcade-menu-tetris.png") });
 

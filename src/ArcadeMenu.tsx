@@ -5,6 +5,7 @@ import {
   useImperativeHandle,
   useRef,
   useState,
+  type ComponentType,
 } from "react";
 import {
   ARCADE_GAMES,
@@ -17,6 +18,47 @@ import FlappyGame from "./FlappyGame";
 import TetrisGame from "./TetrisGame";
 import PixelRunGame from "./PixelRunGame";
 import styles from "./ArcadeMenu.module.css";
+
+const INTERNAL_GAME_CONFIG: Record<
+  string,
+  {
+    hintId: string;
+    hintText: string;
+    tagline: string;
+    Component: ComponentType<{ onExit: () => void }>;
+  }
+> = {
+  deparkanoid: {
+    hintId: "deparkanoid-hint",
+    hintText: "Mouse / Arrows: Move · Space / Click: Launch · Esc: Exit",
+    tagline: "5 Handcrafted Levels · Authentic Departure Mono · Ricochet Physics",
+    Component: Deparkanoid,
+  },
+  snake: {
+    hintId: "snake-hint",
+    hintText: "Arrows / WASD: Move · Space: Action · Esc: Exit",
+    tagline: "5 Campaign Levels · Cyber Obstacles · Golden Apples · Departure Mono",
+    Component: SnakeGame,
+  },
+  pixelrun: {
+    hintId: "pixelrun-hint",
+    hintText: "Space/Up: Jump · Down: Duck/Slide · M: Music · Esc: Exit",
+    tagline: "5 Cyber Sectors · Variable Jump & Slide-Duck · Aerial Drones · 8-Bit Chiptunes",
+    Component: PixelRunGame,
+  },
+  tetris: {
+    hintId: "tetris-hint",
+    hintText: "Arrows/WASD: Move/Rotate · Space: Hard Drop · C: Hold · M: Music · Esc: Exit",
+    tagline: "5 Cyber Sectors · SRS Wall Kicks · Ghost Piece · Hold Matrix · Chiptune Music",
+    Component: TetrisGame,
+  },
+  flappy: {
+    hintId: "flappy-hint",
+    hintText: "Space / Up / Click: Flap · Esc: Exit",
+    tagline: "5 Cyber Sectors · Laser Conduit Pylons · Bonus Data Orbs · Departure Mono",
+    Component: FlappyGame,
+  },
+};
 
 export type ArcadeMenuProps = {
   active: boolean;
@@ -87,13 +129,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     if (!active) return;
     const focusTarget = () => {
       if (playing) {
-        if (
-          selectedGame.id !== "deparkanoid" &&
-          selectedGame.id !== "snake" &&
-          selectedGame.id !== "flappy" &&
-          selectedGame.id !== "tetris" &&
-          selectedGame.id !== "pixelrun"
-        ) {
+        if (!(selectedGame.id in INTERNAL_GAME_CONFIG)) {
           exitButtonRef.current?.focus({ preventScroll: true });
         }
       } else if (playButtonRef.current) {
@@ -192,101 +228,30 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
     >
       {playing ? (
         <div className={styles.gameplayContainer}>
-          {selectedGame.id === "deparkanoid" ? (
-            <>
-              <div className={styles.gameplayHud}>
-                <button
-                  ref={exitButtonRef}
-                  type="button"
-                  className={styles.hudExitButton}
-                  onClick={exitGame}
-                >
-                  Exit game
-                </button>
-                <p id="deparkanoid-hint" className={styles.arcadeHint}>
-                  Mouse / Arrows: Move · Space / Click: Launch · Esc: Exit
-                </p>
-              </div>
-              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
-                <Deparkanoid onExit={exitGame} />
-              </div>
-            </>
-          ) : selectedGame.id === "snake" ? (
-            <>
-              <div className={styles.gameplayHud}>
-                <button
-                  ref={exitButtonRef}
-                  type="button"
-                  className={styles.hudExitButton}
-                  onClick={exitGame}
-                >
-                  Exit game
-                </button>
-                <p id="snake-hint" className={styles.arcadeHint}>
-                  Arrows / WASD: Move · Space: Action · Esc: Exit
-                </p>
-              </div>
-              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
-                <SnakeGame onExit={exitGame} />
-              </div>
-            </>
-          ) : selectedGame.id === "pixelrun" ? (
-            <>
-              <div className={styles.gameplayHud}>
-                <button
-                  ref={exitButtonRef}
-                  type="button"
-                  className={styles.hudExitButton}
-                  onClick={exitGame}
-                >
-                  Exit game
-                </button>
-                <p id="pixelrun-hint" className={styles.arcadeHint}>
-                  Space/Up: Jump · Down: Duck/Slide · M: Music · Esc: Exit
-                </p>
-              </div>
-              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
-                <PixelRunGame onExit={exitGame} />
-              </div>
-            </>
-          ) : selectedGame.id === "tetris" ? (
-            <>
-              <div className={styles.gameplayHud}>
-                <button
-                  ref={exitButtonRef}
-                  type="button"
-                  className={styles.hudExitButton}
-                  onClick={exitGame}
-                >
-                  Exit game
-                </button>
-                <p id="tetris-hint" className={styles.arcadeHint}>
-                  Arrows/WASD: Move/Rotate · Space: Hard Drop · C: Hold · M: Music · Esc: Exit
-                </p>
-              </div>
-              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
-                <TetrisGame onExit={exitGame} />
-              </div>
-            </>
-          ) : selectedGame.id === "flappy" ? (
-            <>
-              <div className={styles.gameplayHud}>
-                <button
-                  ref={exitButtonRef}
-                  type="button"
-                  className={styles.hudExitButton}
-                  onClick={exitGame}
-                >
-                  Exit game
-                </button>
-                <p id="flappy-hint" className={styles.arcadeHint}>
-                  Space / Up / Click: Flap · Esc: Exit
-                </p>
-              </div>
-              <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
-                <FlappyGame onExit={exitGame} />
-              </div>
-            </>
+          {selectedGame.id in INTERNAL_GAME_CONFIG ? (
+            (() => {
+              const { hintId, hintText, Component } = INTERNAL_GAME_CONFIG[selectedGame.id];
+              return (
+                <>
+                  <div className={styles.gameplayHud}>
+                    <button
+                      ref={exitButtonRef}
+                      type="button"
+                      className={styles.hudExitButton}
+                      onClick={exitGame}
+                    >
+                      Exit game
+                    </button>
+                    <p id={hintId} className={styles.arcadeHint}>
+                      {hintText}
+                    </p>
+                  </div>
+                  <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
+                    <Component onExit={exitGame} />
+                  </div>
+                </>
+              );
+            })()
           ) : loadTimedOut ? (
             <div className={styles.timeoutFallback}>
               <h2>Crash Bandicoot</h2>
@@ -433,25 +398,9 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                           Open game on PS1FUN
                         </a>
                       </>
-                    ) : selectedGame.id === "deparkanoid" ? (
-                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
-                        5 Handcrafted Levels · Authentic Departure Mono · Ricochet Physics
-                      </p>
-                    ) : selectedGame.id === "snake" ? (
-                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
-                        5 Campaign Levels · Cyber Obstacles · Golden Apples · Departure Mono
-                      </p>
-                    ) : selectedGame.id === "pixelrun" ? (
-                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
-                        5 Cyber Sectors · Variable Jump &amp; Slide-Duck · Aerial Drones · 8-Bit Chiptunes
-                      </p>
-                    ) : selectedGame.id === "tetris" ? (
-                      <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
-                        5 Cyber Sectors · SRS Wall Kicks · Ghost Piece · Hold Matrix · Chiptune Music
-                      </p>
                     ) : (
                       <p style={{ margin: 0, fontSize: "0.58rem", opacity: 0.8 }}>
-                        5 Cyber Sectors · Laser Conduit Pylons · Bonus Data Orbs · Departure Mono
+                        {INTERNAL_GAME_CONFIG[selectedGame.id]?.tagline}
                       </p>
                     )}
                   </>

@@ -12,8 +12,8 @@ type OverviewHotspot = {
 
 // Shared by click and hover checks so a future camera change only updates one place.
 const overviewHotspots: OverviewHotspot[] = [
-  { destination: "Monitor", id: "monitor", x: 478, y: 339 },
-  { destination: "Arcade", id: "arcade", x: 1413, y: 572 },
+  { destination: "Monitor", id: "monitor", ...hotspotPosition("monitor", { width: 1440, height: 900 }) },
+  { destination: "Arcade", id: "arcade", ...hotspotPosition("arcade", { width: 1440, height: 900 }) },
 ];
 
 function hotspot(id: OverviewHotspot["id"]) {
@@ -32,6 +32,9 @@ test("local room GLBs load in the scene", async ({ page }, testInfo) => {
     "mouse-pad.glb",
     "compact-keyboard.glb",
     "computer-mouse.glb",
+    "cup.glb",
+    "oiia-cat.glb",
+    "batman.glb",
     "arcade-machine.glb",
   ].map((name) =>
     page.waitForResponse((response) => new URL(response.url()).pathname === `/assets/models/${name}`),

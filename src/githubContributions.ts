@@ -46,16 +46,45 @@ function getStorage(): Storage | null {
   return null;
 }
 
+const FETCH_TIMEOUT_MS = 8000;
+
 export function getStoredContributions(): { data: CachedContributions; isFresh: boolean } | null {
   try {
     const storage = getStorage();
     if (!storage) return null;
     const raw = storage.getItem(GITHUB_CACHE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as CachedContributions;
-    if (!parsed || typeof parsed !== "object" || !Array.isArray(parsed.contributions)) return null;
-    const isFresh = Date.now() - (parsed.timestamp || 0) < GITHUB_CACHE_TTL_MS;
-    return { data: parsed, isFresh };
+    const parsed = JSON.parse(raw) as Partial<CachedContributions>;
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      typeof parsed.total !== "number" ||
+      !Array.isArray(parsed.contributions)
+    ) {
+      return null;
+    }
+    const sanitized: ContributionDay[] = [];
+    for (const item of parsed.contributions) {
+      if (!item || typeof item !== "object" || typeof item.date !== "string") {
+        return null;
+      }
+      const count = Number(item.count ?? 0);
+      const level = Math.min(Math.max(Number(item.level ?? 0), 0), 4) as ContributionLevel;
+      if (Number.isNaN(count) || Number.isNaN(level)) {
+        return null;
+      }
+      sanitized.push({ date: item.date, count, level });
+    }
+    const timestamp = typeof parsed.timestamp === "number" ? parsed.timestamp : 0;
+    const isFresh = Date.now() - timestamp < GITHUB_CACHE_TTL_MS;
+    return {
+      data: {
+        timestamp,
+        total: parsed.total,
+        contributions: sanitized,
+      },
+      isFresh,
+    };
   } catch {
     return null;
   }
@@ -94,8 +123,12 @@ export async function fetchContributions(
   if (!fetchFn) {
     return getFallbackContributions();
   }
+  const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+  const timeoutId = controller ? setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS) : null;
   try {
-    const res = await fetchFn(`https://github-contributions-api.jogruber.de/v4/${username}?y=last`);
+    const encodedUser = encodeURIComponent(username.trim());
+    const url = `https://github-contributions-api.jogruber.de/v4/${encodedUser}?y=last`;
+    const res = controller ? await fetchFn(url, { signal: controller.signal }) : await fetchFn(url);
     if (!res.ok) {
       throw new Error(`API returned HTTP ${res.status}`);
     }
@@ -125,6 +158,10 @@ export async function fetchContributions(
       return { total: cached.data.total, contributions: cached.data.contributions };
     }
     return getFallbackContributions();
+  } finally {
+    if (timeoutId !== null) {
+      clearTimeout(timeoutId);
+    }
   }
 }
 

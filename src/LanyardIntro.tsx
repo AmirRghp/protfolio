@@ -46,6 +46,24 @@ export default function LanyardIntro({ onEnter, onDismissed }: LanyardIntroProps
     setPullProgress(progress);
   }, []);
 
+  useEffect(() => {
+    if (state !== "active") {
+      return;
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key === "Enter" ||
+        event.key === " " ||
+        event.key === "Escape"
+      ) {
+        event.preventDefault();
+        triggerSmoothExit();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [state, triggerSmoothExit]);
+
   return (
     <div
       className={styles.overlay}
@@ -78,16 +96,19 @@ export default function LanyardIntro({ onEnter, onDismissed }: LanyardIntroProps
           onUnavailable={triggerSmoothExit}
         />
       </div>
-      <div
+      <button
+        type="button"
         className={styles.promptBlock}
         data-pulling={pullProgress > 0.05}
         style={{ "--pull-progress": pullProgress.toFixed(3) } as CSSProperties}
+        onClick={triggerSmoothExit}
+        aria-label="Pull down to enter or press Enter to enter portfolio"
       >
         <p className={styles.promptText}>Pull down to enter</p>
         <div className={styles.progressTrack} aria-hidden="true">
           <div className={styles.progressFill} />
         </div>
-      </div>
+      </button>
     </div>
   );
 }

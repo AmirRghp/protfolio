@@ -18,6 +18,21 @@ import {
 } from "./oiiaCatLogic";
 import styles from "./MonitorDesktop.module.css";
 
+function disposeSceneObjects(root: Group | Scene) {
+  root.traverse((obj) => {
+    if (obj instanceof Mesh) {
+      obj.geometry?.dispose();
+      if (Array.isArray(obj.material)) {
+        for (const mat of obj.material) {
+          mat?.dispose();
+        }
+      } else {
+        obj.material?.dispose();
+      }
+    }
+  });
+}
+
 export default function MonitorOiiaSync({ active }: { active: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -38,6 +53,13 @@ export default function MonitorOiiaSync({ active }: { active: boolean }) {
     const reducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const handleContextLost = (event: Event) => {
+      event.preventDefault();
+      destroyed = true;
+      cancelAnimationFrame(animId);
+    };
+    canvas.addEventListener("webglcontextlost", handleContextLost);
 
     // Check WebGL availability safely (e.g. In headless/test environments)
     try {
@@ -93,7 +115,10 @@ export default function MonitorOiiaSync({ active }: { active: boolean }) {
     loader.load(
       "/assets/models/oiia-cat.glb",
       (gltf) => {
-        if (destroyed) return;
+        if (destroyed) {
+          disposeSceneObjects(gltf.scene);
+          return;
+        }
         const root = gltf.scene;
         modelGroup = new Group();
 
@@ -165,7 +190,9 @@ export default function MonitorOiiaSync({ active }: { active: boolean }) {
     return () => {
       destroyed = true;
       cancelAnimationFrame(animId);
+      canvas.removeEventListener("webglcontextlost", handleContextLost);
       resizeObserver?.disconnect();
+      disposeSceneObjects(scene);
       if (renderer) {
         renderer.dispose();
       }

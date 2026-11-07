@@ -86,17 +86,6 @@ export function LayersGlyph() {
   );
 }
 
-export function RadarGlyph() {
-  return (
-    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
-      <circle cx="16" cy="16" r="10" fill="none" stroke="currentColor" strokeWidth="2.2" />
-      <path d="M16 16 23 9" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2.4" fill="currentColor" />
-      <path d="M16 6a10 10 0 0 1 8.5 4.8" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" opacity="0.55" />
-    </svg>
-  );
-}
-
 /** The project app of the monitor desktop: the address of the project and a summary of it. */
 export default function ProjectApp({ project, icon }: { project: Project; icon: ReactNode }) {
   const target = projectTarget(project);
@@ -134,6 +123,11 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
 
       {(embedState === "loading" || embedState === "loaded") && (
         <div className={styles.embed}>
+          {embedState === "loading" && (
+            <p className={styles.loadingBanner} role="status">
+              Loading preview…
+            </p>
+          )}
           <iframe
             className={styles.frame}
             src={target}

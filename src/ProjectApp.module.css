@@ -140,6 +140,16 @@
   min-height: 0;
 }
 
+.loadingBanner {
+  margin: 0;
+  padding: 0.45em 0.9em;
+  border-bottom: 1px solid rgb(34 48 63 / 10%);
+  color: #1b4fd8;
+  background: #edf2ff;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
 .frame {
   flex: 1 1 auto;
   width: 100%;

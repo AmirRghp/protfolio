@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { clickRoomHotspot, hotspotPosition } from "./testHelpers";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const monitorWindow = 'section[aria-labelledby="monitor-window-title"]';
@@ -9,7 +10,7 @@ test.describe.configure({ timeout: 90_000 });
 async function focusMonitor(page: Page) {
   await page.setViewportSize({ width: 1440, height: 800 });
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.locator('canvas[data-engine]').click({ position: { x: 494, y: 297 } });
+  await clickRoomHotspot(page, "monitor");
   await expect(page.locator(desktop)).toBeVisible();
 }
 
@@ -105,7 +106,8 @@ test("a touch double tap opens the about-me file without zooming the page", asyn
   });
   const page = await context.newPage();
   await page.goto("/", { waitUntil: "networkidle" });
-  await page.touchscreen.tap(248, 448);
+  const monitorPoint = hotspotPosition("monitor", { width: 768, height: 1024 });
+  await page.touchscreen.tap(monitorPoint.x, monitorPoint.y);
   await expect(page.locator(desktop)).toBeVisible();
 
   const file = page.getByRole("button", { name: "about-me.txt" });

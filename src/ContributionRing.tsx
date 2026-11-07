@@ -90,6 +90,25 @@ export default function ContributionRing({
     [matrix],
   );
 
+  const runSweepFrame = useCallback(function step(timestamp: number) {
+    if (startTimeRef.current === null) {
+      startTimeRef.current = timestamp;
+      setIsAnimating(true);
+    }
+    const elapsed = timestamp - startTimeRef.current;
+    const rawProgress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
+    const eased = easeOutCubic(rawProgress);
+
+    setProgress(eased);
+
+    if (rawProgress < 1) {
+      animFrameRef.current = requestAnimationFrame(step);
+    } else {
+      setIsAnimating(false);
+      animFrameRef.current = null;
+    }
+  }, []);
+
   const startSweep = useCallback(() => {
     if (typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
       setProgress(1);
@@ -105,25 +124,8 @@ export default function ContributionRing({
     setProgress(0);
     setIsAnimating(true);
     startTimeRef.current = null;
-
-    const animate = (timestamp: number) => {
-      if (!startTimeRef.current) startTimeRef.current = timestamp;
-      const elapsed = timestamp - startTimeRef.current;
-      const rawProgress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
-      const eased = easeOutCubic(rawProgress);
-
-      setProgress(eased);
-
-      if (rawProgress < 1) {
-        animFrameRef.current = requestAnimationFrame(animate);
-      } else {
-        setIsAnimating(false);
-        animFrameRef.current = null;
-      }
-    };
-
-    animFrameRef.current = requestAnimationFrame(animate);
-  }, []);
+    animFrameRef.current = requestAnimationFrame(runSweepFrame);
+  }, [runSweepFrame]);
 
   useEffect(() => {
     if (!autoPlay) {
@@ -138,37 +140,16 @@ export default function ContributionRing({
       return;
     }
 
-    let animId: number;
-    let startTime: number | null = null;
-
-    const animate = (timestamp: number) => {
-      if (!startTime) {
-        startTime = timestamp;
-        setIsAnimating(true);
-      }
-      const elapsed = timestamp - startTime;
-      const rawProgress = Math.min(elapsed / ANIMATION_DURATION_MS, 1);
-      const eased = easeOutCubic(rawProgress);
-
-      setProgress(eased);
-
-      if (rawProgress < 1) {
-        animId = requestAnimationFrame(animate);
-      } else {
-        setIsAnimating(false);
-      }
-    };
-
-    animId = requestAnimationFrame(animate);
+    startTimeRef.current = null;
+    animFrameRef.current = requestAnimationFrame(runSweepFrame);
 
     return () => {
-      cancelAnimationFrame(animId);
       if (animFrameRef.current) {
         cancelAnimationFrame(animFrameRef.current);
         animFrameRef.current = null;
       }
     };
-  }, [autoPlay]);
+  }, [autoPlay, runSweepFrame]);
 
   // Geometric sectors pre-computation for performance
   const weekSectors = useMemo(() => {
@@ -282,6 +263,7 @@ export default function ContributionRing({
                         data-level={day.level}
                         data-count={day.count}
                         data-date={day.date}
+                        tabIndex={day.date ? 0 : undefined}
                         aria-label={
                           day.date
                             ? `${day.count} contribution${day.count === 1 ? "" : "s"} on ${day.date}`
@@ -289,6 +271,8 @@ export default function ContributionRing({
                         }
                         onPointerEnter={() => setHoveredCell(day)}
                         onPointerLeave={() => setHoveredCell(null)}
+                        onFocus={() => setHoveredCell(day)}
+                        onBlur={() => setHoveredCell(null)}
                       />
                     );
                   })}

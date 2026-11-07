@@ -213,11 +213,6 @@
   border-radius: 0;
 }
 
-.window[data-moving="true"] {
-  outline: 1px dashed rgb(214 188 135 / 85%);
-  outline-offset: -3px;
-}
-
 .windowBar {
   display: flex;
   align-items: center;
@@ -240,8 +235,7 @@
   cursor: grabbing;
 }
 
-.window[data-maximized="true"] .windowBar,
-.window[data-moving="true"] .windowBar {
+.window[data-maximized="true"] .windowBar {
   cursor: default;
 }
 
@@ -283,12 +277,6 @@
 .windowControl:hover:not(:disabled) {
   border-color: rgb(160 214 226 / 55%);
   background: rgb(20 44 61 / 92%);
-}
-
-.windowControlActive {
-  border-color: rgb(214 188 135 / 85%);
-  background: rgb(40 55 45 / 90%);
-  color: #f4d28a;
 }
 
 .windowControlClose:hover:not(:disabled) {
@@ -346,17 +334,6 @@
   font-size: var(--ui-text);
 }
 
-/* A pointer destination layer, above the window and every icon, so a placement tap cannot
-   activate the content underneath it. Keyboard users move the window with the title bar instead. */
-.moveLayer {
-  position: absolute;
-  z-index: 4;
-  inset: 0;
-  cursor: crosshair;
-  touch-action: none;
-  user-select: none;
-}
-
 .visuallyHidden {
   position: absolute;
   width: 1px;
@@ -392,10 +369,11 @@
 }
 
 .oiiaDropSyncCanvas {
-  width: 720px;
-  height: 720px;
+  width: min(720px, 95%);
+  height: auto;
   max-width: 95%;
   max-height: 95%;
+  aspect-ratio: 1 / 1;
   display: block;
 }
 

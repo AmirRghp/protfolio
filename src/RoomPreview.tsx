@@ -198,17 +198,42 @@ export default function RoomPreview({ navigation, onNavigate }: RoomPreviewProps
     previewRef.current?.focus({ preventScroll: true });
   }, [navigation.destination]);
 
-  // When a destination is focused, Escape key returns to room.
+  // When in room overview, 1/M focuses Monitor and 2/A focuses Arcade; when focused, Escape returns to room.
   useEffect(() => {
-    if (!focusedDestination) return;
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        returnToRoom(focusedDestination);
+      if (focusedDestination) {
+        if (event.key === "Escape") {
+          returnToRoom(focusedDestination);
+        }
+        return;
+      }
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      if (event.key === "1" || event.key === "m" || event.key === "M") {
+        event.preventDefault();
+        hideHotspotHint();
+        hideBackHint();
+        onNavigate("monitor");
+      } else if (event.key === "2" || event.key === "a" || event.key === "A") {
+        event.preventDefault();
+        hideHotspotHint();
+        hideBackHint();
+        setOpenAppId(null);
+        onNavigate("arcade");
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [focusedDestination, returnToRoom]);
+  }, [focusedDestination, returnToRoom, hideHotspotHint, hideBackHint, onNavigate]);
 
   // The desktop is the monitor destination. When the scene is unavailable its hidden layer must
   // not take the focus, so the preview container keeps it instead.
