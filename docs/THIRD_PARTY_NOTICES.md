@@ -70,6 +70,10 @@ src/components/kokonutui/dynamic-text.tsx is an integrated spring-physics text a
 
 src/components/arc/tabs.tsx is a spring-physics tab navigation component based on Arc UI (@uiarc/tabs). It powers the category selection in TechStackSection with an animated sliding highlight under active triggers.
 
+## GitHub Contribution 3D Skyline (Avi Vashishta)
+
+`src/components/landing/GithubActivitySection.tsx` is an integrated, library-free 3D isometric GitHub contribution visualization based on the "As a city" skyline concept published by Avi Vashishta (https://www.avivashishta.com/lab/commits and https://www.avivashishta.com/blog/animate-github-contribution-graph-portfolio). It implements 3-faced cuboid projection, square root height scaling, diagonal wave rising easing, and peak day leader line callouts.
+
 ## 3D models
 
 The 3D assets used in the room workstation and scene are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):

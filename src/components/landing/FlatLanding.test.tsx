@@ -147,6 +147,28 @@ describe("FlatLanding component", () => {
     expect(html).toContain('href="#ld-techstack"');
   });
 
+  it("renders Github Activity section between tech stack and contact with 3D skyline canvas and replay button", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain('id="ld-activity"');
+    expect(html).toContain("Activity");
+    expect(html).toContain("Github Activity");
+    expect(html).toContain("( 3D skyline of contributions )");
+    expect(html).toContain('aria-label="GitHub contribution 3D skyline');
+    expect(html).toContain("Replay");
+    expect(html).toContain('href="#ld-activity"');
+
+    // Verify ordering in HTML: ld-techstack appears before ld-activity, which appears before ld-contact
+    const techIdx = html.indexOf('id="ld-techstack"');
+    const actIdx = html.indexOf('id="ld-activity"');
+    const contactIdx = html.indexOf('id="ld-contact"');
+    expect(techIdx).toBeGreaterThan(-1);
+    expect(actIdx).toBeGreaterThan(techIdx);
+    expect(contactIdx).toBeGreaterThan(actIdx);
+  });
+
   it("renders with clean styles without lingering opacity: 0 on ldPage container", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,

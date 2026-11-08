@@ -17,6 +17,7 @@ import { Button as GlisseButton } from "glisse";
 import "glisse/styles.css";
 import DynamicText from "../kokonutui/dynamic-text";
 import { TechStackSection } from "./TechStackSection";
+import { GithubActivitySection } from "./GithubActivitySection";
 import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {
@@ -619,6 +620,9 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
           <a href="#ld-techstack" onClick={(e) => scrollToSection("ld-techstack", e)}>
             Tech Stack
           </a>
+          <a href="#ld-activity" onClick={(e) => scrollToSection("ld-activity", e)}>
+            Activity
+          </a>
           <a href="#ld-contact" onClick={(e) => scrollToSection("ld-contact", e)}>
             Contact
           </a>
@@ -811,6 +815,13 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
             <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack">
               <div className={styles.ldRise}>
                 <TechStackSection />
+              </div>
+            </section>
+
+            {/* Github Activity Section */}
+            <section className={`${styles.ldActivity} ${styles.ldX}`} id="ld-activity" aria-label="Github Activity">
+              <div className={styles.ldRise}>
+                <GithubActivitySection />
               </div>
             </section>
 
