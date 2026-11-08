@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://amirrghp.github.io/protfolio/sitemap.xml
