@@ -1,144 +1,150 @@
-# PRD: اتاق سه‌بعدی و دسکتاپ تعاملی مانیتور
+# Product Requirements Document (PRD)
 
-**وضعیت:** بازطراحی تمام‌صفحهٔ Hero، ناوبری و حرکت، دارایی‌های صحنه و پرداخت نور/متریال تا R04 تکمیل شده است. یکپارچه‌سازی مدل curved مانیتور در R04A، پوستهٔ دسکتاپ با نوار وضعیت زنده در R05، فایل about-me.txt در R06، اپ‌های پروژه با جابه‌جایی آیکون‌ها در R07 و یکپارچه‌سازی مقصدها و مسیر دسترس‌پذیر در R08 نیز تکمیل شده‌اند و یافتهٔ بازبینی R08 اصلاح شده است. R09 (عملکرد، مرورگر و تحویل بصری) در ۲۰۲۶-۱۰-۲۱ با ثبت شواهد فنی و تأیید صریح بازبینی بصری انسان تکمیل شد. R10 (کنترل‌ها و جابه‌جایی پنجره‌های دسکتاپ) در ۲۰۲۶-۱۰-۲۲ با ۵۰ تست واحد، ۷۳ تست Chromium E2E و مرور بصری تکمیل شد؛ R11 (حالت‌های hover و انتخاب آیکون‌های دسکتاپ) و R12 (بازخورد hover نقاط اتاق و tooltip مانیتور) نیز در ۲۰۲۶-۱۰-۲۲ تکمیل شدند. تغییر قاب/میز R13 در ۲۰۲۶-۱۰-۲۲ به‌صورت blockout پیاده‌سازی و بررسی فنی شد (۵۶ تست واحد، ۷۹ تست E2E و مرور تصویری) و در همان تاریخ با تأیید صریح انسانی تکمیل شد؛ تأیید قدیمی R02 این قاب را پوشش نمی‌داد. R14 (هندسه و پرداخت میز) و R15 (کالیبراسیون حرکت نمای کلی) نیز در ۲۰۲۶-۱۰-۲۲ تکمیل شدند؛ در R15 حدهای parallax به `±0.24` افقی و `±0.12` عمودی کالیبره شد و easing نمایی `0.12s` بدون تغییر ماند. R16 (بازبینی یکپارچهٔ قاب، میز و تعاملات) در ۲۰۲۶-۱۰-۲۲ از نظر فنی کامل شد: در مرور واقعی Chromium رگرسیونی در محدوده پیدا نشد، اصلاح کدی لازم نشد و شواهد تصویری/ویدئویی ثبت شد؛ تأیید بصری نهایی انسان هنوز ثبت نشده است.
-**رفرنس تعامل:** [Shopify BFCM 2025](https://bfcm.shopify.com/2025/)
+## 1. Product Overview
 
-## مرجع بصری تأییدشده
+- **Product Name:** Amirreza Gholipour — AI Engineer Interactive Portfolio
+- **One-Line Description:** An immersive, dual-experience personal portfolio featuring a nocturnal 3D cyberpunk workspace, an interactive virtual desktop, playable retro arcade games, and a full-bleed flat landing page with isometric GitHub skyline visualization.
+- **Product Type:** Interactive Web Application / Single Page Application (SPA)
+- **Primary Platform:** Modern Web Browsers (Desktop, Laptop, Tablet, and Mobile with WebGL2 / HTML5 Canvas support)
+- **Repository / Live URL:** Hosted via GitHub Pages at `https://amirrghp.github.io/protfolio/`
 
-### مرجع اصلی Hero اتاق
+---
 
-تصویر محلی `hero-reference.png` (و `reference.png` هم‌تراز با آن) مرجع جدید هویت اتاق، نورپردازی نئونی شبانه (بنفش/مگنتا و فیروزه‌ای/سیان) و چیدمان کلی Hero است. تصویر در `docs/` نگهداری می‌شود و توضیحات این بخش قرارداد متنی مستقل از تصاویر را نیز ثبت می‌کنند.
+## 2. Problem & Value Proposition
 
-- قاب Hero تمام viewport را از لبه تا لبه بپوشاند (`100svh` با `overflow: hidden`)؛ در بارگذاری نخست، صفحهٔ ورودی تعاملی `LanyardIntro` با کارت هولوگرافیک سه‌بعدی (`/assets/lanyard-photo.webp`) نمایش داده می‌شود که با کشیدن بند به پایین یا کلیدهای `Enter`/`Space`/`Escape` باز شده و نمای اتاق را آشکار می‌کند. محتوای عادی پورتفولیو پس از Hero در صفحه قابل پیمایش می‌ماند.
-- مانیتور خمیده در مرکز روی میز عمیق قرار دارد، در جلوی آن موس‌پد با حاشیه و خطوط نوری نئونی (`mouse-pad.glb`)، کیبورد فشرده (`compact-keyboard.glb`) و موس (`computer-mouse.glb`) با زاویهٔ طبیعی کار قرار گرفته‌اند، در سمت راست مانیتور ماگ قهوه با بخار (`cup.glb`) و گربهٔ موزیکال (`oiia-cat.glb`) روی میز قرار دارند، روی قفسهٔ پایینی دیوار راست فیگور بتمن (`batman.glb`) نشسته است، و دستگاه آرکید (`arcade-machine.glb`) در سمت راست داخل برش میز (`x = 2.96`) قرار گرفته به‌طوری که ادامهٔ پایینی آن در مرز زیرین بخش Hero برش می‌خورد.
-- نورپردازی اتاق مطابق مرجع جدید دارای تم شبانهٔ سرمه‌ای/بنفش عمیق (`#080614` / `#161130`) با نورهای نئونی مگنتا/بنفش (`#d946ef` / `#e040fb`) و فیروزه‌ای (`#00e5ff` / `#38bdf8`) است: نوارهای نوری LED زیر هر دو قفسهٔ سمت راست (`Shelf1` و `Shelf2`) با گرادیان فیروزه‌ای به مگنتا روی دیوار می‌تابند، سطح تیرهٔ میز و لبهٔ جلویی آن بازتاب ملایم نورهای نئونی را نشان می‌دهند، و حاشیهٔ موس‌پد، بک‌لایت کیبورد، نشانگر موس و آرکید با این طیف نوری هماهنگ هستند.
-- دوربین نمای کلی کمی بالاتر از سطح مانیتور قرار می‌گیرد و با زاویه‌ای ملایم رو به پایین نگاه می‌کند تا سطح میز و تجهیزات روی آن در پیش‌زمینه به‌روشنی دیده شوند. نماهای متمرکز مانیتور و آرکید همچنان خوانا و قابل‌دسترس می‌مانند.
-- کیس کامپیوتر، کف، دیوارهای جانبی، قرنیز، صندلی، پایه‌های میز، گیاه و تابلو در صحنه حضور ندارند.
-- محدودهٔ طراحی فعلی از تبلت تا دسکتاپ است؛ طراحی و بازقاب‌بندی ویژهٔ موبایل به تصمیم بعدی موکول می‌شود.
+### What problem are we solving?
+Standard software engineering portfolios are static, repetitive, and fail to demonstrate real frontend engineering depth, 3D graphics competence, or interactive systems design. Traditional resume websites present walls of text that hiring managers and engineering leaders skim in seconds without engaging.
 
-### قرارداد قاب، میز، تجهیزات و نورپردازی نئونی
+### Why does this matter?
+For an AI Engineer specializing in autonomous agent harnesses, machine learning, and computer vision, presenting work through an interactive, technically sophisticated platform proves technical craft and attention to detail before an interview even begins.
 
-- در نمای کلی دسکتاپ، هدر بالای صفحه شامل عنوان مالک (`AG / AI Engineer`) و لینک طلایی `Read portfolio` است؛ ناوبری به مقصدهای اتاق (`Monitor` و `Arcade`) با کلیک روی خود اشیاء در اتاق سه‌بعدی یا کلیدهای میان‌بر (`1`/`M` برای مانیتور و `2`/`A` برای آرکید) انجام می‌شود و در حالت فوکوس دکمهٔ `Go Back (ESC)` و راهنمای نشانگر `[Go Back]` در بیرون از صفحهٔ نمایشگر فعال است.
-- عمق دیده‌شده از ترکیب هندسهٔ واقعی میز و pose دوربین ساخته می‌شود؛ لبهٔ عقب سطح میز در `z=-0.9` و لبهٔ جلویی در `z=3.7..3.8` قرار دارد و سمت راست میز در `x=2.96` برش خورده تا دستگاه آرکید به‌طور کامل در کنار میز جای بگیرد.
-- تغییر نورپردازی نئونی، متریال‌ها و تجهیزات روی میز نباید نگاشت HTML روی `MonitorScreen`، hit target مقصدها، انتقال و بازگشت دوربین، کنترل‌های ثابت HTML، مسیر محتوای زیر Hero یا fallback بدون WebGL را خراب کند.
+### How do we solve it?
+By providing a **dual-mode interactive journey**:
+1. An immersive **3D Nocturnal Cyberpunk Room** powered by Three.js / React Three Fiber, allowing visitors to inspect projects on a virtual curved monitor desktop, play Canvas games on a retro arcade cabinet, and interact with physics-based props.
+2. A sleek, high-performance **Flat Landing Portfolio** accessible via a digital laser scanline portal transition, featuring fluid liquid grid effects, an Arc UI tech stack tabbed explorer, and a 3D isometric GitHub contribution skyline.
 
-### مرجع بصری دسکتاپ مانیتور
+---
 
-سه تصویر محلی زیر کانسپت پذیرفته‌شدهٔ دسکتاپ مانیتور را نشان می‌دهند؛ فایل‌های تصویری پوشهٔ `docs/` عمداً در Git نگهداری نمی‌شوند و ممکن است در clone تازه موجود نباشند:
+## 3. Goals & Constraints
 
-- `monitor-desktop-home.png` — دسکتاپ اصلی
-- `monitor-about-me-open.png` — فایل about-me.txt باز
-- `monitor-project-app-open.png` — اپ پروژه باز
+### Primary Goal
+Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipour's real-world artificial intelligence and software engineering expertise with zero fabricated metrics or invented results.
 
-این تصاویر فقط مرجع ظاهر مانیتور و پنجره‌های داخل آن هستند.
+### Secondary Goals
+- **60 FPS Performance:** Maintain smooth rendering and subtle parallax motion across viewports without dropped frames on standard hardware.
+- **Universal Accessibility:** Ensure all career history, project descriptions, and GitHub links remain fully accessible through semantic HTML without requiring WebGL interaction.
+- **Zero Backend Footprint:** Operate purely client-side with zero server maintenance, leveraging static bundling and browser caching.
 
-جهت بصری مانیتور: پس‌زمینهٔ شبانهٔ سرمه‌ای و سبزآبی با خط افق و خطوط ظریف، آیکون‌های خوانا در ستون سمت چپ، و نوار وضعیت بالای صفحه. نوار وضعیت باید روز، تاریخ و ساعت محلی را کنار نشان‌های Wi-Fi و صدا نمایش دهد. تاریخ و ساعت درج‌شده در تصاویر نمونه‌اند؛ در محصول ساعت باید زنده و خودکار، بدون بارگذاری دوبارهٔ صفحه به‌روز شود و روز/تاریخ نیز هنگام عبور از نیمه‌شب محلی تغییر کند.
+### Core Product Guardrails
+- **No Fabricated Information:** Strict adherence to real credentials (M.Sc. in AI & Robotics, past roles at Daraei360 as AI Engineer Oct 2025–May 2026 and Product Manager May–Sep 2026).
+- **Legitimate Games:** Built-in original HTML5 Canvas games (Cyber Tetris, Cyber Flappy, Pixel Run, Snake Grid, Deparkanoid) without pirated ROMs.
 
-مدل `curved_monitor.glb` که کاربر ارائه و انتخاب کرده، مدل هدف برای مرحلهٔ یکپارچه‌سازی R04A است. نسخهٔ آماده‌شده در `public/assets/models/curved-monitor.glb` قرار دارد؛ منبع، مجوز CC BY 4.0، انتساب و شرح تغییرات در `public/assets/models/ATTRIBUTION.md` ثبت شده‌اند. صفحهٔ مدل باید به‌عنوان سطح مستقل برای هم‌ترازی رابط HTML دسکتاپ در R05 قابل استفاده باشد. منبع و مجوز در R04A تأیید و ادغام انجام شد؛ این مرحله به‌معنای پیاده‌سازی دسکتاپ HTML در R05 نیست.
+---
 
-پس‌زمینه، آیکون‌ها و نوار وضعیت در حالت‌های دسکتاپ، فایل معرفی و اپ پروژه ثابت می‌مانند. پنجرهٔ بازشده در مرکز متمایل به راست قرار می‌گیرد تا آیکون‌های دسکتاپ تا حد امکان قابل‌دیدن بمانند.
+## 4. Target Audience & Personas
 
-پیاده‌سازی R05: رابط دسکتاپ به‌صورت HTML/React روی سطح واقعی نمایشگر نگاشته می‌شود، نه به‌صورت تصویر. سطح واقعی مش `MonitorScreen` در pose جاری دوربین اندازه‌گیری و با نگاشت هم‌گن روی صفحه قرار می‌گیرد و مرز تصویرشدهٔ همان سطح، دسکتاپ را به لبهٔ صفحه می‌بندد. صفحهٔ نمایشگر تخت است، پس لبهٔ صفحه به داخل overlay خم نمی‌شود و نوار وضعیت می‌تواند چسبیده به بالای صفحه بنشیند. wallpaper یک نمونهٔ HTML واحد است که در هر دو حالت overview و focus روی صفحه تصویر می‌شود و هرگز تعویض نمی‌شود؛ خود مدل فیزیکی فقط یک پنل تیرهٔ خنثی است و متن مالک دیگر روی آن رندر نمی‌شود. پس‌زمینه با کامپوننت Gradient Waves (پورت TypeScript از React Bits) ساخته شده است و در نبود WebGL2 زمینهٔ تیرهٔ CSS زیر canvas باقی می‌ماند. دامنهٔ تحویل R05 پوستهٔ دسکتاپ، نوار وضعیت زنده، ستون آیکون و اسکلت پنجره است؛ افزودن آیکون `about-me.txt` و اپ‌های پروژه به R06 و R07 واگذار شده است.
+### Persona 1: The Technical Recruiter / Talent Sourcer
+- **Needs:** Fast access to candidate resume, contact details, role history, education, and GitHub profile.
+- **Pain Points:** Complex 3D navigations that block access to basic information.
+- **Solution:** Instant skip buttons (`Read portfolio`, keyboard `Escape`), and immediate flat portfolio view via `#portfolio` URL hash.
 
-## هدف
+### Persona 2: The Engineering Director / AI Team Lead
+- **Needs:** Proof of engineering maturity, code cleanliness, architecture separation, and genuine technical execution.
+- **Pain Points:** Generic template portfolios with AI-generated filler text and unverifiable metrics.
+- **Solution:** Interactive virtual desktop running real project apps, verifiable open-source code repositories, clean architecture, and exhaustive test coverage.
 
-Hero اتاق باید کل viewport را با ترکیب مرجع مینیمال پر کند و مقصدهای اتاق و محتوای پورتفولیو را به‌شکل یک تجربهٔ یکپارچه نگه دارد. مانیتور باید مانند یک کامپیوتر واقعی دسکتاپی تعاملی داشته باشد؛ بازدیدکننده با کلیک روی مانیتور وارد نمای نزدیک می‌شود و در همان نمایشگر با فایل معرفی و اپ‌های پروژه کار می‌کند.
+### Persona 3: Fellow Engineers & Tech Enthusiasts
+- **Needs:** Delightful interactive touches, visual polish, easter eggs, and smooth physics.
+- **Pain Points:** Clunky controls, audio that plays without permission, unresponsive layouts.
+- **Solution:** 3D holographic lanyard badge with pull kinematics, playable arcade cabinet, musical Oiia Cat with disco drop sync, and tactile optical glass buttons.
 
-## نیازمندی‌ها
+---
 
-### نمای دسکتاپ
+## 5. User Stories
 
-- مانیتور از نمای کلی اتاق با کلیک قابل انتخاب باشد و دوربین به‌نرمی به آن نزدیک شود.
-- صفحهٔ مانیتور از ترکیب بصری مرجع محلی دسکتاپ (`monitor-desktop-home.png`) پیروی کند: پس‌زمینهٔ مصوب، آیکون‌های تمیز و نوار وضعیت شامل روز، تاریخ، ساعت محلی، Wi-Fi و صدا.
-- رابط تعاملی دسکتاپ به‌صورت HTML/React دسترس‌پذیر روی سطح واقعی نمایشگر قرار بگیرد؛ پنجره‌های برنامه داخل دسکتاپ باز شوند و modal تمام‌صفحه جایگزین صفحهٔ مانیتور نباشد.
-- کنترل واضحی برای بازگشت به نمای اتاق وجود داشته باشد.
+- **As a visitor**, I want to pull or skip the entry lanyard badge so that I can enter the portfolio workspace seamlessly.
+- **As a recruiter**, I want to quickly read the candidate's career experience and education so that I can evaluate role fit in under 60 seconds.
+- **As an engineering manager**, I want to click the curved monitor in the 3D room to examine project highlights and launch live demos inside virtual desktop windows.
+- **As a visitor**, I want to play retro arcade games directly on the arcade cabinet to experience responsive Canvas rendering.
+- **As a visitor**, I want to transition smoothly to the flat landing page to explore the tech stack and annual GitHub contribution city.
+- **As a keyboard user**, I want full keyboard accessibility (`1`/`M` for monitor, `2`/`A` for arcade, `Escape` to go back) to navigate without a mouse.
 
-### فایل معرفی
+---
 
-- روی دسکتاپ فایل `about-me.txt` وجود داشته باشد.
-- با بازکردن فایل، یک پنجرهٔ خوانای متنی مطابق مرجع محلی about-me (`monitor-about-me-open.png`) باز شود و معرفی مالک و اطلاعات حرفه‌ای تأییدشده را نمایش دهد.
+## 6. Core Features Specification
 
-پیاده‌سازی R06: فایل `about-me.txt` به‌صورت یک `DesktopApp` در فهرست `src/desktopApps.tsx` به همان دسکتاپ مشترک R05 وصل شد و پنجره با `DesktopWindow` موجود باز می‌شود. طبق تصمیم کاربر، فایل با double click باز می‌شود؛ شمارش فعال‌سازی رویداد `click` انجام می‌شود تا double tap لمسی هم کار کند و `Enter` روی آیکون همان پنجره را باز می‌کند. محتوای پنجره فقط از `portfolioContent.owner` خوانده می‌شود و ظاهر آن یک سطح کاغذی روشن با متن monospace است که داخل پوستهٔ مشترک دسکتاپ می‌نشیند. مسیر HTML زیر Hero بدون تغییر باقی مانده است.
+### 6.1. Interactive Holographic Lanyard Badge (`LanyardIntro`)
+- **Visuals:** Photorealistic 3D holographic lanyard badge (`/assets/lanyard-photo.webp`) suspended on a flexible strap with specular highlights and physics-based inertia.
+- **Interaction:** Drag/pull kinematics with downward dominance calculation; auto-unlock when pulled past threshold.
+- **Accessibility:** Instant bypass via click button or keyboard (`Enter`, `Space`, `Escape`).
 
-### اپ‌های پروژه
+### 6.2. 3D Nocturnal Cyberpunk Hero Room (`RoomScene`)
+- **Aesthetic:** Deep nocturnal cyberpunk palette (`#080614` / `#161130`) illuminated by cyan (`#00e5ff`) and magenta (`#d946ef`) dual LED under-shelf strips.
+- **Scene Anchors:**
+  - Curved monitor center on a deep tabletop (`z=-0.9` to `z=3.8`).
+  - Compact angled mechanical keyboard, optical mouse, and neon-rimmed mousepad.
+  - Steaming coffee mug and musical Oiia Cat figure on the desk.
+  - Wall shelves featuring ambient illumination and a Batman collectible figure.
+  - Retro arcade machine recessed cleanly into the right desk cutout (`x = 2.96`).
+- **Camera System:** Fixed overview with smooth dampened transitions to `monitor` and `arcade` destinations, subtle mouse-driven parallax, and automatic neutral recentering.
 
-- هر پروژه به شکل یک اپ با آیکون متمایز روی دسکتاپ دیده شود.
-- آیکون اپ‌های پروژه با ماوس یا لمس در محدودهٔ دسکتاپ قابل کشیدن و جابه‌جایی باشد.
-- با بازکردن اپ، پنجره‌ای داخل دسکتاپ مطابق مرجع محلی اپ پروژه (`monitor-project-app-open.png`) باز شود و نشانی تنظیم‌شدهٔ همان پروژه را نمایش دهد. نشانی می‌تواند وب‌سایت پروژه یا مخزن GitHub آن باشد.
-- فهرست اپ‌ها و نشانی‌هایشان از دادهٔ محلی و قابل‌ویرایش پروژه بیاید؛ واکشی زنده از GitHub لازم نیست.
-- اگر سایت مقصد نمایش درون پنجره را مسدود کرد یا بارگذاری نشد، راه دسترسی مستقیم به همان نشانی باقی بماند.
+### 6.3. Virtual Monitor Desktop & OS (`features/monitor`)
+- **Direct-Surface Projection:** 2D HTML/CSS desktop interface projected onto the 3D curved monitor mesh using real-time DLT homography and CSS `matrix3d`.
+- **Live Status Bar:** Dynamic clock, local date, battery/wifi indicators, and volume state updating in real-time.
+- **Interactive Apps:**
+  - `AboutMeApp`: Monospace retro text editor displaying verified background, education, and contact links.
+  - `ProjectApp`: Draggable project glyphs opening dedicated windows with feature highlights and live demo loaders.
+  - `ContributionRing`: Radial widget displaying public GitHub contribution volume with a 4-hour `localStorage` cache and offline fallback.
 
-پیاده‌سازی R07: هر پروژهٔ دادهٔ محلی به یک `DesktopApp` در `src/desktopApps.tsx` تبدیل می‌شود و با همان دسکتاپ و پنجرهٔ مشترک نمایش داده می‌شود؛ نشانی اپ `websiteUrl` پروژه است و در نبود آن به `githubUrl` همان پروژه برمی‌گردد، در حالی که کارت‌های برد همچنان لینک GitHub را نشان می‌دهند. طبق تصمیم کاربر، نمایش درون پنجره با دکمهٔ «Load inside this window» و به‌صورت صریح آغاز می‌شود تا هنگام باز شدن اپ درخواستی به شخص ثالث ارسال نشود؛ لینک مستقیم در همهٔ حالت‌ها در نوار آدرس پنجره حاضر است و اگر بارگذاری درون پنجره در مهلت مقرر انجام نشود، پیام خطای روشن و دکمهٔ «Try again» نمایش داده می‌شود. آیکون‌ها با pointer و touch در محدودهٔ صفحهٔ مانیتور کشیده می‌شوند و در مرزهای دسکتاپ clamp می‌شوند و پس از تغییر اندازهٔ صفحه دوباره محدود می‌شوند. جابه‌جایی آیکون فقط با drag انجام می‌شود: نه روشی با pointer و بدون drag و نه معادل صفحه‌کلیدی وجود ندارد، بنابراین این قابلیت با WCAG 2.5.7 و 2.1.1 منطبق نیست و افزودن روش جایگزین تصمیم محصول جداگانه‌ای است.
+### 6.4. Retro Arcade Cabinet & Playable Mini-Games (`features/arcade`)
+- **Interface:** CRT-style arcade menu with scanlines, CRT curve, and game selection preview.
+- **Game Suite:**
+  1. *Cyber Flappy:* Obstacle avoidance game with procedural pipes and collision physics.
+  2. *Cyber Tetris:* Classic tetromino block stacker with level progression, ghost piece, and audio.
+  3. *Pixel Run:* Fast-paced infinite side-scroller with jump mechanics and obstacle waves.
+  4. *Snake Grid:* Classic directional grid snake with neon fruit pickups and high-score tracking.
+  5. *Deparkanoid:* Brick-breaker paddle game with multi-bounce trajectory calculations.
+  6. *Crash Bandicoot:* Optional PS1 emulator integration via sandboxed iframe with direct fallback link.
 
-پیاده‌سازی R08: state پنجرهٔ دسکتاپ به `RoomPreview` منتقل شد تا پنجرهٔ about-me یا اپ پروژه در رفت‌وبرگشت overview↔monitor همان نمونه و همان state را حفظ کند. انتخاب برد یا آرکید، و همچنین شکست صحنه، پنجره را می‌بندد و لایهٔ دسکتاپ بیرون از مانیتور `inert` می‌ماند. focus پس از بستن هر مقصد به دکمهٔ همان مقصد برمی‌گردد؛ `Escape` ابتدا پنجره را می‌بندد و سپس به overview برمی‌گردد. خطای graphics context هم از طریق `onUnavailable` به والد گزارش می‌شود تا پنجره بسته و focus از دسکتاپ پنهان خارج شود. آرکید همچنان فقط پس از Play iframe می‌سازد؛ تا زمانی که قاب نمایش داده می‌شود راهنمای خنثی، لینک مستقیم و Exit بیرون iframe می‌مانند. فقط نبود رویداد load در ۸ ثانیه iframe را با پیام `role="status"` جایگزین می‌کند و focus پس از Play روی Exit می‌نشیند. بررسی ۲۱ اکتبر ۲۰۲۶: صفحهٔ PS1FUN پاسخ 200 و بدون `X-Frame-Options`/`frame-ancestors` بود، اما در HTML آن فقط لینک Privacy Policy دیده شد و terms/embed license پیدا نشد؛ بارگیری زندهٔ بازی و مجوز سرویس همچنان تأیید‌نشده‌اند.
+### 6.5. Musical Oiia Cat Easter Egg (`features/room/props/OiiaCat`)
+- **Interaction:** Clicking the cat triggers a 160 BPM rhythmic spin and bounce animation.
+- **Disco Drop Sync:** During the music drop (seconds 33–57 and 81–105), the entire room shifts into dynamic disco strobe lighting, while the monitor enters Drop Sync mode with a synchronized 2D dancing cat.
 
-اصلاح بازبینی R08: `load` برای iframe cross-origin می‌تواند مربوط به صفحهٔ خطای مرورگر باشد و موفقیت بازی یا شکست شبکه/`X-Frame-Options` را ثابت نمی‌کند. به همین دلیل راهنمای خنثی، لینک مستقیم و Exit در تمام مدت نمایش قاب بیرون آن باقی می‌مانند و پیام خطای والد فقط برای نبود `load` در مهلت ۸ ثانیه نمایش داده می‌شود. تست regression با درخواست abort‌شده، دسترسی به راهنمای قابل‌استفاده و لینک مستقیم را بررسی می‌کند.
+### 6.6. Digital Laser Portal Transition & Flat Landing Page (`features/landing`)
+- **Transition:** Seamless portal sweep with vertical laser scanlines transitioning from the 3D room to a full-bleed ASCII room loop video (`ascii-room.webm`).
+- **Liquid Grid & Magic Cursor:** WebGL2 ripple background canvas responsive to cursor velocity and angular rotation.
+- **Dynamic Role Typography:** Physics-driven `DynamicText` cycling roles (AI Engineer, ML Specialist, Robotics Researcher).
+- **Tactile Glass Exit Bar:** Sleek black exit bar (`#000000`) featuring WebGL2 optical refractive `TactileButton` ("Exit The Room" / "Re-enter").
 
-بررسی R09 (۲۱ اکتبر ۲۰۲۶): اندازه‌گیری روی system Chrome headless با GPU واقعی NVIDIA RTX 3050 در `1440×900`، overview و monitor را حدود ۶۰ فریم و transition صحنه/والپیپر و تغییر سریع مقصدها را بدون فریم بیشتر از ۲۰ms نشان داد. یک context مستقل WebGL2 برای صحنه و یکی برای wallpaper فعال است؛ در حالت monitor یک draw call wallpaper در هر فریم اجرا می‌شود و صحنهٔ سه‌بعدی با `frameloop="demand"` ثابت می‌ماند. در همان viewport، SwiftShader نرم‌افزاری برای monitor حدود ۸٫۷ فریم و میانهٔ ۱۱۶٫۷ms داشت و به‌عنوان baseline غیرسخت‌افزاری جدا ثبت شد. دو Drawback واقعی اصلاح/مستند شد: از دست‌رفتن context والپیپر دیگر حلقهٔ رندر را زنده نگه نمی‌دارد و CSS wallpaper باقی می‌ماند؛ GitHub با `frame-ancestors 'none'` در iframe مسدود می‌شود و PS1FUN با وجود بارگیری iframe تصویر سیاه و خطای mixed-content بیرونی دارد. مرورگرهای Firefox/Safari، دستگاه لمسی واقعی و نرخ نمایش >۶۰Hz بررسی نشده‌اند؛ بازبینی بصری انسان در ۲۰۲۶-۱۰-۲۱ تأیید شد و R09 تکمیل است. جزئیات و شواهد در `docs/archive/plans/R09-verification.md` است.
+### 6.7. Interactive Tech Stack Section (`TechStackSection`)
+- **Navigation:** Spring-animated tab switcher powered by `@uiarc/tabs`.
+- **Agent Harness Focus:** Dedicated category showcasing AI agent harnesses (CODEX, Claude Code, Antigravity, zCode, Cursor, Open Code) with custom monochrome vector icons and reverse hover contrast.
 
-پیاده‌سازی R10 و به‌روزرسانی‌های بعدی دسکتاپ: `DesktopWindow` کنترل‌های Close و Maximize/Restore را با نام دسترس‌پذیر متناسب با حالت دارد و ویجت حلقه‌ای مشارکت‌های گیت‌هاب (`ContributionRing`) در سمت راست دسکتاپ قرار گرفته است (با کش ۴ ساعته در `localStorage` و دادهٔ پشتیبان آفلاین). drag پنجره از ناحیهٔ آزاد نوار عنوان آغاز می‌شود و با pointer capture، آستانهٔ حرکت، `pointercancel` و رهاسازی خارج header مدیریت می‌شود؛ دکمه‌ها، لینک‌ها، iframe و محتوای پنجره drag را شروع نمی‌کنند. هندسه در واحدهای محلی دسکتاپ ذخیره و در نمایش به محدودهٔ زیر نوار وضعیت clamp می‌شود؛ اندازهٔ ذخیره‌شده همان هندسهٔ موردنظر است تا کوچک‌شدن موقت viewport باعث shrink دائمی نشود. Maximize تمام سطح کار زیر نوار وضعیت را پر می‌کند و Restore هندسهٔ قبلی را با محدودهٔ فعلی clamp می‌کند. نوار عنوان فوکوس‌پذیر است و Arrow keys فقط وقتی خود نوار عنوان فوکوس دارد پنجره را با گام ۸ پیکسل محلی جابه‌جا می‌کنند. focus اولیه Close، بستن با Escape، بازگشت focus به آیکون آغازگر، scroll محتوا و reduced motion حفظ شده‌اند.
+### 6.8. 3D Isometric GitHub Activity Skyline (`GithubActivitySection`)
+- **Visualization:** Renders annual GitHub commit activity as a 3D isometric skyline ("As a city") with 3-face shaded cubes in GitHub green tones.
+- **Features:** Diagonal rising wave animation on scroll, pinned best-day callout indicator, and interactive replay control.
 
-### حرکت و کنترل
+### 6.9. Autonomous AI Pixel Tetris Canvas (`PixelTetris`)
+- **Design:** Interactive bottom-of-page canvas running an automated Tetris AI that continuously clears rows within a 6-row ceiling to prevent overflow.
+- **Footer:** High-tracking minimalist typography with smooth "Back to Top" scrolling.
 
-- در حالت آغازین و وقتی مقصدی فوکوس نشده است، حرکت اشاره‌گر داخل Hero صحنه را با parallax بسیار کم، محدود و نرم به سمت اشاره‌گر متمایل کند؛ حرکت نباید قاب را جابه‌جا یا لبهٔ خالی صحنه را آشکار کند.
-- در قاب تازهٔ رو به پایین، parallax باید اختلاف عمق میز و عناصر عقب را بدون چرخش آزاد دوربین یا حرکت اغراق‌آمیز نشان دهد. شدت حرکت پس از تأیید قاب دوباره کالیبره شود؛ حرکت تصویر مرجع عدد ثابت یا هدف کپی دقیق نیست. کالیبراسیون R15: حد جابه‌جایی idle در واحد world `±0.24` افقی و `±0.12` عمودی است و easing نمایی با ثابت زمانی `0.12s`، بدون overshoot و با توقف پس از آرامش، حفظ شد.
-- parallax فقط در حالت idle و دور از کنترل‌های روی Hero اجرا شود؛ کنترل‌ها جابه‌جا نشوند. هنگام فوکوس روی مانیتور یا آرکید، حرکت دوربین همان انتقال مقصد را دنبال کند. با خروج اشاره‌گر از Hero یا از دست‌رفتن focus صفحه، نما نرم به موقعیت خنثی برگردد.
-- اگر اشاره‌گر روی hotspot قابل‌انتخاب قرار گرفت، بازخورد hover (هایلایت نوری OutlinePass) و tooltip متناظر (`USE COMPUTER` برای مانیتور، `USE ARCADE` برای آرکید، و `oiia ?` برای گربه) کمی زیر cursor و clamp‌شده در viewport نمایش داده شود؛ tooltip با `pointer-events: none` هیچ focus/navigation ایجاد نمی‌کند و parallax با آن رقابت نمی‌کند. click روی همان hotspot همچنان به مقصد درست برود.
-- parallax با لمس یا صفحه‌کلید لازم نیست و هیچ قابلیت مهمی نباید به آن وابسته باشد. تنظیم `prefers-reduced-motion` باید حرکت idle را خاموش کند.
-- رفتن از نمای اتاق به مانیتور و برگشت از آن با حرکت دوربین نرم، پیوسته و بدون پرش باشد؛ حس حرکت از رفرنس Shopify الهام بگیرد.
-- هنگام حرکت، مقصد بعدی از وضعیت جاری دوربین گرفته شود تا تعامل‌های پیاپی حرکت را ناگهان قطع یا بازنشانی نکنند.
-- بازگشت با کنترل قابل‌مشاهده و صفحه‌کلید ممکن باشد و تنظیم کاهش حرکت سیستم رعایت شود.
+---
 
-## معیار پذیرش
+## 7. Non-Functional Requirements
 
-- Hero از لبه تا لبهٔ viewport باشد و برد چپ، مانیتور مرکز و آرکید نزدیک آن در راست را نشان دهد؛ کنترل‌های مقصد و راه ورود به محتوای پورتفولیو روی Hero واضح اما کم‌حجم باشند.
-- نمای کلی روی دسکتاپ از بالا و با شیب ملایم به میز نگاه کند؛ سطح پیوستهٔ جلوی مانیتور برای جای آیندهٔ کیبورد و موس‌پد قابل‌دیدن باشد، نه فقط لبهٔ باریک میز. این معیار با تصویر واقعی blockout در ۱۰۲۴، ۱۴۴۰ و عرض دسکتاپ مرجع بررسی و پیش از پرداخت نهایی انسانی تأیید شود.
-- طراحی Hero برای تبلت و دسکتاپ بررسی شود؛ طراحی ویژهٔ موبایل خارج از محدودهٔ فعلی است.
-- کیس، کف، دیوارهای جانبی، قرنیز، صندلی، پایه‌های میز، گیاه، تابلو، جامدادی و لیوان در صحنه وجود نداشته باشند؛ قفسه‌ها خالی بمانند و اجزای حذف‌شده با crop دوربین پنهان نشده باشند.
-- در حالت idle، حرکت اشاره‌گر parallax ظریف و نرم ایجاد کند؛ نما از قاب بیرون نرود، با خروج اشاره‌گر به مرکز بازگردد و با کاهش حرکت خاموش باشد.
-- قاب در اندازه‌های تبلت و دسکتاپ عناصر اصلی را حفظ کند و overflow افقی ایجاد نکند.
-- میز، سه مقصد، نوارهای HTML و tooltipهای مصوب در ۷۶۸، ۱۰۲۴ و ۱۴۴۰ پیکسل از نظر قاب، برخورد و دسترس‌پذیری بررسی شوند؛ در ۳۲۰ و ۳۷۵ پیکسل سلامت مسیر HTML، کنترل‌ها و نبود overflow بررسی شود، بدون ادعای طراحی ویژهٔ موبایل. در عرض‌های باریک‌تر کاهش سطح میز قابل‌قبول است اگر سه مقصد و راه‌های دسترسی حفظ شوند.
-- کلیک روی مانیتور، نمای نزدیک دسکتاپ را باز کند و بازگشت، نمای اتاق را بازیابی کند.
-- `about-me.txt` باز شود و محتوای واقعی و قابل‌خواندن داشته باشد.
-- اپ هر پروژه نشانی تنظیم‌شدهٔ خودش را باز کند؛ خطای بارگذاری هم مسیر مستقیم را حفظ کند.
-- آیکون اپ‌های پروژه با ماوس و لمس جابه‌جا شوند و داخل محدودهٔ دسکتاپ باقی بمانند.
-- ساعت بدون بارگذاری مجدد زنده به‌روز شود؛ روز و تاریخ محلی نیز در گذر از نیمه‌شب به‌روز شوند.
-- نوار وضعیت روز، تاریخ، ساعت محلی، نشان Wi-Fi و صدا را در هر سه حالت دسکتاپ، فایل و اپ نشان دهد.
-- حرکت رفت‌وبرگشت بدون برش یا پرش محسوس باشد و با کاهش حرکت، انیمیشن مطابق تنظیم سیستم حذف یا کوتاه شود.
-- پس از تغییر دوربین، parallax در چهار سمت Hero نرم و محدود بماند، با خروج/blur به حالت خنثی برگردد، روی touch و reduced motion خاموش باشد و هر سه مقصد از دکمهٔ HTML، hotspot و بازگشت keyboard درست کار کنند.
-- نمایش HTML روی صفحهٔ واقعی مانیتور در overview، هنگام انتقال و در focus هم‌تراز بماند؛ پنجره/والپیپر موجود state خود را بی‌دلیل از دست ندهد و مسیر بدون WebGL همچنان قابل‌استفاده باشد.
-- اطلاعات و راه‌های دسترسی به پروژه‌ها بیرون از WebGL نیز در HTML قابل‌استفاده بمانند.
+| Category | Requirement | Target Metric |
+| :--- | :--- | :--- |
+| **Performance** | Framerate during 3D camera travel and idle parallax | Steady 60 FPS on dedicated GPUs; >30 FPS on integrated graphics |
+| **Asset Size** | 3D models and video compression | Total 3D assets under 10 MB; ASCII WebM under 3 MB |
+| **Accessibility** | Semantic HTML, keyboard traps, motion sensitivity | WCAG 2.1 Level AA compliant; respects `prefers-reduced-motion` |
+| **Compatibility** | Modern browser support | Chrome 120+, Safari 17+, Firefox 120+, Edge 120+ |
+| **Offline Resilience**| Network disconnection handling | Bundled JSON fallback for GitHub data; cached static assets |
 
-## ترتیب اجرا و دروازهٔ تأیید
+---
 
-- فهرست فعال و وابستگی‌ها در `docs/plans.md` است؛ جزئیات و چک‌باکس هر مرحله در فایل متناظر آن ثبت می‌شود. R01 تا R12 تکمیل شده‌اند؛ R13 به بعد برای قاب، میز، حرکت و بازبینی تغییر تازه تعریف می‌شوند. سوابق قبلی در `docs/archive/plans/archive.md` تاریخی‌اند.
-- ابتدا Hero تمام‌صفحه و حرکت با blockout بازبینی می‌شود. ساخت یا جایگزینی دارایی‌های نهایی و پرداخت متریال تا ثبت تأیید انسانی blockout مجاز نیست.
-- برای تغییر تازه نیز ابتدا blockout قابل‌مشاهدهٔ pose و عمق میز ساخته و از کاربر تأیید گرفته شود. تأیید قدیمی R02 به‌تنهایی تأیید قاب تازه نیست. پس از آن هندسهٔ نهایی میز، کالیبراسیون حرکت و بررسی یکپارچهٔ نماها انجام شود؛ افزودن وسایل روی میز مرحلهٔ جداگانه است.
-- محدودهٔ طراحی ویژهٔ Hero تبلت تا دسکتاپ است. عرض‌های کوچک‌تر فقط برای سلامت پایهٔ صفحه، عدم overflow افقی و مسیر HTML بررسی می‌شوند.
-- کیفیت بصری از هندسهٔ پرداخت‌شده، متریال خوانا، نور و سایهٔ منسجم، قاب‌بندی دقیق و حرکت نرم سنجیده می‌شود. رفرنس Shopify الهام تعامل/کیفیت است؛ محتوای صحنه، UI، آمار و هویت بصری آن کپی نمی‌شود.
+## 8. Out of Scope
 
-## مرز و ملاحظات
-
-- Shopify مرجع دید رو به سطح میز، حس عمق و نرمی تعامل است؛ هویت و جای نسبی اجزای Hero از `docs/hero-reference.png` می‌آید. زاویهٔ مستقیم و میز کم‌عمق آن تصویر با تصمیم تازه جایگزین شده‌اند. چیدمانِ وسایل، محتوای تجاری، آمار، گرافیک و دارایی‌های Shopify کپی نمی‌شوند.
-- تأیید کانسپت به‌تنهایی تأیید blockout یا مدل نهایی نیست؛ گیت انسانی R02 پیش‌نیاز ساخت دارایی نهایی است.
-- طراحی ویژهٔ موبایل در این مرحله تعیین نشده است.
-- برخی وب‌سایت‌ها نمایش درون پنجره را با سیاست‌های خود مسدود می‌کنند؛ لینک مستقیم باید fallback باشد.
-
-
-### رقص موزیکال گربه Oiia Cat و همگام‌سازی مانیتور
-
-- در سمت راست میز بین ماگ قهوه و دستگاه آرکید (`x=1.80, y=1.906, z=1.65`)، مدل سه‌بعدی گربهٔ Oiia Cat قرار دارد.
-- کلیک روی گربه رقص موزیکال را آغاز می‌کند: پاهای گربه به حالت کالباسی (Loaf) جمع شده و با ریتم ۱۶۰ BPM شروع به چرخش متمرکز و پرش ریتمیک می‌کند.
-- در فاز دور تند آهنگ (Drop در ۳۳ تا ۵۷ ثانیه و ۸۱ تا ۱۰۵ ثانیه): نورپردازی کل اتاق به حالت رقص نور دیسکو درمی‌آید و صفحهٔ مانیتور کامپیوتر وارد مود اختصاصی Drop Sync می‌شود؛ تمامی آیکون‌ها و ویجت‌های دسکتاپ پنهان شده، پس‌زمینه رنگ‌های نئونی یکدست متناوب به خود می‌گیرد و یک کپی دوبعدی بزرگ ۲ برابری از گربه در مرکز دقیق مانیتور همگام با ریتم می‌چرخد و می‌پرد.
-- با توقف رقص یا خروج از نمای اتاق، گربه فوراً به حالت استراحت اولیه بازمی‌گردد و دسکتاپ مانیتور وضعیت عادی خود را بازمی‌یابد.
-
-### پورتفولیوی فلت (FlatLanding)، نوار خروج نئونی و ترنزیشن هیرو
-
-- **نوار خروج نئونی (`ExitBar`)**: در پایین نمای اتاق سه‌بعدی نوار مشکی شبانه یکدست (`#000000`) با حاشیهٔ نئونی تیره قرار دارد که دکمهٔ شیشه‌ای اپتیکال `TactileButton` با عنوان "Exit The Room" را با انکسار نور فیزیکی و فیزیک فنری به نمایش می‌گذارد.
-- **ترنزیشن پورتال اسکن‌لاین لیزری و ویدیوی اسکی هیرو**: با خروج از اتاق، ترنزیشن پورتال سینمایی با خط اسکن‌لاین لیزری سرتاسری (`calc(100cqh + 40px)`) بدون فلش نوری زننده اجرا می‌شود. تصویر در فریم هیرو با ابعاد هماهنگ `clamp(360px, calc(100vh - 64px - 220px), 860px)` نشسته و ویدیوی لوپ اسکی اتاق (`ascii-room.webm`) به صورت لبه‌به‌لبه و بدون درز پخش می‌شود.
-- **اورلی تک‌ستونهٔ متمرکز و تایپوگرافی پویای KokonutUI**: محتوای معرفی روی هیرو به صورت یک ستون متمرکز عمودی و افقی با کامپوننت فیزیک‌محور `DynamicText` برای تغییر عنوان‌های شغلی قرار گرفته است. دکمه‌های اقدام شامل دکمهٔ شیشه‌ای تیرهٔ Glisse ("See my work") و دکمهٔ مینیمال شفاف "Get in Touch" هستند که به سکشن تماس درون‌صفحه‌ای اسکرول نرم می‌کند.
-- **بک‌گراند تعاملی LiquidGrid و نشانگر MagicCursor**: کل صفحهٔ فلت مجهز به پس‌زمینهٔ ریپل بوم LiquidGrid و نشانگر چرخشی داینامیک `MagicCursor` با فیزیک سرعت و زاویه است که با دستگاه‌های لمسی سازگار بوده و المان‌های کلیکی را مسدود نمی‌کند.
-- **سکشن تعاملی تِک‌استک (Tech Stack) و ردهٔ Agent Harness**: سکشن اختصاصی استک مابین سوابق کاری و تماس قرار دارد که از تب‌های فنری Arc UI بهره می‌برد و ۸ دسته‌بندی را پوشش می‌دهد. در کنار فناوری‌های پیشرفتهٔ هوش مصنوعی، تب ویژهٔ **Agent Harness** پلتفرم‌های کدنویسی عامل‌محور (CODEX، Claude Code، Antigravity، zCode، Cursor، Open Code) را با آیکون‌های وکتور اختصاصی و کنتراست معکوس هنگام هاور نمایش می‌دهد.
-- **سکشن فعالیت گیت‌هاب و نمودار سه‌بعدی اسکای‌لاین (Github Activity - As a city)**: بخش مستقل بین تِک‌استک و تماس که مشارکت‌های سالانهٔ گیت‌هاب کاربر (`AmirRghp`) را به صورت یک شهر سه‌بعدی ایزومتریک با مکعب‌های ۳ وجهی و رنگ‌های سبز اختصاصی گیت‌هاب رندر می‌کند. این بخش دارای انیمیشن صعود موجی قطری، خط راهنمای پین به بالاترین روز سال، کارت نمایشگاهی با کنتراست مطلوب، و دکمهٔ بازپخش انیمیشن (`↻ REPLAY`) است.
-- **کف بوم تتریس پیکسلی خودکار (`PixelTetris`) و ساب‌فوتر مینیمال**: در پایین فوتر و زیر دکمهٔ شیشه‌ای "Enter The Room"، بوم تتریس خودکار OriginKit با ماتریس دات‌های دایره‌ای (`rounded: 20`) به عنوان کف تعاملی سایت قرار دارد. بازی از ابتدا با ۵ ردیف پر شده در جریان است و الگوریتم هوش مصنوعی جای‌گذاری قطعات، ارتفاع را حداکثر روی ۶ ردیف مهار می‌کند تا هرگز به سمت بالا سرریز نکند. انیمیشن با `IntersectionObserver` در خارج دید کاربر متوقف شده و با `prefers-reduced-motion` فریم ثابت ارائه می‌دهد. در زیر آن، نوار ساب‌فوتر مینیمال با خط مرزی باریک، متن کپی‌رایت مونو با ترکینگ بالا (`© 2026 AMIRREZA GHOLIPOUR`) و دکمهٔ نرم اسکرول به بالا (`BACK TO TOP`) قرار گرفته است.
-- **بازگشت به اتاق سه‌بعدی**: دکمهٔ شیشه‌ای "Re-enter" در هدر یا "Enter The Room" در فوتر، فریم هیرو را به تمام‌صفحه گسترش داده و درون اتاق سه‌بعدی حل می‌کند؛ پخش ویدیو متوقف شده و کنترل کامل اتاق به کاربر بازمی‌گردد.
+- User authentication, login accounts, and private dashboards.
+- Dynamic CMS or database backends (all project data is strictly version-controlled in `src/data/content.ts`).
+- Commercial game ROM distribution or copyright-infringing assets.
+- Free avatar walking, physics collisions outside props, or first-person controls.
