@@ -1,0 +1,27 @@
+/* KokonutUI DynamicText styles */
+.relative { position: relative; }
+.absolute { position: absolute; }
+.inline-block { display: inline-block; }
+.align-baseline { vertical-align: baseline; }
+.pointer-events-none { pointer-events: none; }
+.invisible { visibility: hidden; }
+.top-0 { top: 0; }
+.left-0 { left: 0; }
+.origin-\[50\%_80\%\] { transform-origin: 50% 80%; }
+.w-0 { width: 0; }
+.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.w-\[1ch\] { width: 1ch; }
+.text-center { text-align: center; }
+.whitespace-pre { white-space: pre; }
+.tabular-nums { font-variant-numeric: tabular-nums; }
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

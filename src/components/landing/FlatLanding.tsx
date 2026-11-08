@@ -13,6 +13,7 @@ import {
 } from "./heroTransition";
 import { getAssetUrl } from "../../assetUrl";
 import { portfolioContent } from "../../content";
+import DynamicText from "../kokonutui/dynamic-text";
 import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {
@@ -20,6 +21,13 @@ export type FlatLandingProps = {
   snapshotCanvas?: HTMLCanvasElement | null;
   onReenter: () => void;
 };
+
+const DYNAMIC_ROLES = [
+  "AI Engineer",
+  "ML Engineer",
+  "Software Engineer",
+  "Creative Developer",
+];
 
 const CAPABILITIES = [
   "Applied AI & RAG",
@@ -658,30 +666,38 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
 
             {/* Hero Intro Overlay */}
             <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
-              <div className={styles.ldHeroGrid}>
-                <div className={styles.ldHeroNameWrap}>
-                  <h1 id="name">{portfolioContent.owner.name}</h1>
+              <div className={styles.ldHeroStack}>
+                <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
+                <h1 id="name">{portfolioContent.owner.name}</h1>
+                <div className={styles.ldHeroRoleWrap} aria-label="Role focus">
+                  <DynamicText
+                    mode="morph"
+                    words={DYNAMIC_ROLES}
+                    interval={2400}
+                    loop={true}
+                    className={styles.ldDynamicText}
+                  />
+                  <span className="sr-only">{portfolioContent.owner.role} · {portfolioContent.owner.headline}</span>
                 </div>
-                <div className={styles.ldHeroSide}>
-                  <p className={styles.ldIntroRole}>
-                    <b>{portfolioContent.owner.role}</b> · {portfolioContent.owner.headline}
-                  </p>
-                  <p className={styles.ldHeroBio}>{portfolioContent.owner.bio}</p>
-                  <div className={styles.ldActions}>
-                    <a
-                      className={`${styles.ldBtn} ${styles.dark}`}
-                      href="#ld-work"
-                      onClick={(e) => scrollToSection("ld-work", e)}
-                    >
-                      See the work
-                    </a>
-                    <a className={styles.ldBtn} href={`mailto:${portfolioContent.owner.email}`}>
-                      Start a conversation
-                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M5.5 4.5h6v6M11.5 4.5 4.5 11.5" />
-                      </svg>
-                    </a>
-                  </div>
+                <p className={styles.ldHeroBio}>
+                  I love solving challenging, real-world problems where data meets human experience.
+                  <br />
+                  Currently building intelligent systems, autonomous agents, and clean backend architectures.
+                </p>
+                <div className={styles.ldActions}>
+                  <a
+                    className={`${styles.ldBtn} ${styles.dark}`}
+                    href="#ld-work"
+                    onClick={(e) => scrollToSection("ld-work", e)}
+                  >
+                    See my work
+                  </a>
+                  <a className={styles.ldBtn} href={`mailto:${portfolioContent.owner.email}`}>
+                    Start a conversation
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M5.5 4.5h6v6M11.5 4.5 4.5 11.5" />
+                    </svg>
+                  </a>
                 </div>
               </div>
             </div>
