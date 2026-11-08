@@ -10,7 +10,7 @@ describe("TechStackSection", () => {
     expect(html).toContain("( select tab to filter )");
   });
 
-  it("renders all 7 tabs including Data & AI", () => {
+  it("renders all 8 tabs including Data & AI and Agent Harness", () => {
     const html = renderToStaticMarkup(<TechStackSection />);
     expect(html).toContain("All");
     expect(html).toContain("Languages");
@@ -19,25 +19,26 @@ describe("TechStackSection", () => {
     expect(html).toContain("Databases");
     expect(html).toContain("DevOps &amp; Cloud");
     expect(html).toContain("Data &amp; AI");
+    expect(html).toContain("Agent Harness");
   });
 
-  it("renders requested technologies from CV, prompt, and image", () => {
+  it("renders requested technologies including newly added AI and Agent Harness items", () => {
     const html = renderToStaticMarkup(<TechStackSection />);
-    // From Prompt & Images
     const expectedTechs = [
       "JavaScript",
       "TypeScript",
       "Python",
-      "C++",
       "React",
       "Next.js",
+      "Three.js",
       "Tailwind CSS",
       "FastAPI",
       "Docker",
       "PostgreSQL",
-      "MongoDB",
       "Redis",
       "Qdrant",
+      "ChromaDB",
+      "FAISS",
       "PyTorch",
       "TensorFlow",
       "Keras",
@@ -54,10 +55,43 @@ describe("TechStackSection", () => {
       "Metabase",
       "Microsoft Clarity",
       "N8N",
+      "Playwright",
+      "Claude API",
+      "OpenRouter API",
+      "Streamlit",
+      "Gradio",
+      "CODEX",
+      "Claude Code",
+      "Antigravity",
+      "zCode",
+      "Cursor",
+      "Open Code",
     ];
 
     for (const tech of expectedTechs) {
       expect(html).toContain(tech);
+    }
+  });
+
+  it("does not render removed items from stack", () => {
+    const html = renderToStaticMarkup(<TechStackSection />);
+    const removedTechs = [
+      ">C++<",
+      ">Framer Motion<",
+      ">Node.js<",
+      ">Express.js<",
+      ">Socket.IO<",
+      ">Passport<",
+      ">Google OAuth<",
+      ">MongoDB<",
+      ">Mongoose<",
+      ">AWS<",
+      ">Vercel<",
+      ">Mistral AI<",
+    ];
+
+    for (const tech of removedTechs) {
+      expect(html).not.toContain(tech);
     }
   });
 });

@@ -408,6 +408,111 @@ export function TechIcon({ name }: { name: string }): ReactNode {
           <path d="M3 4h4v4H3zm14 0h4v4h-4zm-7 4h4v4h-4zm-4 4h4v4H6zm8 0h4v4h-4zm-5 4h4v4H9z" />
         </svg>
       );
+    case "Playwright":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M17.5 12a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0z" fill="#2EAD33" />
+          <path d="M12 4.5a7.5 7.5 0 0 0-7.5 7.5c0 2.6 1.3 4.8 3.3 6.1l1.5-2.2A4.8 4.8 0 0 1 7.2 12a4.8 4.8 0 0 1 4.8-4.8c1.3 0 2.5.5 3.4 1.4l1.9-1.9A7.4 7.4 0 0 0 12 4.5z" fill="#E24329" />
+          <circle cx="15.5" cy="11.5" r="1.5" fill="#FFFFFF" />
+        </svg>
+      );
+    case "ChromaDB":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <circle cx="12" cy="7" r="4.5" fill="#F43F5E" />
+          <circle cx="7" cy="16" r="4.5" fill="#0EA5E9" />
+          <circle cx="17" cy="16" r="4.5" fill="#EAB308" />
+        </svg>
+      );
+    case "FAISS":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#0668E1" />
+          <path d="M7 6h10M7 12h7M7 18h4" stroke="#FFFFFF" strokeWidth="2.4" strokeLinecap="round" />
+        </svg>
+      );
+    case "Claude API":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#D97706" />
+          <path d="M12 4.5l1.6 4.9h5.1l-4.1 3 1.6 4.9-4.2-3-4.2 3 1.6-4.9-4.1-3h5.1z" fill="#FFFFFF" />
+        </svg>
+      );
+    case "OpenRouter API":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#6366F1" />
+          <path d="M6 12h12m-5-5l5 5-5 5" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      );
+    case "Streamlit":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <path d="M12 3l10 18H2L12 3z" fill="#FF4B4B" />
+          <path d="M12 9l5.5 10H6.5L12 9z" fill="#FFFFFF" opacity="0.3" />
+        </svg>
+      );
+    case "Gradio":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="5" fill="#FF7C00" />
+          <rect x="5.5" y="6.5" width="5.5" height="5.5" rx="1.5" fill="#FFFFFF" />
+          <rect x="13" y="6.5" width="5.5" height="5.5" rx="1.5" fill="#FFFFFF" />
+          <rect x="5.5" y="14" width="5.5" height="5.5" rx="1.5" fill="#FFFFFF" />
+          <circle cx="15.75" cy="16.75" r="2.75" fill="#FFFFFF" />
+        </svg>
+      );
+    case "Three.js":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor">
+          <path d="M3.5 18.5L12 3.5l8.5 15h-17zm3.2-1.8h10.6L12 6.6 6.7 16.7z" />
+          <polygon points="12,9 15.5,15 8.5,15" fill="currentColor" opacity="0.6" />
+        </svg>
+      );
+    case "CODEX":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#10A37F" />
+          <path d="M7 8.5l3.5 3.5L7 15.5m5.5 0h4.5" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      );
+    case "Claude Code":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#CC6B2C" />
+          <path d="M8 8l-3 4 3 4m8-8l3 4-3 4m-4-9l-2 10" stroke="#FFFFFF" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      );
+    case "Antigravity":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#4285F4" />
+          <path d="M12 4l6 14H6l6-14zm0 4.2L8.5 16h7L12 8.2z" fill="#FFFFFF" />
+          <circle cx="12" cy="12.5" r="1.5" fill="#FFE873" />
+        </svg>
+      );
+    case "zCode":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#8B5CF6" />
+          <path d="M7 7.5h10l-10 9h10" stroke="#FFFFFF" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      );
+    case "Cursor":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#000000" stroke="#333333" strokeWidth="1" />
+          <path d="M6.5 4.5l11 6.5-5.2 1.4 3.7 6.1-2.1 1.2-3.7-6.1-3.7 3.9V4.5z" fill="#38BDF8" />
+        </svg>
+      );
+    case "Open Code":
+      return (
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <rect width="24" height="24" rx="4" fill="#1E293B" />
+          <circle cx="12" cy="12" r="6" fill="none" stroke="#22C55E" strokeWidth="2" strokeDasharray="28 8" />
+          <path d="M10 9.5l-2.5 2.5 2.5 2.5m4-5l2.5 2.5-2.5 2.5" stroke="#FFFFFF" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        </svg>
+      );
     default:
       return (
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="currentColor">

@@ -9,7 +9,8 @@ type TechCategory =
   | "backend"
   | "databases"
   | "devops"
-  | "ai";
+  | "ai"
+  | "agent-harness";
 
 interface TechItem {
   name: string;
@@ -21,39 +22,35 @@ const TECH_ITEMS: TechItem[] = [
   { name: "JavaScript", categories: ["languages", "frontend", "backend"] },
   { name: "TypeScript", categories: ["languages", "frontend", "backend"] },
   { name: "Python", categories: ["languages", "backend", "ai"] },
-  { name: "C++", categories: ["languages"] },
   { name: "HTML & CSS", categories: ["languages", "frontend"] },
   { name: "MATLAB", categories: ["languages", "ai"] },
 
   // Frontend
   { name: "React", categories: ["frontend"] },
   { name: "Next.js", categories: ["frontend"] },
+  { name: "Three.js", categories: ["frontend"] },
   { name: "Tailwind CSS", categories: ["frontend"] },
   { name: "GSAP", categories: ["frontend"] },
-  { name: "Framer Motion", categories: ["frontend"] },
+  { name: "Streamlit", categories: ["frontend", "ai"] },
+  { name: "Gradio", categories: ["frontend", "ai"] },
   { name: "PyQt", categories: ["frontend"] },
 
   // Backend
-  { name: "Node.js", categories: ["backend"] },
   { name: "FastAPI", categories: ["backend", "ai"] },
-  { name: "Express.js", categories: ["backend"] },
   { name: "REST APIs", categories: ["backend"] },
-  { name: "Socket.IO", categories: ["backend"] },
   { name: "Apache Kafka", categories: ["backend", "devops"] },
   { name: "N8N", categories: ["backend", "devops"] },
   { name: "Telegram Bot", categories: ["backend"] },
   { name: "JWT", categories: ["backend"] },
-  { name: "Passport", categories: ["backend"] },
-  { name: "Google OAuth", categories: ["backend"] },
 
   // Databases
   { name: "PostgreSQL", categories: ["databases"] },
-  { name: "MongoDB", categories: ["databases"] },
   { name: "Redis", categories: ["databases"] },
   { name: "Qdrant", categories: ["databases", "ai"] },
+  { name: "ChromaDB", categories: ["databases", "ai"] },
+  { name: "FAISS", categories: ["databases", "ai"] },
   { name: "MySQL", categories: ["databases"] },
   { name: "Microsoft SQL Server", categories: ["databases"] },
-  { name: "Mongoose", categories: ["databases", "backend"] },
 
   // DevOps & Cloud
   { name: "Docker", categories: ["devops"] },
@@ -61,13 +58,12 @@ const TECH_ITEMS: TechItem[] = [
   { name: "Git", categories: ["devops"] },
   { name: "GitHub", categories: ["devops"] },
   { name: "GitLab", categories: ["devops"] },
-  { name: "AWS", categories: ["devops"] },
-  { name: "Vercel", categories: ["devops"] },
+  { name: "Playwright", categories: ["devops"] },
+  { name: "Selenium", categories: ["devops"] },
   { name: "Postman", categories: ["devops"] },
   { name: "PostHog", categories: ["devops"] },
   { name: "Microsoft Clarity", categories: ["devops"] },
   { name: "Metabase", categories: ["devops", "ai"] },
-  { name: "Selenium", categories: ["devops"] },
   { name: "Unit Testing", categories: ["devops"] },
   { name: "Jira", categories: ["devops"] },
 
@@ -84,8 +80,17 @@ const TECH_ITEMS: TechItem[] = [
   { name: "Ollama", categories: ["ai"] },
   { name: "AI Agents", categories: ["ai"] },
   { name: "OpenAI API", categories: ["ai"] },
+  { name: "Claude API", categories: ["ai"] },
   { name: "Gemini API", categories: ["ai"] },
-  { name: "Mistral AI", categories: ["ai"] },
+  { name: "OpenRouter API", categories: ["ai"] },
+
+  // Agent Harness
+  { name: "CODEX", categories: ["agent-harness"] },
+  { name: "Claude Code", categories: ["agent-harness"] },
+  { name: "Antigravity", categories: ["agent-harness"] },
+  { name: "zCode", categories: ["agent-harness"] },
+  { name: "Cursor", categories: ["agent-harness"] },
+  { name: "Open Code", categories: ["agent-harness"] },
 ];
 
 const TABS: { id: TechCategory; label: string }[] = [
@@ -96,6 +101,7 @@ const TABS: { id: TechCategory; label: string }[] = [
   { id: "databases", label: "Databases" },
   { id: "devops", label: "DevOps & Cloud" },
   { id: "ai", label: "Data & AI" },
+  { id: "agent-harness", label: "Agent Harness" },
 ];
 
 export function TechStackSection() {
