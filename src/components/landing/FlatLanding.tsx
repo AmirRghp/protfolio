@@ -854,7 +854,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                   <span>LinkedIn</span>
                   <em>Amirreza Gholipour</em>
                 </a>
-                <a href="https://t.me/AmirR_ghp" target="_blank" rel="noopener noreferrer">
+                <a href="https://t.me/amir_rghp2" target="_blank" rel="noopener noreferrer">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="m22 2-7 20-4-9-9-4Z" />
                     <path d="M22 2 11 13" />
