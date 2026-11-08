@@ -242,16 +242,16 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     const heroOverlay = heroOverlayRef.current;
     const rHeroOverlay = heroOverlay
       ? heroOverlay.animate(
-          [
-            { opacity: 1, transform: "translate3d(0, 0, 0)" },
-            { opacity: 0, transform: "translate3d(0, 12px, 0)" },
-          ],
-          {
-            duration: HERO_CLOSE_TIMING.contentFadeDuration,
-            fill: "both",
-            easing: "ease-out",
-          },
-        )
+        [
+          { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          { opacity: 0, transform: "translate3d(0, 12px, 0)" },
+        ],
+        {
+          duration: HERO_CLOSE_TIMING.contentFadeDuration,
+          fill: "both",
+          easing: "ease-out",
+        },
+      )
       : null;
 
     const rWrap = wrap.animate(
@@ -268,24 +268,24 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
 
     const rNav = nav
       ? nav.animate(
-          [
-            { opacity: 1, transform: "translate3d(0, 0, 0)" },
-            { opacity: 0, transform: "translate3d(0, -10px, 0)" },
-          ],
-          {
-            duration: HERO_CLOSE_TIMING.navFadeDuration,
-            fill: "both",
-            easing: "ease-out",
-          },
-        )
+        [
+          { opacity: 1, transform: "translate3d(0, 0, 0)" },
+          { opacity: 0, transform: "translate3d(0, -10px, 0)" },
+        ],
+        {
+          duration: HERO_CLOSE_TIMING.navFadeDuration,
+          fill: "both",
+          easing: "ease-out",
+        },
+      )
       : null;
 
     const rBackdrop = backdrop
       ? backdrop.animate([{ opacity: 1 }, { opacity: 0 }], {
-          duration: HERO_CLOSE_TIMING.backdropFadeDuration,
-          fill: "both",
-          easing: "ease-out",
-        })
+        duration: HERO_CLOSE_TIMING.backdropFadeDuration,
+        fill: "both",
+        easing: "ease-out",
+      })
       : null;
 
     // 2. The live playing Hero video container itself expands distortion-free to fill 100vw×100vh
@@ -372,7 +372,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     // Start live ASCII video immediately at t = 0 so the portal is alive throughout the entire transition
     const video = videoRef.current;
     if (video) {
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
 
     const geo = measurePortalGeometry();
@@ -401,37 +401,37 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     // 3. Digital matrix cell grid & bi-chromatic laser scan crest bridge the 3D-to-ASCII conversion across full frame height
     const aPortalFx = portalFx
       ? portalFx.animate(
-          [{ opacity: 0 }, { opacity: 0.68, offset: 0.35 }, { opacity: 0.35, offset: 0.75 }, { opacity: 0 }],
-          {
-            duration: HERO_OPEN_TIMING.dockDuration,
-            fill: "both",
-            easing: "ease-out",
-          },
-        )
+        [{ opacity: 0 }, { opacity: 0.68, offset: 0.35 }, { opacity: 0.35, offset: 0.75 }, { opacity: 0 }],
+        {
+          duration: HERO_OPEN_TIMING.dockDuration,
+          fill: "both",
+          easing: "ease-out",
+        },
+      )
       : null;
 
     const aScanCrest = scanCrest
       ? scanCrest.animate(
-          [
-            { transform: "translate3d(0, -140px, 0)" },
-            { transform: "translate3d(0, calc(100cqh + 40px), 0)" },
-          ],
-          {
-            duration: HERO_OPEN_TIMING.scanSweepDuration,
-            fill: "both",
-            easing: EASE_SCAN_SWEEP,
-          },
-        )
+        [
+          { transform: "translate3d(0, -140px, 0)" },
+          { transform: "translate3d(0, calc(100cqh + 40px), 0)" },
+        ],
+        {
+          duration: HERO_OPEN_TIMING.scanSweepDuration,
+          fill: "both",
+          easing: EASE_SCAN_SWEEP,
+        },
+      )
       : null;
 
     // 4. Nocturnal LiquidGrid backdrop, sticky header, and portfolio sections reveal around the docking frame
     const aBackdrop = backdrop
       ? backdrop.animate([{ opacity: 0 }, { opacity: 1 }], {
-          duration: HERO_OPEN_TIMING.backdropDuration,
-          delay: HERO_OPEN_TIMING.backdropDelay,
-          fill: "both",
-          easing: "ease-out",
-        })
+        duration: HERO_OPEN_TIMING.backdropDuration,
+        delay: HERO_OPEN_TIMING.backdropDelay,
+        fill: "both",
+        easing: "ease-out",
+      })
       : null;
 
     const aNav = nav.animate(
@@ -495,7 +495,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     if (isOpen) {
       const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
       if (!reduced) {
-        video.play().catch(() => {});
+        video.play().catch(() => { });
       }
     } else if (transitionState === "closed") {
       video.pause();
@@ -641,238 +641,238 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
 
       <main className="intro" aria-labelledby="name">
         <div className={styles.ldPage}>
-        <section className={styles.ldHero} id="ld-top">
-          <div ref={frameRef} className={styles.ldFrame}>
-            <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
-              <img
-                ref={transitionImgRef}
-                className={styles.ldTransitionImg}
-                src={getAssetUrl("assets/ascii-room.webp")}
-                alt=""
-                aria-hidden="true"
-              />
-              <video
-                ref={videoRef}
-                className={styles.ldReelVideo}
-                src={getAssetUrl("assets/ascii-room.webm")}
-                poster={getAssetUrl("assets/ascii-room.webp")}
-                autoPlay
-                loop
-                muted
-                playsInline
-                preload="auto"
-                aria-label="Nocturnal Room ASCII Loop"
-              />
-              <div ref={portalFxRef} className={styles.ldPortalFx} aria-hidden="true">
-                <div className={styles.ldMatrixGrid} />
-                <div ref={scanCrestRef} className={styles.ldScanCrest} />
-                <div className={styles.ldPortalSheen} />
-              </div>
-            </div>
-
-            {/* Hero Intro Overlay */}
-            <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
-              <div className={styles.ldHeroStack}>
-                <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
-                <h1 id="name">{portfolioContent.owner.name}</h1>
-                <div className={styles.ldHeroRoleWrap} aria-label="Role focus">
-                  <DynamicText
-                    mode="morph"
-                    words={DYNAMIC_ROLES}
-                    interval={2400}
-                    loop={true}
-                    className={styles.ldDynamicText}
-                  />
-                  <span className="sr-only">{portfolioContent.owner.role} · {portfolioContent.owner.headline}</span>
-                </div>
-                <p className={styles.ldHeroBio}>
-                  I love solving challenging, real-world problems where data meets human experience.
-                  <br />
-                  Currently building intelligent systems, autonomous agents, and clean backend architectures.
-                </p>
-                <div className={styles.ldActions} data-theme="dark">
-                  <GlisseButton onClick={(e) => scrollToSection("ld-work", e)}>
-                    See my work
-                  </GlisseButton>
-                  <a
-                    className={styles.ldGhostBtn}
-                    href="#ld-contact"
-                    onClick={(e) => scrollToSection("ld-contact", e)}
-                  >
-                    Get in Touch
-                  </a>
+          <section className={styles.ldHero} id="ld-top">
+            <div ref={frameRef} className={styles.ldFrame}>
+              <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
+                <img
+                  ref={transitionImgRef}
+                  className={styles.ldTransitionImg}
+                  src={getAssetUrl("assets/ascii-room.webp")}
+                  alt=""
+                  aria-hidden="true"
+                />
+                <video
+                  ref={videoRef}
+                  className={styles.ldReelVideo}
+                  src={getAssetUrl("assets/ascii-room.webm")}
+                  poster={getAssetUrl("assets/ascii-room.webp")}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  aria-label="Nocturnal Room ASCII Loop"
+                />
+                <div ref={portalFxRef} className={styles.ldPortalFx} aria-hidden="true">
+                  <div className={styles.ldMatrixGrid} />
+                  <div ref={scanCrestRef} className={styles.ldScanCrest} />
+                  <div className={styles.ldPortalSheen} />
                 </div>
               </div>
+
+              {/* Hero Intro Overlay */}
+              <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
+                <div className={styles.ldHeroStack}>
+                  <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
+                  <h1 id="name">{portfolioContent.owner.name}</h1>
+                  <div className={styles.ldHeroRoleWrap} aria-label="Role focus">
+                    <DynamicText
+                      mode="morph"
+                      words={DYNAMIC_ROLES}
+                      interval={2400}
+                      loop={true}
+                      className={styles.ldDynamicText}
+                    />
+                    <span className="sr-only">{portfolioContent.owner.role} · {portfolioContent.owner.headline}</span>
+                  </div>
+                  <p className={styles.ldHeroBio}>
+                    I love solving challenging, real-world problems where data meets human experience.
+                    <br />
+                    Currently building intelligent systems, autonomous agents, and clean backend architectures.
+                  </p>
+                  <div className={styles.ldActions} data-theme="dark">
+                    <GlisseButton onClick={(e) => scrollToSection("ld-work", e)}>
+                      See my work
+                    </GlisseButton>
+                    <a
+                      className={styles.ldGhostBtn}
+                      href="#ld-contact"
+                      onClick={(e) => scrollToSection("ld-contact", e)}
+                    >
+                      Get in Touch
+                    </a>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </section>
-
-        <div ref={wrapRef} className={styles.ldWrap}>
-
-          {/* Capabilities Ticker Strip */}
-          <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities">
-            {CAPABILITIES.map((c) => (
-              <span key={c}>{c}</span>
-            ))}
           </section>
 
-          {/* Work Section */}
-          <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work">
-            <div className={`${styles.ldHead} ${styles.ldRise}`}>
-              <div>
-                <div className={styles.ldKicker}>
+          <div ref={wrapRef} className={styles.ldWrap}>
+
+            {/* Capabilities Ticker Strip */}
+            <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities">
+              {CAPABILITIES.map((c) => (
+                <span key={c}>{c}</span>
+              ))}
+            </section>
+
+            {/* Work Section */}
+            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work">
+              <div className={`${styles.ldHead} ${styles.ldRise}`}>
+                <div>
+                  <div className={styles.ldKicker}>
+                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                      <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
+                    </svg>
+                    Selected Work
+                  </div>
+                  <h2>
+                    Four branches
+                    <br />
+                    of the work
+                  </h2>
+                </div>
+                <p className={styles.ldHeadNote}>
+                  The four core pillars of applied machine learning, vision, and autonomous agent systems. Open one to scroll through its projects.
+                </p>
+              </div>
+              <div className={styles.ldRise}>
+                <WorkAccordion />
+              </div>
+            </section>
+
+            {/* Statement Quote Section */}
+            <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me">
+              <div className={styles.ldStatementInner}>
+                <div className={`${styles.ldKicker} ${styles.ldRise}`}>
                   <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                     <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
                   </svg>
-                  Selected Work
+                  About Me
                 </div>
-                <h2>
-                  Four branches
-                  <br />
-                  of the work
-                </h2>
+                <p className={styles.ldRise}>
+                  <b>First and foremost, I thrive on challenging and distinctive engineering work.</b>{" "}
+                  Beyond continuous learning, collaborative teamwork is my favorite part of engineering—the strongest products emerge when diverse experience, sharp execution, and shared vision come together.
+                </p>
               </div>
-              <p className={styles.ldHeadNote}>
-                The four core pillars of applied machine learning, vision, and autonomous agent systems. Open one to scroll through its projects.
-              </p>
-            </div>
-            <div className={styles.ldRise}>
-              <WorkAccordion />
-            </div>
-          </section>
+            </section>
 
-          {/* Statement Quote Section */}
-          <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me">
-            <div className={styles.ldStatementInner}>
+            {/* Numbers Metric Cards */}
+            <section className={`${styles.ldNumbers} ${styles.ldX}`} id="ld-numbers" aria-label="Key Numbers">
+              {STATS.map((st) => (
+                <div key={st.label} className={`${styles.ldStat} ${styles.ldRise}`}>
+                  <span className={styles.ldK}>{st.note}</span>
+                  <div>
+                    <StatCounter st={st} inView={numbersInView} />
+                    <p>{st.label}</p>
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            {/* Experience & Education */}
+            <section className={`${styles.ldProcess} ${styles.ldX}`} id="ld-experience" aria-label="Experience & Education">
               <div className={`${styles.ldKicker} ${styles.ldRise}`}>
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
                 </svg>
-                About Me
+                Career & Education
               </div>
-              <p className={styles.ldRise}>
-                <b>First and foremost, I thrive on challenging and distinctive engineering work.</b>{" "}
-                Beyond continuous learning, collaborative teamwork is my favorite part of engineering—the strongest products emerge when diverse experience, sharp execution, and shared vision come together.
-              </p>
-            </div>
-          </section>
+              <h2 className={styles.ldRise}>Experience & Background</h2>
+              <ol>
+                {portfolioContent.owner.experience.map((exp) => (
+                  <li key={`${exp.company}-${exp.title}`} className={styles.ldRise}>
+                    <div className={styles.ldProcessItem}>
+                      <h3>
+                        {exp.title ? `${exp.company} — ${exp.title}` : exp.company}
+                      </h3>
+                      <p>{exp.highlights.join(" ")}</p>
+                      <em>{exp.period}</em>
 
-          {/* Numbers Metric Cards */}
-          <section className={`${styles.ldNumbers} ${styles.ldX}`} id="ld-numbers" aria-label="Key Numbers">
-            {STATS.map((st) => (
-              <div key={st.label} className={`${styles.ldStat} ${styles.ldRise}`}>
-                <span className={styles.ldK}>{st.note}</span>
-                <div>
-                  <StatCounter st={st} inView={numbersInView} />
-                  <p>{st.label}</p>
-                </div>
+                    </div>
+                  </li>
+                ))}
+                {portfolioContent.owner.education.map((edu) => (
+                  <li key={`${edu.institution}-${edu.degree}`} className={styles.ldRise}>
+                    <div className={styles.ldProcessItem}>
+                      <h3>
+                        {edu.degree} · {edu.field}
+                      </h3>
+                      <p>{edu.institution}</p>
+                      <em>{edu.period}</em>
+
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+
+            {/* Tech Stack Section */}
+            <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack">
+              <div className={styles.ldRise}>
+                <TechStackSection />
               </div>
-            ))}
-          </section>
+            </section>
 
-          {/* Experience & Education */}
-          <section className={`${styles.ldProcess} ${styles.ldX}`} id="ld-experience" aria-label="Experience & Education">
-            <div className={`${styles.ldKicker} ${styles.ldRise}`}>
-              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
-              </svg>
-              Career & Education
-            </div>
-            <h2 className={styles.ldRise}>Experience & Background</h2>
-            <ol>
-              {portfolioContent.owner.experience.map((exp) => (
-                <li key={`${exp.company}-${exp.title}`} className={styles.ldRise}>
-                  <div className={styles.ldProcessItem}>
-                    <h3>
-                      {exp.title ? `${exp.company} — ${exp.title}` : exp.company}
-                    </h3>
-                    <p>{exp.highlights.join(" ")}</p>
-                    <em>{exp.period}</em>
-
-                  </div>
-                </li>
-              ))}
-              {portfolioContent.owner.education.map((edu) => (
-                <li key={`${edu.institution}-${edu.degree}`} className={styles.ldRise}>
-                  <div className={styles.ldProcessItem}>
-                    <h3>
-                      {edu.degree} · {edu.field}
-                    </h3>
-                    <p>{edu.institution}</p>
-                    <em>{edu.period}</em>
-
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </section>
-
-          {/* Tech Stack Section */}
-          <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack">
-            <div className={styles.ldRise}>
-              <TechStackSection />
-            </div>
-          </section>
-
-          {/* Footer Section */}
-          <footer className={`${styles.ldFoot} ${styles.ldX}`} id="ld-contact">
-            <h2 className={styles.ldRise}>Have a project or opportunity in mind?</h2>
-            <a className={`${styles.ldMail} ${styles.ldRise}`} href={`mailto:${portfolioContent.owner.email}`}>
-              {portfolioContent.owner.email}
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M4 10h11M11 5.5 15.5 10 11 14.5" />
-              </svg>
-            </a>
-
-            <nav className={`${styles.ldSocial} ${styles.ldRise}`} aria-label="Social and professional links">
-              <a href={portfolioContent.owner.githubUrl} target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-                  <path d="M9 18c-4.51 2-5-2-7-2" />
+            {/* Footer Section */}
+            <footer className={`${styles.ldFoot} ${styles.ldX}`} id="ld-contact">
+              <h2 className={styles.ldRise}>Have a project or opportunity in mind?</h2>
+              <a className={`${styles.ldMail} ${styles.ldRise}`} href={`mailto:${portfolioContent.owner.email}`}>
+                {portfolioContent.owner.email}
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M4 10h11M11 5.5 15.5 10 11 14.5" />
                 </svg>
-                <span>GitHub</span>
-                <em>github.com/AmirRghp</em>
               </a>
-              <a href="https://www.linkedin.com/in/amirreza-gholipour" target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                  <rect x="2" y="9" width="4" height="12" />
-                  <circle cx="4" cy="4" r="2" />
-                </svg>
-                <span>LinkedIn</span>
-                <em>Amirreza Gholipour</em>
-              </a>
-              <a href="https://t.me/AmirR_ghp" target="_blank" rel="noopener noreferrer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="m22 2-7 20-4-9-9-4Z" />
-                  <path d="M22 2 11 13" />
-                </svg>
-                <span>Telegram</span>
-                <em>@AmirR_ghp</em>
-              </a>
-              <a href={`tel:${portfolioContent.owner.phone}`}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                <span>Phone / Direct</span>
-                <em>{portfolioContent.owner.phone}</em>
-              </a>
-            </nav>
 
-            <div className={`${styles.ldFootCta} ${styles.ldRise}`}>
-              <TactileButton onClick={handleReenter}>
-                Enter The Room
-              </TactileButton>
-            </div>
+              <nav className={`${styles.ldSocial} ${styles.ldRise}`} aria-label="Social and professional links">
+                <a href={portfolioContent.owner.githubUrl} target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+                    <path d="M9 18c-4.51 2-5-2-7-2" />
+                  </svg>
+                  <span>GitHub</span>
+                  <em>github.com/AmirRghp</em>
+                </a>
+                <a href="https://www.linkedin.com/in/amirreza-gholipour" target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                    <rect x="2" y="9" width="4" height="12" />
+                    <circle cx="4" cy="4" r="2" />
+                  </svg>
+                  <span>LinkedIn</span>
+                  <em>Amirreza Gholipour</em>
+                </a>
+                <a href="https://t.me/AmirR_ghp" target="_blank" rel="noopener noreferrer">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m22 2-7 20-4-9-9-4Z" />
+                    <path d="M22 2 11 13" />
+                  </svg>
+                  <span>Telegram</span>
+                  <em>@amir_rghp2</em>
+                </a>
+                <a href={`tel:${portfolioContent.owner.phone}`}>
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  <span>Phone / Direct</span>
+                  <em>{portfolioContent.owner.phone}</em>
+                </a>
+              </nav>
 
-            <div className={styles.ldFootRow}>
-              <span>© {new Date().getFullYear()} Amirreza Gholipour</span>
-              <a href="#top" onClick={(e) => scrollToSection("top", e)}>
-                Back to top
-              </a>
-            </div>
-          </footer>
-        </div>
+              <div className={`${styles.ldFootCta} ${styles.ldRise}`}>
+                <TactileButton onClick={handleReenter}>
+                  Enter The Room
+                </TactileButton>
+              </div>
+
+              <div className={styles.ldFootRow}>
+                <span>© {new Date().getFullYear()} Amirreza Gholipour</span>
+                <a href="#top" onClick={(e) => scrollToSection("top", e)}>
+                  Back to top
+                </a>
+              </div>
+            </footer>
+          </div>
         </div>
       </main>
     </div>
