@@ -65,10 +65,10 @@ function mulberry32(seed: number) {
   };
 }
 
-/** Colors arrive as hex, rgb/rgba, or 'transparent'; fold to [r, g, b, a]. */
+/** Colors arrive as hex or rgb/rgba; fold either to [r, g, b, a]. */
 function parseColor(color: string): [number, number, number, number] {
   const value = (color ?? "").trim().toLowerCase();
-  if (!value || value === "transparent" || value === "none") {
+  if (!value || value === "transparent") {
     return [0, 0, 0, 0];
   }
   const hex = value.replace("#", "");
@@ -446,8 +446,8 @@ export function PixelTetris({
     function draw() {
       ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
-      // Board grid dots/cells (only drawn if boardColor is not transparent)
-      if (boardRGB[3] > 0.001) {
+      // Board grid dots/cells (only draw when board color has visible opacity)
+      if (boardRGB[3] > 0) {
         ctx.beginPath();
         for (let r = 0; r < rows; r++) {
           for (let c = 0; c < cols; c++) tilePath(c, r);

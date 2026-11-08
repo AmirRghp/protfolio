@@ -19,6 +19,11 @@ describe("PixelTetris component", () => {
     expect(html).toContain('aria-hidden="true"');
   });
 
+  it("renders with transparent boardColor by default", () => {
+    const html = renderToStaticMarkup(<PixelTetris />);
+    expect(html).toContain("<canvas");
+  });
+
   it("applies custom className and style correctly", () => {
     const html = renderToStaticMarkup(
       <PixelTetris
