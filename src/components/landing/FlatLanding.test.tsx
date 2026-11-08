@@ -38,6 +38,17 @@ describe("FlatLanding component", () => {
     expect(html).toContain(portfolioContent.owner.headline.replaceAll("&", "&amp;"));
   });
 
+  it("renders Hero CTA buttons with Glisse 'See my work' and ghost 'Get in Touch' scrolling to contact", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("See my work");
+    expect(html).toContain("Get in Touch");
+    expect(html).toContain('href="#ld-contact"');
+    expect(html).not.toContain("Start a conversation");
+  });
+
   it("renders capabilities strip with all 6 disciplines", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,

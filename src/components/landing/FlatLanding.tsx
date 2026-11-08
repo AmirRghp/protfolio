@@ -13,6 +13,8 @@ import {
 } from "./heroTransition";
 import { getAssetUrl } from "../../assetUrl";
 import { portfolioContent } from "../../content";
+import { Button as GlisseButton } from "glisse";
+import "glisse/styles.css";
 import DynamicText from "../kokonutui/dynamic-text";
 import styles from "./flatLanding.module.css";
 
@@ -684,19 +686,16 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                   <br />
                   Currently building intelligent systems, autonomous agents, and clean backend architectures.
                 </p>
-                <div className={styles.ldActions}>
-                  <a
-                    className={`${styles.ldBtn} ${styles.dark}`}
-                    href="#ld-work"
-                    onClick={(e) => scrollToSection("ld-work", e)}
-                  >
+                <div className={styles.ldActions} data-theme="dark">
+                  <GlisseButton onClick={(e) => scrollToSection("ld-work", e)}>
                     See my work
-                  </a>
-                  <a className={styles.ldBtn} href={`mailto:${portfolioContent.owner.email}`}>
-                    Start a conversation
-                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M5.5 4.5h6v6M11.5 4.5 4.5 11.5" />
-                    </svg>
+                  </GlisseButton>
+                  <a
+                    className={styles.ldGhostBtn}
+                    href="#ld-contact"
+                    onClick={(e) => scrollToSection("ld-contact", e)}
+                  >
+                    Get in Touch
                   </a>
                 </div>
               </div>
