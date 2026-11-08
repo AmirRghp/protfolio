@@ -58,6 +58,18 @@ https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md.
 
 `tactile-glass-ui` provides optical glass buttons with WebGL2 refractive shaders, chromatic dispersion, and click shockwaves. It powers `TactileButton` in `ExitBar` and `FlatLanding`.
 
+## OriginKit Magic Cursor
+
+src/components/originkit/MagicCursor.tsx is an integrated, responsive pointer tracker component based on Magic Cursor (https://www.originkit.dev/components/magic-cursor) published by OriginKit. It provides an interactive 25px vector arrow cursor with speed-based dynamic rotation angle and spring-physics squash/stretch animations.
+
+## KokonutUI Dynamic Text
+
+src/components/kokonutui/dynamic-text.tsx is an integrated spring-physics text animator based on KokonutUI (https://kokonutui.com/docs/components/text/dynamic-text). It handles smooth physics-based letter transitions between professional roles with zero external animation library dependencies.
+
+## Arc UI Tabs
+
+src/components/arc/tabs.tsx is a spring-physics tab navigation component based on Arc UI (@uiarc/tabs). It powers the category selection in TechStackSection with an animated sliding highlight under active triggers.
+
 ## 3D models
 
 The 3D assets used in the room workstation and scene are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
