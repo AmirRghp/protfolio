@@ -95,6 +95,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
   const frameRef = useRef<HTMLDivElement>(null);
   const reelRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const heroOverlayRef = useRef<HTMLDivElement>(null);
   const portalFxRef = useRef<HTMLDivElement>(null);
   const scanCrestRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -129,6 +130,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
       reelRef.current,
       portalFxRef.current,
       scanCrestRef.current,
+      heroOverlayRef.current,
       navRef.current,
       wrapRef.current,
       page,
@@ -226,6 +228,21 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     const geo = measurePortalGeometry();
 
     // 1. Fade out page content, sticky header, and dark LiquidGrid backdrop so the live 3D room sits directly behind the expanding portal
+    const heroOverlay = heroOverlayRef.current;
+    const rHeroOverlay = heroOverlay
+      ? heroOverlay.animate(
+          [
+            { opacity: 1, transform: "translate3d(0, 0, 0)" },
+            { opacity: 0, transform: "translate3d(0, 12px, 0)" },
+          ],
+          {
+            duration: HERO_CLOSE_TIMING.contentFadeDuration,
+            fill: "both",
+            easing: "ease-out",
+          },
+        )
+      : null;
+
     const rWrap = wrap.animate(
       [
         { opacity: 1, transform: "translate3d(0, 0, 0)" },
@@ -282,6 +299,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     });
 
     const anims: Animation[] = [rWrap, rExpand, rDissolve];
+    if (rHeroOverlay) anims.push(rHeroOverlay);
     if (rNav) anims.push(rNav);
     if (rBackdrop) anims.push(rBackdrop);
     runningAnimationsRef.current = anims;
@@ -637,37 +655,40 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                 <div className={styles.ldPortalSheen} />
               </div>
             </div>
+
+            {/* Hero Intro Overlay */}
+            <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
+              <div className={styles.ldHeroGrid}>
+                <div className={styles.ldHeroNameWrap}>
+                  <h1 id="name">{portfolioContent.owner.name}</h1>
+                </div>
+                <div className={styles.ldHeroSide}>
+                  <p className={styles.ldIntroRole}>
+                    <b>{portfolioContent.owner.role}</b> · {portfolioContent.owner.headline}
+                  </p>
+                  <p className={styles.ldHeroBio}>{portfolioContent.owner.bio}</p>
+                  <div className={styles.ldActions}>
+                    <a
+                      className={`${styles.ldBtn} ${styles.dark}`}
+                      href="#ld-work"
+                      onClick={(e) => scrollToSection("ld-work", e)}
+                    >
+                      See the work
+                    </a>
+                    <a className={styles.ldBtn} href={`mailto:${portfolioContent.owner.email}`}>
+                      Start a conversation
+                      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M5.5 4.5h6v6M11.5 4.5 4.5 11.5" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
 
         <div ref={wrapRef} className={styles.ldWrap}>
-          {/* Intro Section */}
-          <section className={`${styles.ldIntro} ${styles.ldX}`} id="intro">
-            <div className={styles.ldRise}>
-              <h1 id="name">{portfolioContent.owner.name}</h1>
-            </div>
-            <div className={`${styles.ldIntroSide} ${styles.ldRise}`}>
-              <p className={styles.ldIntroRole}>
-                <b>{portfolioContent.owner.role}</b> · {portfolioContent.owner.headline}
-              </p>
-              <p>{portfolioContent.owner.bio}</p>
-              <div className={styles.ldActions}>
-                <a
-                  className={`${styles.ldBtn} ${styles.dark}`}
-                  href="#ld-work"
-                  onClick={(e) => scrollToSection("ld-work", e)}
-                >
-                  See the work
-                </a>
-                <a className={styles.ldBtn} href={`mailto:${portfolioContent.owner.email}`}>
-                  Start a conversation
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5.5 4.5h6v6M11.5 4.5 4.5 11.5" />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </section>
 
           {/* Capabilities Ticker Strip */}
           <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities">
