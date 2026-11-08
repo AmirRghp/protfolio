@@ -1,4 +1,4 @@
-import { getAssetUrl } from "./assetUrl";
+import { getAssetUrl } from "@/core/utils/assetUrl";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import Lanyard from "./Lanyard";
 import { LANYARD_PULL_MIN_PX } from "./lanyardPull";

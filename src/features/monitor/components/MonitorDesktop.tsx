@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEventHandler, type PointerEventHandler, type ReactNode, type Ref } from "react";
-import { formatStatusTimestamp, useLiveClock } from "./desktopStatus";
+import { formatStatusTimestamp, useLiveClock } from "@/features/monitor/utils/desktopStatus";
 import {
   clampIconOffset,
   clampWindowRect,
@@ -12,11 +12,11 @@ import {
   type IconOffset,
   type LocalRect,
   type WindowRect,
-} from "./desktopDrag";
-import GradientWaves from "./GradientWaves";
-import ContributionRing from "./ContributionRing";
+} from "@/features/monitor/utils/desktopDrag";
+import GradientWaves from "@/features/room/props/GradientWaves";
+import ContributionRing from "@/features/monitor/apps/ContributionRing";
 import MonitorOiiaSync from "./MonitorOiiaSync";
-import { oiiaAudio } from "./oiiaAudio";
+import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 import styles from "./MonitorDesktop.module.css";
 
 export type DesktopApp = {

@@ -24,7 +24,7 @@ afterAll(() => {
 
 async function loadAsset(name: string) {
   (globalThis as Record<string, unknown>).self ??= globalThis;
-  const bytes = await readFile(new URL(`../public/assets/models/${name}`, import.meta.url));
+  const bytes = await readFile(new URL(`../../../../public/assets/models/${name}`, import.meta.url));
   return new GLTFLoader().parseAsync(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength), "");
 }
 

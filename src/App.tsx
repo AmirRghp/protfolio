@@ -1,12 +1,8 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
-import LanyardIntro from "./LanyardIntro";
-import RoomPreview from "./RoomPreview";
-import FlatLanding from "./components/landing/FlatLanding";
-import MagicCursor from "./components/originkit/MagicCursor";
-import { captureSceneSnapshot } from "./components/landing/sceneSnapshot";
-import { getInitialIntroPhaseFromSearch, type IntroPhase } from "./lanyardPull";
-import { oiiaAudio } from "./oiiaAudio";
-import { initialRoomNavigation, roomNavigationReducer, type RoomDestination, type RoomNavigationState } from "./roomNavigation";
+import { LanyardIntro, getInitialIntroPhaseFromSearch, type IntroPhase } from "@/features/lanyard";
+import { RoomPreview, roomNavigationReducer, initialRoomNavigation, oiiaAudio, type RoomDestination, type RoomNavigationState } from "@/features/room";
+import { FlatLanding, captureSceneSnapshot } from "@/features/landing";
+import { MagicCursor } from "@/core";
 
 function getInitialNavigation(): RoomNavigationState {
   if (typeof window !== "undefined") {

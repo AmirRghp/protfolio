@@ -8,7 +8,7 @@
 import { useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
 import * as THREE from "three";
 import { LANYARD_PULL_MIN_PX, evaluatePullGesture } from "./lanyardPull";
-import { detectSoftwareGl, parseColor } from "./webglUtils";
+import { detectSoftwareGl, parseColor } from "@/core/utils/webglUtils";
 import styles from "./Lanyard.module.css";
 
 export type LanyardOrientation = "portrait" | "landscape";
@@ -696,6 +696,10 @@ const scratch = {
   r: new THREE.Quaternion(),
 };
 
+/**
+ * Transforms an angular torque vector by the rigid body's inverse inertia tensor $I^{-1}$,
+ * rotated into the world orientation frame: $I_{\text{world}}^{-1} = R I_{\text{body}}^{-1} R^T$.
+ */
 const applyInverseInertia = (body: SimBody, vector: THREE.Vector3, out: THREE.Vector3) => {
   scratch.r.copy(body.quaternion).invert();
   out.copy(vector).applyQuaternion(scratch.r);
@@ -703,6 +707,10 @@ const applyInverseInertia = (body: SimBody, vector: THREE.Vector3, out: THREE.Ve
   return out.applyQuaternion(body.quaternion);
 };
 
+/**
+ * Integrates rigid-body quaternion orientation under angular velocity $\mathbf{\omega}$ over time step $h$:
+ * $$\dot{q} = \frac{1}{2} \mathbf{\omega} q$$
+ */
 const rotateBody = (q: THREE.Quaternion, w: THREE.Vector3) => {
   const { x: qx, y: qy, z: qz, w: qw } = q;
   q.x += 0.5 * (w.x * qw + w.y * qz - w.z * qy);
@@ -712,16 +720,28 @@ const rotateBody = (q: THREE.Quaternion, w: THREE.Vector3) => {
   q.normalize();
 };
 
+/**
+ * Computes the effective generalized inverse mass (compliance) of the rigid body at attachment point $\mathbf{r}$
+ * along constraint normal $\mathbf{n}$:
+ * $$w = \frac{1}{m} + (\mathbf{r} \times \mathbf{n})^T I^{-1} (\mathbf{r} \times \mathbf{n})$$
+ */
 const bodyWeight = (body: SimBody, r: THREE.Vector3, normal: THREE.Vector3) => {
   const rn = scratch.c.crossVectors(r, normal);
   return 1 / body.mass + rn.dot(applyInverseInertia(body, rn, scratch.d));
 };
 
+/**
+ * Applies a linear and angular constraint impulse to the rigid body at contact radius $\mathbf{r}$.
+ */
 const pushBody = (body: SimBody, r: THREE.Vector3, impulse: THREE.Vector3) => {
   body.position.addScaledVector(impulse, 1 / body.mass);
   rotateBody(body.quaternion, applyInverseInertia(body, scratch.e.crossVectors(r, impulse), scratch.f));
 };
 
+/**
+ * Solves an elastic distance constraint segment between nodes using Extended Position Based Dynamics (XPBD).
+ * Couples rope particles to the rigid body badge hang point using generalized mass and damping.
+ */
 const solveSegment = (sim: Simulation, i: number, h: number, physics: PhysicsConfig) => {
   const { nodes, body } = sim;
   const a = nodes[i];
@@ -753,6 +773,9 @@ const solveSegment = (sim: Simulation, i: number, h: number, physics: PhysicsCon
   else b.addScaledVector(normal, -lambda * wb);
 };
 
+/**
+ * Resolves the pointer grab pin constraint holding the badge at user-controlled coordinates.
+ */
 const solvePin = (body: SimBody, grab: GrabState, target: THREE.Vector3) => {
   const r = scratch.g.copy(grab.local).applyQuaternion(body.quaternion);
   const delta = scratch.a.copy(target).sub(body.position).sub(r);
@@ -811,6 +834,18 @@ const configureSimulation = (sim: Simulation, layout: CardLayout, length: number
   body.hang.set(0, layout.hangY, 0);
 };
 
+/**
+ * Advances the coupled strap and rigid-body lanyard simulation by time $\Delta t$.
+ *
+ * Implements sub-stepped position-based Verlet integration (sub-steps $h \le \frac{1}{960}$ s)
+ * accounting for gravity, procedural breeze forces, air resistance, aerodynamic drag,
+ * twist restoring torques, and XPBD distance constraints.
+ *
+ * @param sim Active simulation state (nodes, rigid body, grab pin)
+ * @param dt Frame delta time in seconds
+ * @param physics Physical constants and tuning parameters
+ * @param time Elapsed wall-clock time in seconds for procedural wind synthesis
+ */
 const stepSimulation = (sim: Simulation, dt: number, physics: PhysicsConfig, time: number) => {
   const steps = Math.max(1, Math.ceil(dt / MAX_STEP - 1e-6));
   const h = dt / steps;

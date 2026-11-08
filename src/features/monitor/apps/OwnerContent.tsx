@@ -1,4 +1,4 @@
-import { portfolioContent } from "./content";
+import { portfolioContent } from "@/data/content";
 
 export default function OwnerContent() {
   const { owner } = portfolioContent;

@@ -1,4 +1,4 @@
-import { getAssetUrl } from "./assetUrl";
+import { getAssetUrl } from "@/core/utils/assetUrl";
 import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from "react";
 import { Canvas, useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
@@ -27,19 +27,19 @@ import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { OutlinePass } from "three/addons/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import { calculateRaveLightingState } from "./oiiaCatLogic";
-import { oiiaAudio } from "./oiiaAudio";
-import { detectSoftwareGl } from "./webglUtils";
+import { calculateRaveLightingState } from "@/features/room/utils/oiiaCatLogic";
+import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
+import { detectSoftwareGl } from "@/core/utils/webglUtils";
 import { RoomBlueprintPipeline, createRoomBuildShaderPass } from "./RoomBuildEffect";
 import {
   LANYARD_EXIT_LEAD_MS,
   ROOM_BUILD_DURATION_MS,
   evaluateRoomBuildState,
   type RoomBuildStage,
-} from "./roomBuildAnimation";
-import type { IntroPhase } from "./lanyardPull";
-import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "./monitorProjection";
-import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "./arcadeProjection";
+} from "@/features/room/utils/roomBuildAnimation";
+import type { IntroPhase } from "@/features/lanyard/lanyardPull";
+import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "@/features/monitor/utils/monitorProjection";
+import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "@/features/arcade/utils/arcadeProjection";
 import {
   MONITOR_SCENE_POSITION,
   MONITOR_YAW,
@@ -54,13 +54,11 @@ import {
   roomParallaxTargetOffset,
   stepIdleParallax,
   type IdleParallaxState,
-} from "./roomCamera";
-import type { RoomDestination } from "./roomNavigation";
-import type { RoomHotspot, RoomHotspotHover } from "./roomHover";
+} from "@/features/room/utils/roomCamera";
+import type { RoomDestination } from "@/features/room/utils/roomNavigation";
+import type { RoomHotspot, RoomHotspotHover } from "@/features/room/utils/roomHover";
 import RoomUnavailable from "./RoomUnavailable";
-import CoffeeMug from "./CoffeeMug";
-import BatmanFigure from "./BatmanFigure";
-import OiiaCat from "./OiiaCat";
+import { BatmanFigure, CoffeeMug, OiiaCat } from "@/features/room/props";
 
 type Triple = [number, number, number];
 

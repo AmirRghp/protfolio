@@ -5,8 +5,8 @@ import {
   arcadeOverlayLayout,
   projectedArcadeSize,
 } from "./arcadeProjection";
-import { arcadeFocusPose } from "./roomCamera";
-import { applyHomography, projectToCanvas } from "./monitorProjection";
+import { arcadeFocusPose } from "@/features/room/utils/roomCamera";
+import { applyHomography, projectToCanvas } from "@/features/monitor/utils/monitorProjection";
 
 describe("arcade screen projection", () => {
   const viewport = { width: 1440, height: 900 };

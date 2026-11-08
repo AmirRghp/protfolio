@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { portfolioContent } from "./content";
+import { portfolioContent } from "@/data/content";
 import styles from "./AboutMeApp.module.css";
 
 type SectionTab = "all" | "experience" | "skills" | "projects";

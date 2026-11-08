@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import MonitorDesktop, { DesktopWindow, type DesktopApp } from "./MonitorDesktop";
-import { oiiaAudio } from "./oiiaAudio";
+import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 
 const aboutMe: DesktopApp = {
   id: "about-me",

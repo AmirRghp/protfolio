@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import FlatLanding from "./FlatLanding";
-import { portfolioContent } from "../../content";
+import { portfolioContent } from "@/data/content";
 
 describe("FlatLanding component", () => {
   it("renders the sticky header with Re-enter button and logo", () => {

@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import ContributionRing from "./ContributionRing";
-import { formatTooltipDate, type ContributionDay } from "./githubContributions";
+import { formatTooltipDate, type ContributionDay } from "@/data/githubContributions";
 
 const mockDays: ContributionDay[] = Array.from({ length: 364 }, (_, i) => ({
   date: `2026-01-${String((i % 28) + 1).padStart(2, "0")}`,

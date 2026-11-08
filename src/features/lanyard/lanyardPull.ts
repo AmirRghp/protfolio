@@ -8,10 +8,21 @@ export type PullGestureEvaluation = {
 };
 
 /**
- * Evaluates a pointer drag that started on the hanging lanyard card.
- * Requires a deliberate downward pull of at least `thresholdPx` (default 75px,
- * within the 50–100px window) so a simple touch, tap, or small movement never
- * triggers the site transition prematurely.
+ * Evaluates the 2D pointer pull kinematics on the hanging 3D lanyard card.
+ *
+ * Implements a directional displacement vector check with downward dominance:
+ * $$\Delta y = \max(0, y_{\text{current}} - y_{\text{start}}), \quad \Delta x = |x_{\text{current}} - x_{\text{start}}|$$
+ * Requires the vertical pull component to dominate horizontal lateral movement:
+ * $$\Delta y \ge 0.6 \cdot \Delta x$$
+ * and exceed the calibrated threshold $T \in [50, 100]$ px (default 75px)
+ * to prevent accidental taps, swipes, or tremors from triggering the room entry.
+ *
+ * @param startY Initial pointer Y coordinate on drag start
+ * @param currentY Current pointer Y coordinate during active drag
+ * @param startX Initial pointer X coordinate on drag start
+ * @param currentX Current pointer X coordinate during active drag
+ * @param thresholdPx Minimum downward displacement required to fire (clamped to 50–100px)
+ * @returns Evaluated gesture kinematics {deltaX, deltaY, progress in [0, 1], triggered boolean}
  */
 export function evaluatePullGesture(
   startY: number,

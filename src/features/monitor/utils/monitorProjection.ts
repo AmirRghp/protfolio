@@ -1,7 +1,8 @@
 import type { BufferGeometry, Camera, Matrix4 } from "three";
 import { Vector3 } from "three";
+import type { Point } from "@/core/types";
 
-export type Point = { x: number; y: number };
+export type { Point };
 
 /** Row-major 3x3 homography: x' = (h0 x + h1 y + h2) / (h6 x + h7 y + h8). */
 export type Homography = readonly [
@@ -36,6 +37,15 @@ function formatNumber(value: number) {
   return Number(value.toFixed(6)).toString();
 }
 
+/**
+ * Projects a 2D point using a 3x3 planar homography matrix:
+ * x' = (h0*x + h1*y + h2) / (h6*x + h7*y + h8)
+ * y' = (h3*x + h4*y + h5) / (h6*x + h7*y + h8)
+ * 
+ * @param homography The row-major 3x3 homography transformation matrix
+ * @param point The 2D source point {x, y}
+ * @returns The projected 2D destination point {x, y}
+ */
 export function applyHomography(homography: Homography, point: Point): Point {
   const [h0, h1, h2, h3, h4, h5, h6, h7, h8] = homography;
   const weight = h6 * point.x + h7 * point.y + h8;
@@ -45,6 +55,15 @@ export function applyHomography(homography: Homography, point: Point): Point {
   };
 }
 
+/**
+ * Solves the Direct Linear Transformation (DLT) system of linear equations
+ * mapping 4 source points to 4 target points via Gaussian elimination with partial pivoting.
+ * Yields the canonical 3x3 projective transformation matrix with h8 normalized to 1.
+ *
+ * @param source Quad corners in source coordinate space (e.g. local overlay pixels)
+ * @param target Quad corners in target coordinate space (e.g. projected screen canvas pixels)
+ * @returns Row-major 3x3 homography matrix tuple
+ */
 export function solveHomography(source: Point[], target: Point[]): Homography {
   if (source.length !== 4 || target.length !== 4) {
     throw new Error("A homography needs exactly four point pairs");
@@ -78,6 +97,13 @@ export function solveHomography(source: Point[], target: Point[]): Homography {
   return [solution[0], solution[1], solution[2], solution[3], solution[4], solution[5], solution[6], solution[7], 1];
 }
 
+/**
+ * Inverts a 3x3 homography matrix using the adjugate matrix divided by the determinant,
+ * followed by normalization with inverse[8] = 1.
+ *
+ * @param homography The forward homography matrix
+ * @returns The inverse homography matrix mapping target space back to source space
+ */
 export function invertHomography(homography: Homography): Homography {
   const [h0, h1, h2, h3, h4, h5, h6, h7, h8] = homography;
   const determinant =
@@ -97,6 +123,17 @@ export function invertHomography(homography: Homography): Homography {
   ];
 }
 
+/**
+ * Converts a 3x3 planar projective homography matrix into a column-major CSS `matrix3d(...)` string.
+ * Maps:
+ *   [h0, h1, h2]      [m11, m21, m31, m41]      [h0, h1, 0, h2]
+ *   [h3, h4, h5]  ->  [m12, m22, m32, m42]  ->  [h3, h4, 0, h5]
+ *   [h6, h7, h8]      [m13, m23, m33, m43]      [ 0,  0, 1,  0]
+ *                     [m14, m24, m34, m44]      [h6, h7, 0, h8]
+ *
+ * @param homography The 3x3 row-major homography matrix
+ * @returns Formatted CSS `matrix3d(...)` property value
+ */
 export function homographyToCssMatrix(homography: Homography): string {
   const [h0, h1, h2, h3, h4, h5, h6, h7, h8] = homography;
   return `matrix3d(${[

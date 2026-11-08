@@ -15,7 +15,7 @@
  * rewritten in TypeScript for this repository and integrated into the monitor desktop.
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, type CSSProperties } from "react";
-import { parseNullableColor as parseColor } from "./webglUtils";
+import { parseNullableColor as parseColor } from "@/core/utils/webglUtils";
 import styles from "./GradientWaves.module.css";
 
 const MAX_SWELLS = 4;

@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import App from "./App";
-import { portfolioContent } from "./content";
+import { portfolioContent } from "@/data/content";
 
 describe("portfolio entry page", () => {
   it("renders the owner's name and current role as semantic content", () => {

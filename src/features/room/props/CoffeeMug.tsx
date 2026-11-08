@@ -1,4 +1,4 @@
-import { getAssetUrl } from "./assetUrl";
+import { getAssetUrl } from "@/core/utils/assetUrl";
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import {

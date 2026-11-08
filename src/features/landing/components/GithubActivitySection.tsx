@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { GITHUB_USERNAME, useContributions } from "../../githubContributions";
+import { GITHUB_USERNAME, useContributions } from "@/data/githubContributions";
 import styles from "./githubActivity.module.css";
 
 // 3D Cuboid face colors for GitHub contribution levels 0 to 4: [front, top, side]

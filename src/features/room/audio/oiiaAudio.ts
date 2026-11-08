@@ -1,4 +1,4 @@
-import { getAssetUrl } from "./assetUrl";
+import { getAssetUrl } from "@/core/utils/assetUrl";
 export interface CatAudioState {
   isPlaying: boolean;
   currentTime: number;
@@ -16,6 +16,14 @@ export interface OiiaAudioOptions {
   bpm?: number;
 }
 
+/**
+ * Oiia Cat audio engine and choreography coordinator.
+ * 
+ * Manages playback of the looping track, Web Audio API graph routing
+ * (`MediaElementSourceNode -> AnalyserNode -> GainNode -> destination`),
+ * real-time FFT spectrum analysis for kick/bass reactivity (bins 1–4, 0–250Hz),
+ * and musical drop detection windows (33s–57s and 81s–105s).
+ */
 export class OiiaAudioManager {
   private src: string;
   private duration: number;
@@ -44,10 +52,22 @@ export class OiiaAudioManager {
     this.bpm = options.bpm ?? 160;
   }
 
+  /**
+   * Determines whether the specified playback timestamp falls inside an EDM drop window.
+   * Drop window 1: 33.0s – 57.0s (First high-energy chorus drop)
+   * Drop window 2: 81.0s – 105.0s (Second climactic drop)
+   *
+   * @param time Playback time in seconds
+   * @returns Boolean indicating whether current playback is inside a drop window
+   */
   private static isDropWindow(time: number): boolean {
     return (time >= 33.0 && time <= 57.0) || (time >= 81.0 && time <= 105.0);
   }
 
+  /**
+   * Initializes the HTMLAudioElement fallback element with looping, auto-preload,
+   * and timeupdate listeners that synchronize drop phase changes.
+   */
   private initAudio() {
     if (this.audio || typeof window === "undefined" || typeof Audio === "undefined") {
       return;
@@ -81,6 +101,11 @@ export class OiiaAudioManager {
     }
   }
 
+  /**
+   * Initializes the Web Audio API graph routing for live FFT spectrum analysis:
+   * `MediaElementAudioSourceNode -> AnalyserNode (fftSize=64) -> GainNode -> destination`.
+   * Frequency bins 1–4 are sampled during animation frames to compute real-time bass energy (0–250Hz).
+   */
   private initWebAudio() {
     if (
       this.audioContext ||
@@ -110,6 +135,10 @@ export class OiiaAudioManager {
     }
   }
 
+  /**
+   * Begins audio playback, initializing audio graph routing and resuming suspended AudioContext.
+   * If browser autoplay policy blocks audio element playback, gracefully falls back to a simulated clock.
+   */
   public async play(): Promise<void> {
     this.initAudio();
     this.initWebAudio();

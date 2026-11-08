@@ -1,7 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import ArcadeMenu from "./ArcadeMenu";
-import { ARCADE_GAMES, ARCADE_GAME_URL } from "./arcadeData";
+import { ARCADE_GAMES, ARCADE_GAME_URL } from "@/features/arcade/utils/arcadeData";
 
 describe("ArcadeMenu component", () => {
   it("renders all 6 games and shows Crash Bandicoot with Play option", () => {

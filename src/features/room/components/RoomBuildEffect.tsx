@@ -18,7 +18,7 @@ import {
   WebGLRenderTarget,
 } from "three";
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
-import type { RoomBuildItemGroup, RoomBuildState } from "./roomBuildAnimation";
+import type { RoomBuildItemGroup, RoomBuildState } from "@/features/room/utils/roomBuildAnimation";
 
 const edgesCache = new WeakMap<BufferGeometry, BufferGeometry>();
 const _tempBox = new Box3();

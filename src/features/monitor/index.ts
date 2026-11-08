@@ -4,3 +4,4 @@ export * from "./components/desktopApps";
 export * from "./utils/monitorProjection";
 export * from "./utils/desktopDrag";
 export * from "./utils/desktopStatus";
+export * from "./apps";

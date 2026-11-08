@@ -1,4 +1,4 @@
-import { getAssetUrl } from "./assetUrl";
+import { getAssetUrl } from "@/core/utils/assetUrl";
 import { useEffect, useRef } from "react";
 import {
   AmbientLight,
@@ -11,12 +11,12 @@ import {
   WebGLRenderer,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { oiiaAudio } from "./oiiaAudio";
+import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 import {
   calculateCatBounce,
   calculateMonitorRaveColor,
   calculateSpinVelocity,
-} from "./oiiaCatLogic";
+} from "@/features/room/utils/oiiaCatLogic";
 import styles from "./MonitorDesktop.module.css";
 
 function disposeSceneObjects(root: Group | Scene) {

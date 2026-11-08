@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../arc/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/arc";
 import { TechIcon } from "./techIcons";
 import styles from "./techStack.module.css";
 

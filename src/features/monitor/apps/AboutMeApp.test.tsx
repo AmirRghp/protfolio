@@ -1,8 +1,8 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import AboutMeApp, { AboutMeFileIcon } from "./AboutMeApp";
-import { aboutMeApp, desktopApps } from "./desktopApps";
-import { portfolioContent } from "./content";
+import { aboutMeApp, desktopApps } from "@/features/monitor/components/desktopApps";
+import { portfolioContent } from "@/data/content";
 
 describe("about me file", () => {
   it("renders the owner identity, bio, experience, education, skills, courses, and projects from the shared content", () => {

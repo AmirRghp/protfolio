@@ -1,9 +1,9 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
-import { portfolioContent, projectTarget } from "./content";
+import { portfolioContent, projectTarget } from "@/data/content";
 import { aboutMeApp, desktopApps, projectApps } from "./desktopApps";
-import { clampIconOffset } from "./desktopDrag";
-import ProjectApp from "./ProjectApp";
+import { clampIconOffset } from "@/features/monitor/utils/desktopDrag";
+import ProjectApp from "@/features/monitor/apps/ProjectApp";
 
 describe("desktop apps", () => {
   it("turns every project of the shared content into an app", () => {

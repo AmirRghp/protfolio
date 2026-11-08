@@ -10,7 +10,18 @@ export const ROOM_OVERVIEW_TARGET_Y = 2.95;
 export const MONITOR_SCENE_POSITION: [number, number, number] = [-1.35, 0, 0.22];
 export const MONITOR_YAW = 0.48;
 
-/** Computes the world-space center and outward normal of the tilted monitor display surface. */
+/**
+ * Computes the world-space center, outward normal vector, and tangent right vector
+ * of the curved monitor screen display surface.
+ *
+ * Evaluates the 3D affine transformation applying Euler Y-axis rotation (yaw $\theta = 0.48$ rad):
+ * $$x' = p_x + x_{\text{local}} \cos\theta + z_{\text{local}} \sin\theta$$
+ * $$y' = p_y + y_{\text{local}}$$
+ * $$z' = p_z - x_{\text{local}} \sin\theta + z_{\text{local}} \cos\theta$$
+ * with normal vector $\mathbf{n} = [\sin\theta, 0, \cos\theta]$ and right vector $\mathbf{r} = [\cos\theta, 0, -\sin\theta]$.
+ *
+ * @returns Object with world-space `center`, `normal`, and `right` 3D coordinate tuples
+ */
 export function monitorScreenPose() {
   const [px, py, pz] = MONITOR_SCENE_POSITION;
   const cos = Math.cos(MONITOR_YAW);
@@ -35,6 +46,14 @@ export function monitorScreenPose() {
  */
 export const ROOM_TRANSITION_SECONDS = 0.7;
 
+/**
+ * Calculates optimal camera distance from the desk overview target based on viewport aspect ratio.
+ * Fits both vertical and horizontal bounds using trigonometric frustum projection:
+ * `distance = max(halfHeight / tan(halfFov), halfWidth / (tan(halfFov) * aspect)) * margin + padding`.
+ *
+ * @param aspect Viewport aspect ratio (width / height)
+ * @returns Camera distance along the Z-axis in world units
+ */
 export function roomCameraDistance(aspect: number) {
   // Zoomed-in framing closer to the desk so the angled monitor, desk peripherals, and arcade
   // fill the viewport with generous headroom for smooth cursor-driven camera panning.
@@ -59,9 +78,15 @@ export const ARCADE_SCREEN_WIDTH = 2.1633;
 export const ARCADE_SCREEN_HEIGHT = 1.8824;
 
 /**
- * Poses the camera for the arcade focus destination: positioned directly along the outward
- * normal of the tilted arcade monitor screen at close framing distance (matching the monitor zoom),
- * filling the viewport with the CRT display while revealing the joystick control deck below.
+ * Computes the optimal camera position and target orientation for the arcade cabinet focus state.
+ *
+ * Positions the camera along the outward surface normal $\mathbf{n}$ at a distance
+ * calculated via frustum projection trigonometry:
+ * $$d = \max\left(\frac{W}{2 \tan(\text{FOV}/2) \cdot \text{aspect}}, \frac{H}{2 \tan(\text{FOV}/2)}\right) \cdot 1.08$$
+ * ensuring the arcade CRT screen completely fills the viewport while keeping the joystick controls visible.
+ *
+ * @param aspect Viewport aspect ratio (width / height)
+ * @returns Object with camera world `position` and look-at `target` coordinate tuples
  */
 export function arcadeFocusPose(aspect: number) {
   const halfFov = (ROOM_FOV * Math.PI) / 360;
@@ -117,8 +142,21 @@ export type IdleParallaxState = {
 };
 
 /**
- * Critically-damped second-order spring (SmoothDamp / maath damp) so pointer changes accelerate
- * smoothly from the current velocity instead of jerking on the first frame.
+ * Evaluates a critically-damped second-order spring (SmoothDamp / maath damp)
+ * governing camera and pointer motion without overshooting or instantaneous velocity jumps.
+ *
+ * Implements the closed-form implicit solution to the harmonic oscillator differential equation:
+ * $$\ddot{x} + 2\omega \dot{x} + \omega^2(x - x_{\text{target}}) = 0, \quad \omega = \frac{2}{\tau}$$
+ * approximated via the rational Padé polynomial:
+ * $$\exp(-\omega \Delta t) \approx \frac{1}{1 + \omega \Delta t + 0.48(\omega \Delta t)^2 + 0.235(\omega \Delta t)^3}$$
+ *
+ * @param current Current scalar value
+ * @param target Target scalar destination
+ * @param velocity Current scalar velocity (modified by spring acceleration)
+ * @param smoothTime Time constant $\tau$ in seconds (approximate time to reach target)
+ * @param delta Time step $\Delta t$ elapsed since previous frame in seconds
+ * @param eps Convergence epsilon below which values snap to target and settle
+ * @returns Object containing the integrated `value`, updated `velocity`, and boolean `settled` flag
  */
 export function dampValue(
   current: number,
@@ -152,6 +190,12 @@ export function dampValue(
 
 /**
  * Advances the 2D idle camera parallax state by one frame using critically-damped spring physics.
+ *
+ * @param state Current parallax position and velocity state {x, y, vx, vy}
+ * @param target Target parallax offset {x, y}
+ * @param delta Time elapsed since previous frame in seconds
+ * @param smoothTime Optional custom smoothing time constant (defaults based on return state)
+ * @returns Updated parallax state with `settled` boolean
  */
 export function stepIdleParallax(
   state: IdleParallaxState,
@@ -174,8 +218,15 @@ export function stepIdleParallax(
 }
 
 /**
- * Quintic smootherstep easing for intentional camera focus transitions, eliminating acceleration
- * discontinuities at the start and end of a move.
+ * Quintic smootherstep easing polynomial for 3D camera focus transitions:
+ * $$S_2(t) = 6t^5 - 15t^4 + 10t^3$$
+ *
+ * Provides $C^2$ continuity with zero first and second derivatives at both boundaries:
+ * $$S_2'(0) = S_2''(0) = S_2'(1) = S_2''(1) = 0$$
+ * completely eliminating acceleration jerk at the start and end of camera movements.
+ *
+ * @param progress Normalized transition progress $t \in [0, 1]$
+ * @returns Smooth $C^2$ eased factor in range $[0, 1]$
  */
 export function easeCameraTransition(progress: number): number {
   const t = Math.max(0, Math.min(1, progress));

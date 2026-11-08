@@ -8,7 +8,7 @@ import {
   useContributions,
   type ContributionCell,
   type ContributionDay,
-} from "./githubContributions";
+} from "@/data/githubContributions";
 import styles from "./ContributionRing.module.css";
 
 export type ContributionRingProps = {

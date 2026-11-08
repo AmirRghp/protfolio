@@ -1,6 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 import { PerspectiveCamera, Vector3 } from "three";
-import { monitorScreenPose, ROOM_FOV, roomOverviewPose } from "../src/roomCamera";
+import { monitorScreenPose, ROOM_FOV, roomOverviewPose } from "@/features/room/utils/roomCamera";
 
 const desktop = '[role="region"][aria-label="Amirreza workspace"]';
 const layer = '[class*="desktopLayer"]';

@@ -1,5 +1,7 @@
+import type { Point } from "@/core/types";
+
 /** A point in the local coordinate space of the desktop. */
-export type LocalPoint = { x: number; y: number };
+export type LocalPoint = Point;
 
 /** The offset of a desktop icon, relative to its place in the default layout. */
 export type IconOffset = LocalPoint;

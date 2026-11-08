@@ -11,12 +11,12 @@ import {
   ARCADE_GAMES,
   ARCADE_GAME_URL,
   ARCADE_LOAD_TIMEOUT_MS,
-} from "./arcadeData";
-import Deparkanoid from "./Deparkanoid";
-import SnakeGame from "./SnakeGame";
-import FlappyGame from "./FlappyGame";
-import TetrisGame from "./TetrisGame";
-import PixelRunGame from "./PixelRunGame";
+} from "@/features/arcade/utils/arcadeData";
+import Deparkanoid from "@/features/arcade/games/deparkanoid";
+import SnakeGame from "@/features/arcade/games/snake-grid";
+import FlappyGame from "@/features/arcade/games/cyber-flappy";
+import TetrisGame from "@/features/arcade/games/cyber-tetris";
+import PixelRunGame from "@/features/arcade/games/pixel-run";
 import styles from "./ArcadeMenu.module.css";
 
 const INTERNAL_GAME_CONFIG: Record<

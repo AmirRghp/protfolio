@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { projectTarget, type PortfolioContent } from "./content";
+import { projectTarget, type PortfolioContent } from "@/data/content";
 import styles from "./ProjectApp.module.css";
 
 type Project = PortfolioContent["projects"][number];

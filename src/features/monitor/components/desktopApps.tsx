@@ -1,14 +1,16 @@
-import AboutMeApp, { AboutMeFileIcon } from "./AboutMeApp";
-import { portfolioContent, type ProjectIcon } from "./content";
-import type { DesktopApp } from "./MonitorDesktop";
-import ProjectApp, {
+import {
+  AboutMeApp,
+  AboutMeFileIcon,
   AgentGlyph,
   ChatGlyph,
   LayersGlyph,
+  ProjectApp,
   RagGlyph,
   ScanGlyph,
   VisionGlyph,
-} from "./ProjectApp";
+} from "@/features/monitor/apps";
+import { portfolioContent, type ProjectIcon } from "@/data/content";
+import type { DesktopApp } from "./MonitorDesktop";
 
 /** The `about-me.txt` file of the monitor desktop. */
 export const aboutMeApp: DesktopApp = {

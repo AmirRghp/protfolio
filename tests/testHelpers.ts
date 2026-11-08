@@ -1,6 +1,6 @@
 import type { Page } from "@playwright/test";
 import { PerspectiveCamera, Vector3 } from "three";
-import { monitorScreenPose, ROOM_FOV, roomOverviewPose } from "../src/roomCamera";
+import { monitorScreenPose, ROOM_FOV, roomOverviewPose } from "@/features/room/utils/roomCamera";
 
 export function hotspotPosition(destination: "monitor" | "arcade", viewport: { width: number; height: number }) {
   const aspect = viewport.width / viewport.height;

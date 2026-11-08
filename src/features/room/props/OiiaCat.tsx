@@ -1,4 +1,4 @@
-import { getAssetUrl } from "./assetUrl";
+import { getAssetUrl } from "@/core/utils/assetUrl";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
@@ -16,7 +16,7 @@ import {
   PointsMaterial,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { oiiaAudio } from "./oiiaAudio";
+import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 import {
   calculateCatBounce,
   calculateHoverHeight,
@@ -26,9 +26,9 @@ import {
   calculateShortestAngleDiff,
   calculateSpinVelocity,
   createLoafShadowTexture,
-} from "./oiiaCatLogic";
-import type { RoomDestination } from "./roomNavigation";
-import { detectSoftwareGl } from "./webglUtils";
+} from "@/features/room/utils/oiiaCatLogic";
+import type { RoomDestination } from "@/features/room/utils/roomNavigation";
+import { detectSoftwareGl } from "@/core/utils/webglUtils";
 
 const isSoftwareGl = detectSoftwareGl();
 

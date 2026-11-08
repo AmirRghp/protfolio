@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { TactileButton } from "tactile-glass-ui";
-import LiquidGrid from "./LiquidGrid";
+import { LiquidGrid, PixelTetris } from "@/features/landing/effects";
 import WorkAccordion from "./WorkAccordion";
 import {
   computeHeroPortalGeometry,
@@ -10,15 +10,14 @@ import {
   EASE_SCAN_SWEEP,
   HERO_CLOSE_TIMING,
   HERO_OPEN_TIMING,
-} from "./heroTransition";
-import { getAssetUrl } from "../../assetUrl";
-import { portfolioContent } from "../../content";
+} from "@/features/landing/utils";
+import { getAssetUrl } from "@/core/utils";
+import { portfolioContent } from "@/data";
 import { Button as GlisseButton } from "glisse";
 import "glisse/styles.css";
-import DynamicText from "../kokonutui/dynamic-text";
+import DynamicText from "@/core/components/kokonutui";
 import { TechStackSection } from "./TechStackSection";
 import { GithubActivitySection } from "./GithubActivitySection";
-import PixelTetris from "../originkit/PixelTetris";
 import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {

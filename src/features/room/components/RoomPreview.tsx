@@ -1,8 +1,8 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import ArcadeMenu from "./ArcadeMenu";
-import { portfolioContent } from "./content";
-import { desktopApps } from "./desktopApps";
-import MonitorDesktop from "./MonitorDesktop";
+import ArcadeMenu from "@/features/arcade/components/ArcadeMenu";
+import { portfolioContent } from "@/data/content";
+import { desktopApps } from "@/features/monitor/components/desktopApps";
+import MonitorDesktop from "@/features/monitor/components/MonitorDesktop";
 import RoomUnavailable from "./RoomUnavailable";
 import {
   backCursorHintPosition,
@@ -10,13 +10,13 @@ import {
   ROOM_HOTSPOT_LABELS,
   type RoomHotspot,
   type RoomHotspotHover,
-} from "./roomHover";
+} from "@/features/room/utils/roomHover";
 import styles from "./RoomPreview.module.css";
-import type { RoomDestination, RoomNavigationState } from "./roomNavigation";
-import type { IntroPhase } from "./lanyardPull";
-import type { RoomBuildStage } from "./roomBuildAnimation";
-import { oiiaAudio } from "./oiiaAudio";
-import ExitBar from "./components/exit/ExitBar";
+import type { RoomDestination, RoomNavigationState } from "@/features/room/utils/roomNavigation";
+import type { IntroPhase } from "@/features/lanyard/lanyardPull";
+import type { RoomBuildStage } from "@/features/room/utils/roomBuildAnimation";
+import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
+import { ExitBar } from "@/core";
 
 const RoomScene = lazy(() => import("./RoomScene"));
 

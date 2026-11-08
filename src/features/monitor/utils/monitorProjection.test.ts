@@ -13,7 +13,7 @@ import {
 } from "./monitorProjection";
 
 async function loadMonitorScene() {
-  const bytes = await readFile(new URL("../public/assets/models/curved-monitor.glb", import.meta.url));
+  const bytes = await readFile(new URL("../../../../public/assets/models/curved-monitor.glb", import.meta.url));
   const { scene } = await new GLTFLoader().parseAsync(
     bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength),
     "",
