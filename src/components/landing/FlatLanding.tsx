@@ -883,7 +883,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                   cellSize={20}
                   gap={1}
                   rounded={20}
-                  boardColor="rgba(255, 255, 255, 0.059)"
+                  boardColor="transparent"
                   colors={["#FFFFFF", "#FFFFFF"]}
                   movement={4}
                   dropSpeed={2}

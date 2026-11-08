@@ -65,9 +65,12 @@ function mulberry32(seed: number) {
   };
 }
 
-/** Colors arrive as hex or rgb/rgba; fold either to [r, g, b, a]. */
+/** Colors arrive as hex, rgb/rgba, or 'transparent'; fold to [r, g, b, a]. */
 function parseColor(color: string): [number, number, number, number] {
-  const value = (color ?? "").trim();
+  const value = (color ?? "").trim().toLowerCase();
+  if (!value || value === "transparent" || value === "none") {
+    return [0, 0, 0, 0];
+  }
   const hex = value.replace("#", "");
   if (/^[0-9a-f]{8}$/i.test(hex)) {
     return [
@@ -133,7 +136,7 @@ interface Piece {
  * and maintains the stack capped at a controlled height without overflowing upwards.
  */
 export function PixelTetris({
-  boardColor = "rgba(255, 255, 255, 0.059)",
+  boardColor = "transparent",
   colors = ["#FFFFFF", "#FFFFFF"],
   movement = 4,
   cellSize = 20,
@@ -443,13 +446,15 @@ export function PixelTetris({
     function draw() {
       ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
 
-      // Board grid dots/cells
-      ctx.beginPath();
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) tilePath(c, r);
+      // Board grid dots/cells (only drawn if boardColor is not transparent)
+      if (boardRGB[3] > 0.001) {
+        ctx.beginPath();
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols; c++) tilePath(c, r);
+        }
+        ctx.fillStyle = rgba(boardRGB, 1);
+        ctx.fill();
       }
-      ctx.fillStyle = rgba(boardRGB, 1);
-      ctx.fill();
 
       const flashing = new Set(clearing);
       const lit = clearMs > 0 && Math.floor(clearMs / BLINK_MS) % 2 === 0;
