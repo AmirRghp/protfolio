@@ -2,6 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import LanyardIntro from "./LanyardIntro";
 import RoomPreview from "./RoomPreview";
 import FlatLanding from "./components/landing/FlatLanding";
+import MagicCursor from "./components/originkit/MagicCursor";
 import { captureSceneSnapshot } from "./components/landing/sceneSnapshot";
 import { getInitialIntroPhaseFromSearch, type IntroPhase } from "./lanyardPull";
 import { oiiaAudio } from "./oiiaAudio";
@@ -111,6 +112,7 @@ export default function App() {
           onDismissed={handleLanyardDismissed}
         />
       )}
+      <MagicCursor />
       <div className="site-shell" data-intro-phase={introPhase} data-view-mode={viewMode}>
         <div
           ref={previewContainerRef}
