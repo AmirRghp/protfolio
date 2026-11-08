@@ -1,92 +1,138 @@
-# پورتفولیوی سه‌بعدی Amirreza Gholipour
+# Amirreza Gholipour — 3D Cyberpunk & Flat Portfolio
 
-یک پورتفولیوی انگلیسی با نمای آغازین ثابت اتاق، حرکت ظریف اشاره‌گر و ناوبری میان مقصدهای سه‌بعدی. با فوکوس روی مانیتور، یک دسکتاپ HTML با نوار وضعیت زنده روی سطح واقعی نمایشگر curved باز می‌شود و پنجرهٔ باز آن بین overview و مانیتور حفظ می‌شود. تنظیم کاهش حرکت سیستم، حرکت اشاره‌گر را خاموش می‌کند. محتوای HTML بدون WebGL هم قابل‌خواندن است.
+An interactive, dual-experience developer portfolio for **Amirreza Gholipour**, **AI Engineer** (Machine Learning Engineer · M.Sc. in Artificial Intelligence & Robotics).
 
-## پیش‌نیازها
+The project blends an immersive, nocturnal cyberpunk 3D workspace built with **Three.js** and **React Three Fiber** with a lightweight, high-performance, WCAG-compliant **2D Flat Landing** portfolio featuring WebGL2 refractive optical glass tactile buttons, an interactive liquid grid, and a 3D GitHub contribution city skyline.
 
-- Node.js شاخهٔ `22` از نسخهٔ `22.12` به بعد، یا شاخهٔ `24` یا `26`؛ مطابق `package.json`
-- npm همراه Node.js
+---
 
-## راه‌اندازی محلی
+## 🌟 Key Experiences
 
+### 1. 3D Hero Room (`RoomScene`)
+- **Aesthetic:** Nocturnal cyberpunk workspace (`#080614`) illuminated by cyan (`#00e5ff`) and magenta (`#d946ef`) dual under-shelf LEDs.
+- **Interactive Curved Monitor:** Houses an in-engine virtual desktop OS with draggable windows, a live status bar, and a 52-week GitHub contribution ring.
+- **Retro Arcade Cabinet:** Playable mini-arcade running 5 built-in Canvas mini-games (*Cyber Flappy*, *Cyber Tetris*, *Pixel Run*, *Snake Grid*, and *Deparkanoid*) plus a sandboxed external demo (*Crash Bandicoot* via PS1FUN).
+- **Interactive Props:** Musical Oiia Cat, steaming coffee mug, mechanical keyboard, Batman collectible, and smooth camera navigation hot-spots with keyboard shortcuts (`1`/`M` for Monitor, `2`/`A` for Arcade, `Esc` to return).
+- **Lanyard Gateway:** Interactive 3D holographic badge (`LanyardIntro`) with pull kinematics and instant skip (`Enter` / `Space` / `Esc`).
+
+### 2. 2D Flat Landing (`FlatLanding`)
+- **Instant Accessible Navigation:** Direct URL hash `#portfolio` or transition through the sleek black `ExitBar` ("Exit The Room") with WebGL2 refractive glass buttons (`TactileButton`).
+- **Interactive Elements:** Nocturnal `LiquidGrid` canvas backdrop, `MagicCursor`, and dynamic role cycling.
+- **GitHub Contribution Skyline:** Visualizes annual commit activity as an isometric 3D procedural skyline ("As a city") with live caching and offline fallback.
+- **Categorized Showcase:** Filtered project highlights powered by Arc UI spring tabs (`@uiarc/tabs`).
+- **Seamless Return:** One-click re-entry to the 3D room anytime.
+
+---
+
+## 🛠️ Tech Stack
+
+| Domain | Technology |
+|---|---|
+| **Framework & Language** | React 19, TypeScript (Strict), Vite 8 |
+| **3D Graphics & Physics** | Three.js 0.186, React Three Fiber 9 |
+| **Animation & Motion** | Motion (`motion/react`), Spring Kinematics |
+| **Tactile UI** | `tactile-glass-ui` (WebGL2 Refractive Optical Glass) |
+| **Testing & Quality** | Vitest 5, Playwright 1.64, ESLint 10, TypeScript 6 |
+
+---
+
+## 📂 Project Architecture
+
+The codebase follows a modular, feature-first architecture under `src/`:
+
+```
+src/
+├── core/                  # Shared types, math utilities, and tactile UI primitives
+│   ├── components/        # ExitBar, MagicCursor, Arc UI tabs
+│   ├── types/             # Point, Dimensions, ViewportSize, RaycastTarget
+│   └── utils/             # assetUrl, webglUtils, math helpers
+├── data/                  # Static records and external API handlers
+│   ├── content.ts         # Career records, skills, and project highlights
+│   └── githubContributions.ts # 52-week GitHub API fetcher with localStorage TTL
+├── features/              # Self-contained domain modules
+│   ├── arcade/            # Arcade cabinet, CRT DLT projection & 5 Canvas games
+│   ├── landing/           # 2D Flat landing, LiquidGrid, GitHub skyline
+│   ├── lanyard/           # 3D Holographic badge and pull-to-enter gateway
+│   ├── monitor/           # Virtual desktop OS, window manager & desktop apps
+│   └── room/              # 3D Three.js scene, camera interpolator & props
+├── App.tsx                # Dual-experience root router and hash sync
+├── main.tsx               # Client entry point
+└── style.css              # Global styles and design tokens
+```
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+- **Node.js:** `^22.12.0`, `^24.0.0`, or `^26.0.0`
+- **Package Manager:** `npm` (bundled with Node.js)
+
+### Installation & Local Development
 ```sh
+# Clone repository
+git clone https://github.com/amirreza/portfolio.git
+cd portfolio
+
+# Install dependencies
 npm ci
+
+# Start local development server with Vite
 npm run dev
 ```
 
-نشانی توسعه را Vite در ترمینال نمایش می‌دهد. برای بررسی نسخهٔ production:
-
+### Production Build & Preview
 ```sh
+# Compile TypeScript and generate optimized static build
 npm run build
+
+# Preview production build locally
 npm run preview
 ```
 
-## فرمان‌های بررسی
+---
+
+## 🧪 Verification & Testing Pipeline
+
+To ensure maximum runtime stability, visual fidelity, and accessibility compliance, run the test and verification suites:
 
 ```sh
+# 1. Run all unit and integration tests (Vitest)
+npm run test
+
+# 2. Verify complete TypeScript compilation
 npm run typecheck
+
+# 3. Lint codebase and enforce React hook rules
 npm run lint
-npm test -- --run
-npm run build
+
+# 4. Run end-to-end browser tests across viewports (Playwright)
 npm run test:e2e
 ```
 
-آزمون مرورگر با Playwright و Chromium اجرا می‌شود. `npm run test:e2e` ابتدا build تولیدی می‌سازد و سپس صفحه‌ها و تعاملات را روی آن بررسی می‌کند. اگر اجرای پیش‌فرض با ۸ worker روی SwiftShader منابع را اشباع کرد، برای نتیجهٔ محلی پایدارتر از `npx playwright test --workers=2` استفاده کنید؛ این تنظیم جای اجرای CI را نمی‌گیرد.
+---
 
-## به‌روزرسانی محتوا
+## 📚 Canonical Documentation
 
-محتوای مالک، سوابق کاری و پروژه‌ها در `src/content.ts` قرار دارد. متن رابط پورتفولیو انگلیسی است.
+For detailed architectural decisions, design tokens, error fallbacks, and engineering specifications, consult the canonical documentation in [`docs/`](docs/):
 
-- سوابق کاری را با شرکت، عنوان و بازهٔ زمانی واقعی و قابل‌تأیید ثبت کنید.
-- برای پروژه‌ها `id` یکتای پایدار، عنوان، توضیح کوتاه، نشانی GitHub معتبر و `icon` (نام گلیف: `scan`، `rag`، `vision`، `agent`، `chat` یا `layers`) وارد کنید. قالب کارت مشترک است و افزودن پروژه به منطق جداگانهٔ صحنه نیاز ندارد.
-- `websiteUrl` اختیاری است: نشانی اپ دسکتاپ ابتدا از آن خوانده می‌شود و در نبود آن به `githubUrl` همان پروژه برمی‌گردد. `highlights` اختیاری است و چیپ‌های کوتاه اپ را می‌سازد.
-- برای تغییر متن‌ها و لینک‌ها، `npm run typecheck`، `npm run lint`، `npm test -- --run` و `npm run test:e2e` را اجرا کنید.
-- اطلاعات تماس یا فایل رزومه را فقط وقتی وارد کنید که منبع واقعی آن‌ها موجود و تأیید شده باشد.
+| Document | Purpose |
+|---|---|
+| [`docs/PRD.md`](docs/PRD.md) | Product Requirements, Core Features, Personas, and Non-Functional Specs |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System Architecture, Feature Modules, and 3D Projection Math |
+| [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | Nocturnal Palette (`#080614`), Typography, Spacing, and Motion Tokens |
+| [`docs/UX_FLOWS.md`](docs/UX_FLOWS.md) | Interactive State Machines, Portal Transitions, and User Journeys |
+| [`docs/TESTING.md`](docs/TESTING.md) | Testing Pyramid, 40 Vitest Suites, and Playwright E2E Configurations |
+| [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | Node/Vite Configuration, Client Requirements, and GitHub API Caching |
+| [`docs/ERROR_HANDLING.md`](docs/ERROR_HANDLING.md) | Resilience, WebGL Context Loss Recovery, and Iframe Fallbacks |
+| [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Static Hosting, Dynamic Code-Splitting, and GitHub Actions CI/CD |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture Decision Records (ADRs 001–008) |
+| [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Semantic Release Notes and Version History |
+| [`AGENTS.md`](AGENTS.md) | AI Agent Guardrails, Coding Standards, and Local Skills Directory |
 
-## صحنه و دارایی‌ها
+---
 
-- `src/LanyardIntro.tsx` و `public/assets/lanyard-photo.webp` صفحهٔ ورودی تعاملی با کارت هولوگرافیک سه‌بعدی هستند که با کشیدن بند به پایین یا کلیدهای `Enter` / `Space` / `Escape` باز می‌شوند.
-- `public/assets/models/arcade-machine.glb` مدل دستگاه آرکید است؛ منبع، مجوز و تغییرات در `public/assets/models/ATTRIBUTION.md` ثبت شده‌اند.
-- `public/assets/models/curved-monitor.glb` مدل مانیتور میز است؛ اسکریپت آماده‌سازی آن `scripts/prepare-curved-monitor.mjs` است و منبع، مجوز و تغییرات در `public/assets/models/ATTRIBUTION.md` ثبت شده‌اند.
-- مدل‌های تجهیزات میز و قفسه شامل `public/assets/models/compact-keyboard.glb` (کیبورد فشرده)، `public/assets/models/computer-mouse.glb` (موس کامپیوتر)، `public/assets/models/mouse-pad.glb` (موس‌پد نئونی)، `public/assets/models/cup.glb` (ماگ قهوه با بخار) و `public/assets/models/batman.glb` (فیگور بتمن روی قفسه) هستند؛ مشخصات و مجوز آن‌ها در `public/assets/models/ATTRIBUTION.md` مستند شده است.
-- `public/assets/models/oiia-cat.glb` مدل سه‌بعدی گربهٔ Oiia Cat در سمت راست میز است؛ مشخصات، انیمیشن مورف، مجوز CC BY 4.0 و انتساب هنرمند (Zhuier) به همراه قطعه صوتی در `public/assets/models/ATTRIBUTION.md` ثبت شده است.
-- تصویر مرجع طراحی اتاق در `docs/hero-reference.png` نگهداری می‌شود؛ این تصویر مدل سه‌بعدی یا مدرک رفتار برنامه محسوب نمی‌شود.
-- صحنه به‌صورت chunk جداگانه بارگیری می‌شود. اگر WebGL یا بارگیری صحنه/مدل شکست بخورد، محتوای HTML و کنترل‌های پورتفولیو باید همچنان در دسترس بمانند.
+## 📜 Attributions & Licenses
 
-## دسکتاپ مانیتور
-
-- `src/MonitorDesktop.tsx` پوستهٔ دسکتاپ داخل نمایشگر است: wallpaper، نوار وضعیت زنده، ستون آیکون، ویجت حلقه‌ای مشارکت‌های گیت‌هاب (`src/ContributionRing.tsx`)، اسکلت پنجره و جابه‌جایی آیکون‌ها. فهرست اپ‌های دسکتاپ در `src/desktopApps.tsx` جمع می‌شود؛ فایل `about-me.txt` در R06 و اپ هر پروژه در R07 به همین فهرست اضافه شدند.
-- `src/ContributionRing.tsx` و `src/githubContributions.ts` نمودار حلقه‌ای ۵۲ هفته مشارکت‌های GitHub را با کش ۴ ساعته در `localStorage` و دادهٔ پشتیبان آفلاین (`src/githubContributionsFallback.json`) نمایش می‌دهند.
-- `src/AboutMeApp.tsx` محتوای فایل `about-me.txt` است: نام، نقش و سوابق کاری از `src/content.ts` خوانده می‌شود و در یک سطح کاغذی روشن داخل همان پنجرهٔ مشترک نمایش داده می‌شود.
-- `src/ProjectApp.tsx` محتوای اپ هر پروژه است: نشانی پروژه در نوار آدرس، خلاصهٔ پروژه و لینک مستقیم. نمایش درون پنجره فقط با دکمهٔ «Load inside this window» آغاز می‌شود؛ در حین بارگذاری نشانگر وضعیت نمایش داده می‌شود و اگر بارگذاری تا مهلت انجام نشود، پیام خطا با لینک مستقیم نمایش داده می‌شود. سایتی که با `X-Frame-Options`/`frame-ancestors` قاب را مسدود کند ممکن است صفحهٔ خطای مرورگر را نشان دهد و از والد قابل‌تشخیص نباشد؛ لینک مستقیم در همهٔ حالت‌ها باقی می‌ماند.
-- فایل `about-me.txt` با double click باز می‌شود؛ `Enter` روی آیکون همان کار را می‌کند. یک کلیک یا ضربهٔ تنها فقط فوکوس می‌گیرد و آیکون راهنمای «Double-click, double tap, or press Enter to open» دارد.
-- آیکون‌های دسکتاپ با ماوس یا لمس در محدودهٔ صفحهٔ مانیتور کشیده می‌شوند و در مرزهای دسکتاپ محدود می‌مانند؛ یک drag واقعی بازشدن اپ را فعال نمی‌کند و پس از تغییر اندازهٔ صفحه هم جای آیکون‌ها دوباره محدود می‌شود.
-- پنجرهٔ مشترک دسکتاپ کنترل‌های Close و Maximize/Restore دارد. جابه‌جایی با drag از ناحیهٔ آزاد نوار عنوان یا با کلیدهای جهت وقتی خود نوار عنوان فوکوس دارد انجام می‌شود؛ دکمه‌ها، لینک‌ها و محتوای پنجره drag را شروع نمی‌کنند.
-- هندسهٔ پنجره در واحدهای محلی دسکتاپ نگه داشته می‌شود و همیشه زیر نوار وضعیت و داخل محدوده clamp می‌ماند. Maximize سطح کار را پر می‌کند و Restore اندازه/جای قبلی را با clamp به محدودهٔ فعلی برمی‌گرداند. تغییر هندسه iframe اپ را remount نمی‌کند، هندسه بین reload ذخیره نمی‌شود، بازکردن اپ دیگر پنجره را از جای پیش‌فرض شروع می‌کند و بازفعال‌سازی همان اپ هندسه را حفظ می‌کند.
-- `src/GradientWaves.tsx` پس‌زمینهٔ موج‌دار دسکتاپ است؛ پورتی از کامپوننت React Bits با notice در `docs/THIRD_PARTY_NOTICES.md`. در نبود WebGL2 یا از‌دست‌رفتن context آن، canvas حذف و زمینهٔ تیرهٔ CSS زیر آن حفظ می‌شود؛ حلقهٔ رندر مرده ادامه پیدا نمی‌کند.
-- `src/monitorProjection.ts` سطح واقعی صفحهٔ مانیتور را از مدل می‌خواند و آن را به مختصات کانواس نگاشت می‌کند؛ `src/RoomScene.tsx` این نگاشت را هر فریم روی لایهٔ HTML می‌نویسد. تغییر این فایل‌ها باید هم‌ترازی دسکتاپ با صفحهٔ فیزیکی را حفظ کند.
-- ساعت نوار وضعیت از زمان محلی بازدیدکننده می‌آید و در نیمه‌شب محلی روز و تاریخ را عوض می‌کند؛ قالب زمان در `src/desktopStatus.ts` است.
-
-## مقصدها، آرکید و مسیر دسترس‌پذیر
-
-- `src/RoomPreview.tsx` مالک state پنجرهٔ باز دسکتاپ است. پنجره با رفتن به overview بسته نمی‌شود؛ اما انتخاب آرکید یا شکست صحنه آن را می‌بندد. بنابراین هر مقصد فقط UI متعلق به خودش را نشان می‌دهد.
-- در overview، حرکت ماوس روی hotspotهای اتاق هایلایت نوری (OutlinePass) و tooltip متناظر (`USE COMPUTER`، `USE ARCADE` و `oiia ?`) را کمی زیر cursor نشان می‌دهد. همچنین کلیدهای میان‌بر `1`/`M` (مانیتور) و `2`/`A` (آرکید) دسترسی مستقیم صفحه‌کلیدی به مقصدها را فراهم می‌کنند.
-- لایهٔ دسکتاپ بیرون از focus مانیتور `inert` است. بازگشت از مانیتور یا آرکید با کنترل HTML «Go Back (ESC)»، کلیک بیرون از صفحهٔ نمایشگر، یا کلید `Escape` ممکن است.
-- `Escape` ابتدا پنجرهٔ باز مانیتور را می‌بندد و focus را به آیکون آغازگر برمی‌گرداند؛ `Escape` بعدی به overview برمی‌گردد.
-- دستگاه آرکید (`src/ArcadeMenu.tsx`) شامل ۶ بازی قابل‌اجرا است: `Crash Bandicoot` (از طریق سرویس PS1FUN که فقط پس از انتخاب «Play game» بارگذاری می‌شود) و ۵ بازی داخلی Canvas (`Pixel Run`، `Cyber Tetris`، `Snake Grid`، `Deparkanoid` و `Cyber Flappy`).
-- با خطای WebGL، شکست chunk/مدل یا از‌دست‌رفتن graphics context، پنجرهٔ دسکتاپ بسته و لایهٔ آن inert می‌شود و محتوای HTML پورتفولیو در دسترس باقی می‌ماند.
-
-## محدودیت‌های شناخته‌شده
-
-- build یک هشدار Vite برای chunk سه‌بعدی بزرگ‌تر از ۵۰۰ kB دارد؛ در اندازه‌گیری R09 حجم chunk برابر `971,681` بایت و فشردهٔ gzip برابر `257,046` بایت بود. این اندازه به‌تنهایی زمان بارگیری یا کارایی دستگاه را تعیین نمی‌کند.
-- اندازه‌گیری R09 روی system Chrome headless با GPU واقعی NVIDIA RTX 3050 در `1440×900` انجام شد: overview و monitor حدود ۶۰ فریم، و monitor در SwiftShader حدود ۸٫۷ فریم با میانهٔ ۱۱۶٫۷ms. SwiftShader baseline نرم‌افزاری است و معادل GPU واقعی نیست؛ Firefox/Safari، دستگاه لمسی واقعی و نرخ نمایش >۶۰Hz بررسی نشده‌اند.
-- بازی Crash Bandicoot از سرویس بیرونی PS1FUN در iframe نمایش داده می‌شود و لینک مستقیم نیز ارائه می‌شود. شرایط حقوقی سرویس تأیید نشده و بارگیری زندهٔ بازی در محیط آزمون این مخزن تضمین‌شده نیست. ROM یا emulator جداگانه در این پروژه توزیع نمی‌شود. fallback فقط نبود رویداد load در ۸ ثانیه را تشخیص می‌دهد. `load` برای محتوای cross-origin می‌تواند مربوط به صفحهٔ خطای خود مرورگر هم باشد؛ بنابراین نه نشانهٔ موفقیت بازی است و نه شکست شبکه یا `X-Frame-Options` را در والد قابل‌تشخیص می‌کند. به همین دلیل راهنمای خنثی و لینک مستقیم بیرون قاب همیشه قابل‌استفاده می‌مانند.
-- اگر پنجرهٔ اپ پروژه در مانیتور باز باشد و بازدیدکننده به overview برگردد، پنجره و iframe بارگذاری‌شده تا انتخاب برد/آرکید یا شکست صحنه باقی می‌مانند. در R09، GitHub به‌دلیل CSP در iframe مسدود شد و PS1FUN با وجود بارگیری قاب، تصویر سیاه و خطاهای mixed-content بیرونی داشت؛ بنابراین هزینهٔ iframe در حالت موفق اپ شخص ثالث تأیید نشده است.
-- لینک‌های پروژه به مخزن‌های عمومی GitHub می‌روند؛ محتوای خود آن مخزن‌ها خارج از این پروژه نگهداری می‌شود.
-- جابه‌جایی آیکون‌های دسکتاپ فقط با drag انجام می‌شود: نه روشی با pointer و بدون drag وجود دارد و نه معادل صفحه‌کلیدی. بنابراین این قابلیت با WCAG 2.5.7 (Dragging Movements) و 2.1.1 (Keyboard) منطبق نیست و R07 از نظر دسترس‌پذیری کامل تلقی نمی‌شود. افزودن روش جایگزین یک تصمیم محصول جداگانه است؛ R10 این محدودیت را برای پنجره‌ها برطرف می‌کند، نه برای آیکون‌ها.
-- R10 در Chromium با پروجکشن SwiftShader و لمس شبیه‌سازی‌شدهٔ Playwright بررسی شد؛ Firefox/Safari و دستگاه لمسی واقعی بررسی نشده‌اند. هندسهٔ پنجره بین reload ذخیره نمی‌شود. اگر focus داخل iframe cross-origin اپ پروژه باشد، Escape به DOM والد نمی‌رسد؛ دکمهٔ Close بیرون iframe باقی می‌ماند.
-- R12 نیز در Chromium با mouse API Playwright و رندر SwiftShader بررسی شد؛ tooltip فقط برای mouse/fine hover فعال است و Firefox/Safari، دستگاه لمسی واقعی و GPU واقعی پوشش داده نشده‌اند.
-- در بازبینی R09 اندازهٔ labelهای دسکتاپ در ۷۶۸/۱۰۲۴ برابر ۹px و در ۱۴۴۰ برابر ۱۰٫۵۳px بود. سرریز مشاهده نشد و خوانایی ۹px در تأیید بصری انسانی پذیرفته شد؛ طراحی ویژهٔ موبایل در R09 بررسی یا ادعا نشده است.
-- سایتی که نمایش درون قاب را با `X-Frame-Options` مسدود کند از سمت والد قابل تشخیص نیست؛ در آن حالت مرورگر صفحهٔ خطای خودش را در قاب نشان می‌دهد و لینک مستقیم بیرون قاب همیشه در دسترس است.
-
-جزئیات تصمیم‌ها، وضعیت تسک‌ها و شواهد بررسی در `docs/plans.md` ثبت می‌شود.
+- 3D models and digital assets are properly licensed under Creative Commons or open-source licenses. Detailed sources, creator attributions, and license agreements are documented in [`public/assets/models/ATTRIBUTION.md`](public/assets/models/ATTRIBUTION.md).
+- Open-source software licenses and third-party notices are maintained in [`docs/THIRD_PARTY_NOTICES.md`](docs/THIRD_PARTY_NOTICES.md).
