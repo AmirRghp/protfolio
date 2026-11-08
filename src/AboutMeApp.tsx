@@ -129,7 +129,7 @@ export default function AboutMeApp() {
                 >
                   <div className={styles.cardHeader}>
                     <p className={styles.entryTitle}>
-                      {role.title} · {role.company}
+                      {role.title ? `${role.title} · ${role.company}` : role.company}
                     </p>
                     <p className={styles.entryPeriod}>{role.period}</p>
                   </div>

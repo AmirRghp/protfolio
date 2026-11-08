@@ -39,7 +39,7 @@ export default function OwnerContent() {
             {owner.experience.map((role) => (
               <li key={`${role.company}-${role.title}-${role.period}`} className="experience__card">
                 <div className="experience__header">
-                  <h3>{role.title}</h3>
+                  <h3>{role.title || role.company}</h3>
                   <p className="experience__meta">
                     {role.company} · {role.period}
                   </p>

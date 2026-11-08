@@ -105,9 +105,9 @@ export const portfolioContent: PortfolioContent = {
     ],
     metrics: [
       { value: "M.Sc.", label: "AI & Robotics at MUST" },
-      { value: "Daraei360", label: "AI Engineer & Product Manager" },
       { value: "9+ Projects", label: "Applied AI, RAG & Vision" },
-      { value: "ICSPIS 2025", label: "Executive Committee" },
+      { value: "Babol, IR", label: "UTC+3:30 · Based" },
+      { value: "International", label: "Relocate or Remote" },
     ],
     experience: [
       {
@@ -135,6 +135,17 @@ export const portfolioContent: PortfolioContent = {
           "Designed and deployed data-driven machine learning and generative AI workflows.",
           "Built retrieval-augmented generation (RAG), fine-tuning, and intelligent automation pipelines.",
           "Integrated backend AI services using Python, FastAPI, vector databases, and modern LLM frameworks.",
+        ],
+      },
+      {
+        company: "Executive Committee",
+        companyNote: "ICSPIS 2025",
+        title: "",
+        period: "July 2025 – January 2026",
+        location: "Babol, Iran",
+        highlights: [
+          "Served on the executive committee for the 11th International Conference on Signal Processing and Intelligent Systems (ICSPIS 2025).",
+          "Coordinated conference logistics, technical sessions, and academic operations hosted at Mazandaran University of Science and Technology.",
         ],
       },
     ],

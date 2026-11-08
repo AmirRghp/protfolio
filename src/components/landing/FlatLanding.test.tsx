@@ -85,7 +85,7 @@ describe("FlatLanding component", () => {
 
     for (const exp of portfolioContent.owner.experience) {
       expect(html).toContain(exp.company);
-      expect(html).toContain(exp.title);
+      if (exp.title) expect(html).toContain(exp.title);
       expect(html).toContain(exp.period);
     }
 
@@ -105,11 +105,24 @@ describe("FlatLanding component", () => {
     );
 
     expect(html).toContain('data-count="9"');
-    expect(html).toContain('data-count="2025"');
     expect(html).toContain("M.Sc.");
-    expect(html).toContain("Daraei360");
+    expect(html).toContain("Babol, IR");
+    expect(html).toContain("BASED");
+    expect(html).toContain("UTC+3:30");
+    expect(html).toContain("INTERNATIONAL");
+    expect(html).toContain("OPEN");
+    expect(html).toContain("RELOCATE OR REMOTE");
     expect(html).toContain("MUST · 2024–Present");
-    expect(html).toContain("11th Int. Signal &amp; Intelligent Systems");
+  });
+
+  it("renders About Me kicker and updated statement text", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain("About Me");
+    expect(html).toContain("First and foremost, I thrive on challenging and distinctive engineering work.");
+    expect(html).toContain("Beyond continuous learning, collaborative teamwork is my favorite part of engineering");
   });
 
   it("renders with clean styles without lingering opacity: 0 on ldPage container", () => {

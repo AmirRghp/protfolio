@@ -52,8 +52,8 @@ type StatItem = {
 const STATS: StatItem[] = [
   { val: "M.Sc.", num: 0, note: "MUST · 2024–Present", label: "Artificial Intelligence & Robotics" },
   { val: "9+", num: 9, suffix: "+", note: "Applied AI, RAG & Vision", label: "Production & Research Projects" },
-  { val: "Daraei360", num: 0, note: "FinTech & AI Systems", label: "AI Engineer & Product Manager" },
-  { val: "ICSPIS", num: 2025, note: "Executive Committee", label: "11th Int. Signal & Intelligent Systems" },
+  { val: "Babol, IR", num: 0, note: "BASED", label: "UTC+3:30" },
+  { val: "INTERNATIONAL", num: 0, note: "OPEN", label: "RELOCATE OR REMOTE" },
 ];
 
 function StatCounter({ st, inView }: { st: StatItem; inView: boolean }) {
@@ -738,10 +738,19 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
           </section>
 
           {/* Statement Quote Section */}
-          <section className={`${styles.ldStatement} ${styles.ldX}`}>
-            <p className={styles.ldRise}>
-              <b>First and foremost, I have always loved challenging and distinctive work.</b> Alongside continuous learning, collaborative teamwork is one of my favorite parts of engineering—the strongest results happen when team members bring their knowledge, experience, and perspectives together toward a shared goal.
-            </p>
+          <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me">
+            <div className={styles.ldStatementInner}>
+              <div className={`${styles.ldKicker} ${styles.ldRise}`}>
+                <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+                  <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
+                </svg>
+                About Me
+              </div>
+              <p className={styles.ldRise}>
+                <b>First and foremost, I thrive on challenging and distinctive engineering work.</b>{" "}
+                Beyond continuous learning, collaborative teamwork is my favorite part of engineering—the strongest products emerge when diverse experience, sharp execution, and shared vision come together.
+              </p>
+            </div>
           </section>
 
           {/* Numbers Metric Cards */}
@@ -771,13 +780,11 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                 <li key={`${exp.company}-${exp.title}`} className={styles.ldRise}>
                   <div className={styles.ldProcessItem}>
                     <h3>
-                      {exp.company} — {exp.title}
+                      {exp.title ? `${exp.company} — ${exp.title}` : exp.company}
                     </h3>
                     <p>{exp.highlights.join(" ")}</p>
                     <em>{exp.period}</em>
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 10h11M11 5.5 15.5 10 11 14.5" />
-                    </svg>
+
                   </div>
                 </li>
               ))}
@@ -789,9 +796,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                     </h3>
                     <p>{edu.institution}</p>
                     <em>{edu.period}</em>
-                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M4 10h11M11 5.5 15.5 10 11 14.5" />
-                    </svg>
+
                   </div>
                 </li>
               ))}
