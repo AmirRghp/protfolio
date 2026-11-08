@@ -1015,6 +1015,11 @@
   color: var(--ink);
 }
 
+/* Tech Stack Section */
+.ldTech {
+  padding: 80px 40px !important;
+}
+
 /* Footer */
 .ldFoot {
   padding: 120px 40px 32px !important;

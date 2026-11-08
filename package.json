@@ -16,8 +16,11 @@
     "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
+    "@radix-ui/react-tabs": "^1.2.1",
     "@react-three/fiber": "9.8.2",
     "glisse": "^0.5.0",
+    "lucide-react": "^1.70.0",
+    "motion": "^14.10.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "tactile-glass-ui": "^0.1.1",

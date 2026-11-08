@@ -125,6 +125,28 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Beyond continuous learning, collaborative teamwork is my favorite part of engineering");
   });
 
+  it("renders Tech Stack section between experience and contact with filter tabs and technology chips", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
+    );
+
+    expect(html).toContain('id="ld-techstack"');
+    expect(html).toContain("Stacks");
+    expect(html).toContain("Tech Stack");
+    expect(html).toContain("( select tab to filter )");
+    expect(html).toContain("Languages");
+    expect(html).toContain("Frontend");
+    expect(html).toContain("Backend");
+    expect(html).toContain("Databases");
+    expect(html).toContain("DevOps &amp; Cloud");
+    expect(html).toContain("Data &amp; AI");
+    expect(html).toContain("PyTorch");
+    expect(html).toContain("LangChain");
+    expect(html).toContain("Docker");
+    expect(html).toContain("React");
+    expect(html).toContain('href="#ld-techstack"');
+  });
+
   it("renders with clean styles without lingering opacity: 0 on ldPage container", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,

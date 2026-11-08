@@ -16,6 +16,7 @@ import { portfolioContent } from "../../content";
 import { Button as GlisseButton } from "glisse";
 import "glisse/styles.css";
 import DynamicText from "../kokonutui/dynamic-text";
+import { TechStackSection } from "./TechStackSection";
 import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {
@@ -615,6 +616,9 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
           <a href="#ld-experience" onClick={(e) => scrollToSection("ld-experience", e)}>
             Experience
           </a>
+          <a href="#ld-techstack" onClick={(e) => scrollToSection("ld-techstack", e)}>
+            Tech Stack
+          </a>
           <a href="#ld-contact" onClick={(e) => scrollToSection("ld-contact", e)}>
             Contact
           </a>
@@ -801,6 +805,13 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                 </li>
               ))}
             </ol>
+          </section>
+
+          {/* Tech Stack Section */}
+          <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack">
+            <div className={styles.ldRise}>
+              <TechStackSection />
+            </div>
           </section>
 
           {/* Footer Section */}

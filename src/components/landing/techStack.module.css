@@ -1,0 +1,128 @@
+.techSection {
+  width: 100%;
+}
+
+.techHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.techKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--mono, monospace);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #a1a1a8);
+  margin-bottom: 20px;
+}
+
+.techKicker svg {
+  width: 12px;
+  height: 12px;
+  color: #3b82f6;
+}
+
+.techTitle {
+  font-family: var(--sans, "Plus Jakarta Sans", sans-serif);
+  font-size: clamp(32px, 3.7vw, 52px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  color: #ffffff;
+  margin: 0;
+}
+
+.techHint {
+  font-family: var(--mono, monospace);
+  color: #6e6e77;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  padding-bottom: 4px;
+}
+
+.techGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.techChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 15px;
+  border-radius: 9px;
+  background: #141518;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #e4e4e7;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: default;
+  user-select: none;
+  transition:
+    background-color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    border-color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.techChip span {
+  transition: color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.techChip svg {
+  flex-shrink: 0;
+  transition: color 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.techChip:focus,
+.techChip:focus-visible {
+  outline: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .techChip:hover {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px -4px rgba(255, 255, 255, 0.22);
+  }
+
+  .techChip:hover span {
+    color: #000000 !important;
+    font-weight: 600;
+  }
+
+  .techChip:hover svg {
+    color: #000000 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .techHead {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .techChip {
+    font-size: 13px;
+    padding: 7px 12px;
+    gap: 7px;
+  }
+}

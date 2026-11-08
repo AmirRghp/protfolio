@@ -1,0 +1,170 @@
+/* Arc UI Tabs Nocturnal Theme */
+.root {
+  position: relative;
+  width: 100%;
+}
+
+.listShell {
+  position: relative;
+  display: inline-flex;
+  max-width: 100%;
+  min-width: 0;
+  align-items: center;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+}
+
+.viewport {
+  min-width: 0;
+  overflow-x: auto;
+  border-radius: inherit;
+  scrollbar-width: none;
+}
+
+.viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.listShell[data-left="true"] .viewport {
+  mask-image: linear-gradient(to right, transparent, black 35px, black);
+}
+
+.listShell[data-right="true"] .viewport {
+  mask-image: linear-gradient(to right, black, black calc(100% - 35px), transparent);
+}
+
+.listShell[data-left="true"][data-right="true"] .viewport {
+  mask-image: linear-gradient(to right, transparent, black 35px, black calc(100% - 35px), transparent);
+}
+
+/* The list owns the stacking context so the gliding highlight passes under every label */
+.list {
+  isolation: isolate;
+  display: inline-flex;
+  width: max-content;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  margin: 0;
+}
+
+.scrollButton {
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  bottom: 0;
+  display: grid;
+  width: 32px;
+  place-items: center;
+  border: 0;
+  background: #141518;
+  color: #f1efe8;
+  cursor: pointer;
+}
+
+.scrollLeft {
+  left: 0;
+  border-radius: 9999px 0 0 9999px;
+}
+
+.scrollRight {
+  right: 0;
+  border-radius: 0 9999px 9999px 0;
+}
+
+.scrollButton:disabled {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.trigger {
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 4rem;
+  flex: 0 0 auto;
+  height: 36px;
+  border: 0;
+  border-radius: 9999px;
+  padding: 0 18px;
+  background: transparent;
+  color: #8a8a93;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.18s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .trigger:hover {
+    color: #ffffff;
+  }
+}
+
+.trigger:active {
+  color: #ffffff;
+}
+
+.trigger:focus,
+.trigger:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.trigger[data-state="active"] {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.selection {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border-radius: 9999px;
+  background: #1e1f23;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  will-change: transform;
+}
+
+.triggerLabel {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.content {
+  margin-top: 24px;
+  width: 100%;
+}
+
+.content[data-motion-pop-id] {
+  margin-top: 0;
+}
+
+.content[data-state="inactive"] {
+  pointer-events: none;
+}
+
+.content:focus-visible {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trigger {
+    transition: none;
+  }
+}
