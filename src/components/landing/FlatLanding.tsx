@@ -18,6 +18,7 @@ import "glisse/styles.css";
 import DynamicText from "../kokonutui/dynamic-text";
 import { TechStackSection } from "./TechStackSection";
 import { GithubActivitySection } from "./GithubActivitySection";
+import PixelTetris from "../originkit/PixelTetris";
 import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {
@@ -876,11 +877,31 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                 </TactileButton>
               </div>
 
+              {/* Floor Pixel Tetris Canvas */}
+              <div className={styles.ldFootTetris} aria-hidden="true">
+                <PixelTetris
+                  cellSize={20}
+                  gap={1}
+                  rounded={20}
+                  boardColor="rgba(255, 255, 255, 0.059)"
+                  colors={["#FFFFFF", "#FFFFFF"]}
+                  movement={4}
+                  dropSpeed={2}
+                  maxStackHeight={6}
+                  prefillRows={5}
+                />
+              </div>
+
               <div className={styles.ldFootRow}>
-                <span>© {new Date().getFullYear()} Amirreza Gholipour</span>
-                <a href="#top" onClick={(e) => scrollToSection("top", e)}>
-                  Back to top
-                </a>
+                <span>© {new Date().getFullYear()} AMIRREZA GHOLIPOUR</span>
+                <button
+                  type="button"
+                  className={styles.ldBackToTop}
+                  onClick={(e) => scrollToSection("top", e)}
+                  aria-label="Scroll back to top"
+                >
+                  BACK TO TOP
+                </button>
               </div>
             </footer>
           </div>

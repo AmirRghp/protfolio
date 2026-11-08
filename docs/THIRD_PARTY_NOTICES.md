@@ -74,6 +74,10 @@ src/components/arc/tabs.tsx is a spring-physics tab navigation component based o
 
 `src/components/landing/GithubActivitySection.tsx` is an integrated, library-free 3D isometric GitHub contribution visualization based on the "As a city" skyline concept published by Avi Vashishta (https://www.avivashishta.com/lab/commits and https://www.avivashishta.com/blog/animate-github-contribution-graph-portfolio). It implements 3-faced cuboid projection, square root height scaling, diagonal wave rising easing, and peak day leader line callouts.
 
+## OriginKit Pixel Tetris
+
+`src/components/originkit/PixelTetris.tsx` is an integrated, self-playing 2D canvas Tetris component based on Pixel Tetris (https://www.originkit.dev/components/pixel-tetris?preset=base) published by OriginKit. It provides an autonomous tetromino stacking engine with circular matrix dots (`rounded: 20`), pre-filled bottom rows for active mid-game appearance, height-capping AI logic, and responsive `IntersectionObserver` pause/resume controls.
+
 ## 3D models
 
 The 3D assets used in the room workstation and scene are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):

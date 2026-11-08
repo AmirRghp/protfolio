@@ -97,6 +97,9 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Enter The Room");
     expect(html).toContain(portfolioContent.owner.email);
     expect(html).toContain(portfolioContent.owner.githubUrl);
+    expect(html).toContain("AMIRREZA GHOLIPOUR");
+    expect(html).toContain("BACK TO TOP");
+    expect(html).toContain("role=\"presentation\"");
   });
 
   it("renders key metrics in the numbers section with data-count for numeric metrics", () => {

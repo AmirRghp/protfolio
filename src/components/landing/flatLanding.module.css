@@ -1115,23 +1115,54 @@
   margin-top: 56px;
 }
 
+/* Floor Pixel Tetris Canvas */
+.ldFootTetris {
+  margin-top: 64px;
+  width: 100%;
+  height: clamp(180px, 22vw, 240px);
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px 8px 0 0;
+}
+
 .ldFootRow {
-  margin-top: 100px;
-  padding-top: 20px;
-  border-top: 1px solid var(--line);
+  margin-top: 0;
+  padding: 24px 0 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   justify-content: space-between;
+  align-items: center;
   font-family: var(--mono);
   font-weight: 500;
   font-size: 11px;
   line-height: 1;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
 }
 
-.ldFootRow a {
-  color: inherit;
+.ldBackToTop {
+  background: transparent;
+  border: none;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.ldBackToTop:hover {
+  color: #ffffff;
+}
+
+.ldBackToTop:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 4px;
 }
 
 /* Responsive adjustments */
