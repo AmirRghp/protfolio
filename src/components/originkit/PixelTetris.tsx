@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, type CSSProperties } from "react";
 
 // Fallback swatches when the colors list is left empty.
 const FALLBACK_COLORS = ["#FFFFFF", "#FFFFFF"];
@@ -151,6 +151,11 @@ export function PixelTetris({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
+  const stableColors = useMemo(
+    () => (colors && colors.length ? colors : FALLBACK_COLORS),
+    [colors],
+  );
+
   useEffect(() => {
     const canvasEl = canvasRef.current;
     const containerEl = containerRef.current;
@@ -161,7 +166,7 @@ export function PixelTetris({
     const ctx: CanvasRenderingContext2D = context;
 
     const boardRGB = parseColor(boardColor);
-    const source = colors && colors.length ? colors : FALLBACK_COLORS;
+    const source = stableColors;
     const blockRGB = source.map(parseColor);
 
     const rand = mulberry32(0x7e7415);
@@ -570,7 +575,7 @@ export function PixelTetris({
     };
   }, [
     boardColor,
-    (colors ?? []).join(","),
+    stableColors,
     movement,
     cellSize,
     gap,

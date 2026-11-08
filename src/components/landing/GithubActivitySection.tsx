@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { GITHUB_USERNAME, useContributions } from "../../githubContributions";
 import styles from "./githubActivity.module.css";
 

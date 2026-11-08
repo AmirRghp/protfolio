@@ -67,7 +67,9 @@ export function OriginkitMagicCursor({
   }, [enableGlow, glowColor, glowIntensity]);
 
   const live = useRef({ cursorSize, enableStretch });
-  live.current = { cursorSize, enableStretch };
+  useEffect(() => {
+    live.current = { cursorSize, enableStretch };
+  });
 
   const resolvedLabelFont = { ...DEFAULT_LABEL_FONT, ...labelFont };
 

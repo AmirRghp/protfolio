@@ -20,6 +20,7 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  useSyncExternalStore,
 } from "react";
 import { cn } from "../../lib/utils";
 import "./dynamic-text.css";
@@ -396,6 +397,14 @@ class MorphEngine {
     return this.glyphs.map((g) => ({ id: g.id, char: g.char }));
   }
 
+  attach(id: number, el: HTMLSpanElement | null) {
+    const glyph = this.glyphs.find((g) => g.id === id);
+    if (glyph) {
+      glyph.el = el;
+      paint(glyph);
+    }
+  }
+
   refFor(id: number) {
     let ref = this.refs.get(id);
     if (!ref) {
@@ -697,41 +706,46 @@ function MorphLayer({
   const rootRef = useRef<HTMLSpanElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
   const engineRef = useRef<MorphEngine | null>(null);
-  if (!engineRef.current) {
-    engineRef.current = new MorphEngine();
-  }
-  const engine = engineRef.current;
   // Server and first client render lay the text out in flow; after mount the
   // glyphs switch to absolutely positioned, physics-driven spans.
-  const [live, setLive] = useState(false);
+  const live = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
   const [views, setViews] = useState<GlyphView[]>([]);
 
   useLayoutEffect(() => {
+    if (engineRef.current == null) {
+      engineRef.current = new MorphEngine();
+    }
+    const engine = engineRef.current;
     engine.root = rootRef.current;
     engine.onChange = () => setViews(engine.views());
-    setLive(true);
     return () => engine.stop();
-  }, [engine]);
+  }, []);
 
   useLayoutEffect(() => {
+    const engine = engineRef.current;
     const root = rootRef.current;
     const measure = measureRef.current;
-    if (!(live && root && measure)) {
+    if (!(live && root && measure && engine)) {
       return;
     }
     engine.em = Number.parseFloat(getComputedStyle(root).fontSize) || 16;
-    engine.reduced = reducedRef.current;
+    engine.reduced = Boolean(reducedRef.current);
     const { tokens, width } = measureTokens(measure, text);
     engine.update(tokens, width);
     setViews(engine.views());
     engine.kick();
-  }, [engine, live, text, reducedRef]);
+  }, [live, text, reducedRef]);
 
   // Fonts loading or the font size changing move the letters: re-place them.
   useEffect(() => {
+    const engine = engineRef.current;
     const root = rootRef.current;
     const measure = measureRef.current;
-    if (!(live && root && measure)) {
+    if (!(live && root && measure && engine)) {
       return;
     }
     const observer = new ResizeObserver(() => {
@@ -741,7 +755,7 @@ function MorphLayer({
     });
     observer.observe(measure);
     return () => observer.disconnect();
-  }, [engine, live, text]);
+  }, [live, text]);
 
   return (
     <span className="relative inline-block align-baseline" ref={rootRef}>
@@ -765,7 +779,7 @@ function MorphLayer({
               aria-hidden="true"
               className="absolute top-0 left-0 origin-[50%_80%]"
               key={view.id}
-              ref={engine.refFor(view.id)}
+              ref={(el) => engineRef.current?.attach(view.id, el)}
             >
               {view.char}
             </span>
