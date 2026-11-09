@@ -100,6 +100,8 @@ sequenceDiagram
 2. **Hash-Based View Switcher:** Syncs view modes between 3D Room (`#room` or root) and Flat Portfolio (`#portfolio`), enabling deep linking and browser history navigation (Back/Forward).
 3. **Data Caching Pipeline:** GitHub commit stats query the public REST API, store the result in `localStorage` with a 4-hour TTL, and gracefully fall back to `githubContributionsFallback.json` upon failure.
 4. **Responsive Device & 3D Execution Gate (`src/core/utils/responsive.ts`):** A centralized `useResponsiveDevice` hook evaluates media queries via React 19 `useSyncExternalStore`. On touch devices or viewports $< 1024\text{px}$, `<RoomPreview>` is strictly omitted from the component tree, ensuring zero background WebGL GPU consumption and directing mobile users immediately to `FlatLanding`.
+5. **Refractive Optical Liquid Glass Navbar & GPU Compositing Pipeline (`src/features/landing`):** The scrolled sticky navbar integrates Glisse's `<Glass>` component to project real-time light refraction and chromatic dispersion over scrolling elements (`data-glisse-backdrop` on `<main>`). To prevent Chromium/WebKit from isolating the glass in an unbacked compositor layer, `will-change: transform, opacity` is eliminated from `.ldNav`, `.ldNavGlass` sits at `z-index: 0`, and interactive foreground controls are elevated to `position: relative; z-index: 1`, enabling hardware-accelerated `backdrop-filter: blur(16px)` sampling.
+6. **Scroll-Invariant Arc UI Tab Indicator (`src/core/components/arc/tabs.tsx`):** A single persistent indicator element inside `TabsPrimitive.List` derives its geometry dynamically from `target.offsetLeft` and `target.offsetWidth`, rendering transitions scroll-invariant during simultaneous horizontal swipe gestures on mobile viewports. Local stacking isolation (`isolation: isolate` and `translateZ(0)`) prevents WebKit 3D layer promotion from occluding active tab labels on iOS Safari.
 
 ---
 
@@ -136,5 +138,6 @@ Each mini-game operates as an autonomous, self-contained engine:
 | **3D React** | React Three Fiber | 9.8.2 | Declarative Three.js component bindings |
 | **Motion** | Motion (Framer) | 14.10.1 | Spring physics and kinetic transitions |
 | **Optics** | tactile-glass-ui | 0.1.1 | WebGL2 refractive glass buttons |
-| **Testing** | Vitest | 5.0.5 | 40 unit test suites (223 tests) |
+| **Liquid Glass** | glisse | 0.4.1 | Optical refractive liquid glass navbar & hero CTA |
+| **Testing** | Vitest | 5.0.5 | 42 unit test suites (243 tests) |
 | **E2E Testing**| Playwright | 1.64.1 | Cross-browser Chromium end-to-end verification |

@@ -115,11 +115,13 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 - **Liquid Grid & Magic Cursor:** WebGL2 ripple background canvas responsive to cursor velocity and angular rotation. Suppressed on touch devices to avoid sticky artifacts.
 - **Dynamic Role Typography:** Physics-driven `DynamicText` cycling roles (AI Engineer, ML Specialist, Robotics Researcher).
 - **Tactile Glass Exit Bar:** Sleek black exit bar (`#000000`) featuring WebGL2 optical refractive `TactileButton` ("Exit The Room" / "Re-enter").
+- **Optical Liquid Glass Scrolled Navbar:** Scrolled sticky header integrates Glisse's `<Glass>` with chromatic dispersion (`0.4`), optical bend (`0.31`), and high-intensity diffusion (`--lg-blur: 16px`), engineered without GPU compositor layer trapping (`z-index: 0` glass under `z-index: 1` nav items) to smoothly blur passing page text and images.
 - **Unified Column Geometry:** The Hero section (`.ldHero`) shares identical responsive max-width and auto-margin centering with `.ldWrap` (`width: min(1240px, calc(100% - 48px)); margin: 0 auto;`), guaranteeing flush vertical alignment across all screen sizes.
 
 ### 6.7. Interactive Tech Stack Section (`TechStackSection`)
-- **Navigation:** Spring-animated tab switcher powered by `@uiarc/tabs`.
+- **Navigation:** Spring-animated tab switcher powered by `@uiarc/tabs` featuring a single persistent indicator pill. Indicator coordinates are calculated scroll-invariantly from `offsetLeft` and `offsetWidth`, preventing position jumps or freezes during touch scrolling.
 - **Agent Harness Focus:** Dedicated category showcasing AI agent harnesses (CODEX, Claude Code, Antigravity, zCode, Cursor, Open Code) with custom monochrome vector icons and reverse hover contrast.
+- **iOS Safari Optimization:** Hardware-composited text promotion (`translateZ(0)`) and container stacking isolation (`isolation: isolate`) guarantee active tab titles remain fully visible above the sliding indicator pill.
 - **Progressive Truncation & Blur:** Displays the first 10 items initially for categories with $> 10$ technologies, accompanied by a soft frosted blur overlay (`backdrop-filter: blur(4px)`).
 - **Smooth Expand/Collapse:** A letter-spaced monospace button (`VIEW ALL TECHNOLOGIES (60)` / `COLLAPSE STACK`) triggers a hardware-accelerated 60fps CSS Grid transition (`grid-template-rows: 0fr -> 1fr`) with rotating chevron; tab switches automatically reset expansion.
 

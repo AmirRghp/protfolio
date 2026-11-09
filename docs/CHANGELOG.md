@@ -6,6 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.8.0] - 2026-11-09
+
+### Added
+- **Refractive Optical Liquid Glass Scrolled Navbar (`FlatLanding` & `glisse`):**
+  - Replaced the static CSS blurred backdrop (`rgba(10, 10, 11, 0.85)` + `backdrop-filter: blur(14px)`) on the scrolled sticky header with true optical refractive `<Glass>` from `glisse`.
+  - Configured authentic Apple-grade optical tokens: `--lg-glass-bend: 0.31`, `--lg-glass-dispersion: 0.4`, `--lg-blur: 16px`, `--lg-rim-shine: 0`, `borderRadius: 0`, and `background: "none"`.
+  - Bound `data-glisse-backdrop` onto `<main>` and coordinated layout geometry (`.ldNav` height $64\text{px}$, `margin-bottom: -64px`, `.ldPage` `padding-top: 64px`) so Glisse's bounding-box detection couples with scrolling page content.
+- **Scroll-Invariant Arc UI Tab Indicator (`@/core/components/arc/tabs`):**
+  - Replaced per-tab `layoutId="selection"` spans with a single persistent indicator element inside `TabsPrimitive.List`.
+  - Derived indicator `x`, `width`, `top`, and `height` dynamically from `target.offsetLeft` and `target.offsetWidth`, rendering coordinate calculations strictly scroll-invariant regardless of container `scrollLeft` or concurrent smooth `scrollBy` animations on touch viewports.
+  - Animated indicator geometry with Framer Motion spring physics using `initial={false}` to suppress mount fly-in artifacts.
+
+### Fixed
+- **GPU Compositor Layer Isolation on Scrolled Navbar:**
+  - Resolved an issue where `--lg-blur` on `<Glass>` failed to blur page elements passing beneath (causing text like "See my work" to remain sharp with chromatic-only fringing).
+  - Removed `will-change: transform, opacity` from `.ldNav` to prevent Chromium/Blink from trapping the header in an isolated compositor layer.
+  - Repositioned `.ldNavGlass` to `z-index: 0` and elevated interactive header children (`.ldLogo`, `.ldLinks`, `.ldNavCta`) to `position: relative; z-index: 1`, allowing `backdrop-filter: blur(16px)` to sample and diffuse the underlying page canvas.
+- **Active Tab Label Occlusion on iOS Safari:**
+  - Resolved WebKit 3D layer promotion bug where Framer Motion's active tab background indicator rendered over the white text label on iOS Safari.
+  - Applied `isolation: isolate` on `.trigger` to enforce an isolated local stacking context.
+  - Promoted `.triggerLabel` to a hardware-composited layer via `-webkit-transform: translateZ(0)` to preserve `z-index: 2` layering above the sliding pill.
+  - Added `pointer-events: none` to the selection indicator to prevent event interception during animations.
+
+---
+
 ## [0.7.0] - 2026-11-09
 
 ### Added

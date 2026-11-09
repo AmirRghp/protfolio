@@ -138,6 +138,11 @@ flowchart TD
     
     FlatLandingActive --> ScrollExplore[Scroll through Tech Stack, Experience, GitHub City]
     
+    ScrollExplore --> ScrollThreshold{Scroll offset > 12px?}
+    ScrollThreshold -- Yes --> ScrolledNav[Activate .ldNav.scrolled: Fade in Glisse Optical Liquid Glass backdrop]
+    ScrolledNav --> OpticRefraction[Sample and blur passing elements with 16px frosted dispersion]
+    ScrollThreshold -- No --> TransparentNav[Header remains clean and transparent at hero top]
+    
     FlatLandingActive --> CheckReenterDevice{Is device desktop with fine pointer?}
     CheckReenterDevice -- No (Mobile / Tablet) --> MobileNav[Show 'Get in Touch' button; suppress room entry]
     CheckReenterDevice -- Yes --> ClickReenter[Click 'Re-enter' in header or 'Enter The Room' in footer]

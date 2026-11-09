@@ -143,3 +143,48 @@ This document records the foundational architecture decisions, trade-offs, and d
 - **Consequences:**
   - *Positive:* Clean, architectural column alignment across all sections on desktop, tablet, and mobile.
   - *Positive:* Dynamic laser portal transition FLIP geometry seamlessly adapts to the centered docked frame rect without distortion.
+
+---
+
+## ADR-010: Scroll-Invariant Tab Indicator with Single Persistent DOM Node (Mobile Coordinate Mismatch Resolution)
+
+- **Status:** Accepted
+- **Date:** November 2026
+- **Context:**
+  In horizontally scrollable tab lists on mobile viewports (`@/core/components/arc/tabs`), rendering separate per-tab `layoutId="selection"` elements inside each `TabsTrigger` caused severe animation glitches when switching tabs. Framer Motion computed FLIP layout transitions in viewport coordinate space while container focus and reveal handlers simultaneously executed smooth scrolling (`scrollBy`). This coordinate mismatch caused the indicator to jump across unrelated tabs (e.g., drifting toward DevOps during Data & AI to Agent Harness transitions) or cancel the translation entirely (`isDeltaZero`), causing the pill to pop in place without sliding. Additionally, on iOS Safari, WebKit's 3D compositing layer promotion caused the dark indicator to render over white tab titles, visually erasing active tab text.
+- **Decision:**
+  Refactor the tab indicator architecture:
+  1. Replace per-tab mount/unmount `layoutId` spans with a single persistent indicator element inside `TabsPrimitive.List`.
+  2. Derive indicator $x$, $\text{width}$, $\text{top}$, and $\text{height}$ directly from the active tab's `offsetLeft` and `offsetWidth` relative to the `.list` container, ensuring translations remain strictly scroll-invariant regardless of container `scrollLeft` or concurrent scroll animations.
+  3. Animate indicator position and width using Framer Motion's morph spring with `initial={false}` to suppress mount fly-in.
+  4. Remove `layoutScroll` on the viewport container to avoid redundant layout projection recalculations.
+  5. Apply `isolation: isolate` to `.trigger` and promote `.triggerLabel` to a hardware-composited layer via `-webkit-transform: translateZ(0)` to preserve `z-index: 2` text layering above the sliding pill on iOS Safari.
+- **Consequences:**
+  - *Positive:* 100% elimination of indicator drift, coordinate jumps, and frozen pills during mobile tab switching.
+  - *Positive:* Text labels remain crisp and readable on iOS Safari without occlusion.
+  - *Positive:* Unified indicator physics across desktop and mobile devices.
+
+---
+
+## ADR-011: Refractive Optical Liquid Glass Scrolled Navbar via Glisse & GPU Compositing Optimization
+
+- **Status:** Accepted
+- **Date:** November 2026
+- **Context:**
+  The portfolio previously used a standard CSS backdrop blur (`rgba(10, 10, 11, 0.85)` + `backdrop-filter: blur(14px)`). To elevate the nocturnal cyberpunk visual language into authentic Apple-grade optical glass matching the hero CTA button, we integrated Glisse's refractive `<Glass>` component. However, the initial implementation suffered from stacking context isolation: `will-change: transform, opacity` on `.ldNav` combined with `position: absolute; z-index: -1` on `<Glass>` forced Chromium to isolate the glass into an unbacked compositor layer. Because `.ldNav` had a transparent background, `backdrop-filter: blur(...)` had no pixels to sample in its local layer, preventing blur from rendering over underlying page content (causing "See my work" to remain 100% sharp with only chromatic fringing).
+- **Decision:**
+  Implement true optical liquid glass with optimized GPU compositing:
+  1. Mount `<Glass>` inside the sticky header with rectangular borders (`borderRadius: 0`), zero background tint (`background: "none"`), and calibrated optical tokens:
+     ```css
+     --lg-glass-bend: 0.31;
+     --lg-glass-dispersion: 0.4;
+     --lg-blur: 16px;
+     --lg-rim-shine: 0;
+     ```
+  2. Add `data-glisse-backdrop` onto `<main>` and align header geometry (`.ldNav` height $64\text{px}$, `margin-bottom: -64px`, `.ldPage` `padding-top: 64px`) so Glisse binds `bend(glass, main)` to scrolling elements.
+  3. Remove `will-change: transform, opacity` from `.ldNav` to avoid trapping the child in an isolated compositor layer.
+  4. Reposition `.ldNavGlass` to `z-index: 0` (`pointer-events: none`) and elevate foreground controls (`.ldLogo`, `.ldLinks`, `.ldNavCta`) to `position: relative; z-index: 1`.
+- **Consequences:**
+  - *Positive:* Delivers authentic Apple Liquid Glass aesthetics with optical refraction, chromatic dispersion, and high-intensity frosted blur (`16px`).
+  - *Positive:* Smoothly diffuses underlying page text, ASCII room animations, and section cards during scroll without visual artifacts.
+  - *Positive:* Zero test regressions and clean cross-browser rendering on both desktop and mobile viewports.

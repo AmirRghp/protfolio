@@ -122,9 +122,11 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - Constrained strictly within virtual desktop bounds to prevent clipping.
 
 ### 6.3. Arc UI Segmented Tabs (`@uiarc/tabs`)
-- Spring-physics sliding active indicator pill.
+- Spring-physics sliding active indicator pill implemented as a single persistent DOM element inside `TabsPrimitive.List`.
+- Scroll-invariant geometry calculation ($x$, $\text{width}$) derived directly from active tab's `offsetLeft` and `offsetWidth`, preventing indicator drift, jumps, or frozen transitions during mobile horizontal scrolling.
 - Accessible ARIA tabs and keyboard arrow navigation.
 - High-contrast hover inversion for technology badge icons.
+- WebKit stacking context isolation (`isolation: isolate` on trigger, `-webkit-transform: translateZ(0)` on label) preventing indicator overlay occlusion on iOS Safari.
 
 ### 6.4. Progressive Tech Stack Expander (`TechStackSection`)
 - Truncates initial display to first 10 items for categories with $> 10$ technologies.
@@ -141,6 +143,12 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - Circular matrix cells scale from standard $20\text{px}$ (desktop) to $10\text{px}$ (mobile).
 - Expands vertical board capacity from 8 to 16 rows and horizontal capacity to 28–30 columns.
 - Increases prefilled mid-game rows to 7 and stack ceiling to 9 rows, doubling active block density.
+
+### 6.7. Optical Refractive Liquid Glass Scrolled Navbar (`glisse`)
+- True physical light refraction with chromatic dispersion (`--lg-glass-bend: 0.31`, `--lg-glass-dispersion: 0.4`, `--lg-rim-shine: 0`).
+- Seamless rectangular geometry (`borderRadius: 0`, `background: "none"`) mounted inside the sticky header.
+- High-intensity frosted diffusion (`--lg-blur: 16px`) providing smooth milky blur for underlying text, ASCII room video, and cards.
+- Non-isolated GPU compositor architecture (`z-index: 0` glass with `z-index: 1` interactive controls, zero `will-change`) allowing hardware-accelerated sampling over the underlying page canvas.
 
 ---
 

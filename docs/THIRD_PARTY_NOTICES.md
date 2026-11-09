@@ -54,6 +54,24 @@ https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md.
 
 `src/components/landing/LiquidGrid.tsx` is an integrated, strongly-typed React 19 component based on Liquid Grid (https://www.originkit.dev/components/liquid-grid) published by OriginKit. It provides an interactive 2D canvas water ripple simulation with damping and absorption algorithms, customized for the dark nocturnal portfolio background.
 
+## Glisse (Liquid Glass)
+
+`glisse` provides React components implementing Apple's physical "Liquid Glass" design language for the web with SVG displacement lenses, optical refraction, chromatic dispersion, and frosted backdrop diffusion. It powers the scrolled sticky navbar (`<Glass>`) and hero CTA button (`<Button>`) in `src/features/landing/components/FlatLanding.tsx`.
+
+MIT License
+
+Copyright (c) 2026 Kelvin Zhang (https://glisse.kelvinzhang.ca and https://github.com/0kzh/glisse)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
 ## Tactile Glass UI
 
 `tactile-glass-ui` provides optical glass buttons with WebGL2 refractive shaders, chromatic dispersion, and click shockwaves. It powers `TactileButton` in `ExitBar` and `FlatLanding`.
