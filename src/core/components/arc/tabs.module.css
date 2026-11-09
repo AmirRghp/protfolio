@@ -84,6 +84,7 @@
 
 .trigger {
   position: relative;
+  isolation: isolate;
   -webkit-tap-highlight-color: transparent;
   display: inline-flex;
   align-items: center;
@@ -134,6 +135,7 @@
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
   will-change: transform;
+  pointer-events: none;
 }
 
 .triggerLabel {
@@ -141,6 +143,8 @@
   z-index: 2;
   display: inline-flex;
   align-items: center;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 .trigger:disabled {
