@@ -80,6 +80,9 @@
   margin: 0 !important;
   padding: 0 !important;
   gap: 0 !important;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: filter;
 }
 
 .ldPage {

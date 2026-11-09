@@ -184,7 +184,11 @@ This document records the foundational architecture decisions, trade-offs, and d
   2. Add `data-glisse-backdrop` onto `<main>` and align header geometry (`.ldNav` height $64\text{px}$, `margin-bottom: -64px`, `.ldPage` `padding-top: 64px`) so Glisse binds `bend(glass, main)` to scrolling elements.
   3. Remove `will-change: transform, opacity` from `.ldNav` to avoid trapping the child in an isolated compositor layer.
   4. Reposition `.ldNavGlass` to `z-index: 0` (`pointer-events: none`) and elevate foreground controls (`.ldLogo`, `.ldLinks`, `.ldNavCta`) to `position: relative; z-index: 1`.
+  5. Enforce unified `userSpaceOnUse` coordinate space across WebKit (iOS / macOS Safari) and Chromium (Android / Desktop Chrome):
+     - **Root Cause of iOS Safari Bend Failure:** Glisse previously branched on `navigator.userAgent` (`boxUnits = () => /AppleWebKit\//.test(...) && !/Chrom.../`). On Safari, it switched SVG filters to `objectBoundingBox` and divided displacement scale by container height (`scale = (lens.reach / down) * spectrum[i]`). With `<main>` wrapping the entire $5,555\text{px}$ page, scale shrank to $\approx 0.0035\text{px}$, causing WebKit to render zero visible bend while Android Chrome retained the full $19.8\text{px}$ displacement.
+     - **Fix:** Automated idempotent patch (`scripts/patch-glisse.js` integrated via `postinstall`) forcing `boxUnits = () => false`. This unifies SVG filters in `userSpaceOnUse` with raw pixel coordinates and displacement scales across all platforms.
+     - **iOS GPU Stability:** Added `-webkit-transform: translateZ(0); transform: translateZ(0); will-change: filter;` to `.ld main.intro` ensuring iOS Safari maintains hardware-accelerated GPU compositor layers during continuous touch scrolling.
 - **Consequences:**
-  - *Positive:* Delivers authentic Apple Liquid Glass aesthetics with optical refraction, chromatic dispersion, and high-intensity frosted blur (`16px`).
+  - *Positive:* Delivers authentic Apple Liquid Glass aesthetics with optical refraction, chromatic dispersion, and high-intensity frosted blur (`16px`) uniformly on both iOS Safari and Android Chrome across the full page (Hero, Work, Numbers, Experience, Tech Stack, Activity, Contact, Footer).
   - *Positive:* Smoothly diffuses underlying page text, ASCII room animations, and section cards during scroll without visual artifacts.
   - *Positive:* Zero test regressions and clean cross-browser rendering on both desktop and mobile viewports.

@@ -19,6 +19,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Animated indicator geometry with Framer Motion spring physics using `initial={false}` to suppress mount fly-in artifacts.
 
 ### Fixed
+- **iOS Safari / WebKit Scale Diminution in Glisse Optical Liquid Glass (`FlatLanding`):**
+  - Resolved an issue where the liquid glass `bend` (optical displacement refraction) rendered visibly on Android (Chromium) but failed completely on iPhone (iOS / Safari WebKit), leaving text passing beneath the navbar straight without warping.
+  - Root cause: Glisse's internal `boxUnits` branched on WebKit user agents, setting `filterUnits="objectBoundingBox"` and dividing displacement scale by the container height (`down = 5555px`), producing a sub-pixel near-zero displacement of $\approx 0.0035\text{px}$.
+  - Added an automated idempotent patch script (`scripts/patch-glisse.js`) invoked during `postinstall` that forces `boxUnits = () => false`, unifying all platforms into `userSpaceOnUse` with full physical pixel displacement ($19.8\text{px}$–$21.4\text{px}$) across the entire page (Hero, Work, Numbers, Experience, Tech Stack, Activity, Contact, Footer).
+  - Added `-webkit-transform: translateZ(0); transform: translateZ(0); will-change: filter;` to `.ld main.intro` to guarantee hardware-composited GPU stability on iOS during continuous touch scrolling.
+  - Updated `--lg-blur` to `16px` for an intensified frosted glass aesthetic and added automated Vitest regression test `src/features/landing/utils/glisseSafariPatch.test.ts`.
 - **GPU Compositor Layer Isolation on Scrolled Navbar:**
   - Resolved an issue where `--lg-blur` on `<Glass>` failed to blur page elements passing beneath (causing text like "See my work" to remain sharp with chromatic-only fringing).
   - Removed `will-change: transform, opacity` from `.ldNav` to prevent Chromium/Blink from trapping the header in an isolated compositor layer.
