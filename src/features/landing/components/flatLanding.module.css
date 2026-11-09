@@ -220,6 +220,13 @@
   width: 100%;
   box-sizing: border-box;
   margin: 0;
+  padding: 0;
+}
+
+.ldHeroInner {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
   padding: 64px max(24px, calc((100% - 1240px) / 2)) 0;
 }
 
@@ -1540,6 +1547,7 @@
   .ldNav {
     grid-template-columns: 1fr auto;
     height: 58px;
+    margin-bottom: -58px;
     padding: 0 16px;
   }
 
@@ -1549,7 +1557,11 @@
   }
 
   .ldHero {
-    padding: 64px max(24px, calc((100% - 1240px) / 2)) 0;
+    padding: 0;
+  }
+
+  .ldHeroInner {
+    padding: 58px max(24px, calc((100% - 1240px) / 2)) 0;
   }
 
   .ldFrame {
@@ -1673,7 +1685,12 @@
 
   .ldHero {
     width: 100%;
-    padding: 64px 10px 0;
+    padding: 0;
+  }
+
+  .ldHeroInner {
+    width: 100%;
+    padding: 58px 10px 0;
   }
 
   .ldWrap > section {

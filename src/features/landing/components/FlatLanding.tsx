@@ -678,7 +678,8 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
       <main className="intro" aria-labelledby="name">
         <div className={styles.ldPage}>
           <section className={styles.ldHero} id="ld-top" data-glisse-backdrop>
-            <div ref={frameRef} className={styles.ldFrame}>
+            <div className={styles.ldHeroInner}>
+              <div ref={frameRef} className={styles.ldFrame}>
               <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
                 <img
                   ref={transitionImgRef}
@@ -739,6 +740,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
                     </a>
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </section>

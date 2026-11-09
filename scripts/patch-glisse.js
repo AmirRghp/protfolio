@@ -132,6 +132,99 @@ function bend(element, source) {
 \t};
 }`;
 
+const originalBoxedSnippet = `\t\tconst boxed = [
+\t\t\timage(maps.across, \`across-\${k}\`),
+\t\t\timage(maps.down, \`down-\${k}\`),
+\t\t\timage(maps.light, merged("raw")),
+\t\t\tsvg("feFlood", {
+\t\t\t\t"flood-color": "rgb(128, 128, 128)",
+\t\t\t\tresult: \`neutral-\${k}\`
+\t\t\t})
+\t\t];`;
+
+const patchedBoxedSnippet = `\t\tconst boxed = [
+\t\t\timage(maps.across, \`across-\${k}\`),
+\t\t\timage(maps.down, \`down-\${k}\`),
+\t\t\timage(maps.light, merged("raw"))
+\t\t];
+\t\tfilter.append(svg("feFlood", {
+\t\t\t"flood-color": "rgb(128, 128, 128)",
+\t\t\tresult: \`neutral-\${k}\`
+\t\t}));`;
+
+const originalRaysSnippet = `\t\t\tboxed.push(across);
+\t\t\tfilter.append(across, down);`;
+
+const patchedRaysSnippet = `\t\t\tboxed.push(across, down);
+\t\t\tfilter.append(across, down);`;
+
+const originalPlaceRectSnippet = `\t\tconst rect = box ? {
+\t\t\tx: lens.x / across,
+\t\t\ty: lens.y / down,
+\t\t\twidth: lens.width / across,
+\t\t\theight: lens.height / down
+\t\t} : {`;
+
+const patchedPlaceRectSnippet = `\t\tconst effAcross = (box && lens.effAcross) || across;
+\t\tconst effDown = (box && lens.effDown) || down;
+\t\tconst rect = box ? {
+\t\t\tx: lens.x / effAcross,
+\t\t\ty: lens.y / effDown,
+\t\t\twidth: lens.width / effAcross,
+\t\t\theight: lens.height / effDown
+\t\t} : {`;
+
+const originalRenderMemberSnippet = `\t\tfor (const member of surface.members) {
+\t\t\tconst at = member.glass.getBoundingClientRect();
+\t\t\tif (!member.fit || !at.width || !at.height) continue;
+\t\t\tconst width = at.width / unit;
+\t\t\tconst height = at.height / unit;
+\t\t\tconst reach = member.fit.strength * Math.min(width, height) * member.amount;
+\t\t\tconst { dispersion } = member.fit;
+\t\t\tconst blur = member.fit.blur * member.amount;
+\t\t\tmember.placed = {
+\t\t\t\tx: (at.left - from.left) / unit,
+\t\t\t\ty: (at.top - from.top) / unit,
+\t\t\t\twidth,
+\t\t\t\theight,
+\t\t\t\treach,
+\t\t\t\tdispersion,
+\t\t\t\tblur
+\t\t\t};
+\t\t\tshown.push(member);
+\t\t}`;
+
+const patchedRenderMemberSnippet = `\t\tconst isBox = boxUnits();
+\t\tlet padTop = 0, padLeft = 0, effAcross = across, effDown = down;
+\t\tif (isBox) {
+\t\t\tconst cs = getComputedStyle(content);
+\t\t\tpadTop = parseFloat(cs.paddingTop) || 0;
+\t\t\tpadLeft = parseFloat(cs.paddingLeft) || 0;
+\t\t\teffAcross = Math.max(1, across - padLeft - (parseFloat(cs.paddingRight) || 0));
+\t\t\teffDown = Math.max(1, down - padTop - (parseFloat(cs.paddingBottom) || 0));
+\t\t}
+\t\tfor (const member of surface.members) {
+\t\t\tconst at = member.glass.getBoundingClientRect();
+\t\t\tif (!member.fit || !at.width || !at.height) continue;
+\t\t\tconst width = at.width / unit;
+\t\t\tconst height = at.height / unit;
+\t\t\tconst reach = member.fit.strength * Math.min(width, height) * member.amount;
+\t\t\tconst { dispersion } = member.fit;
+\t\t\tconst blur = member.fit.blur * member.amount;
+\t\t\tmember.placed = {
+\t\t\t\tx: isBox ? (at.left - from.left - padLeft) / unit : (at.left - from.left) / unit,
+\t\t\t\ty: isBox ? (at.top - from.top - padTop) / unit : (at.top - from.top) / unit,
+\t\t\t\twidth,
+\t\t\t\theight,
+\t\t\t\treach,
+\t\t\t\tdispersion,
+\t\t\t\tblur,
+\t\t\t\teffAcross,
+\t\t\t\teffDown
+\t\t\t};
+\t\t\tshown.push(member);
+\t\t}`;
+
 let patchedCount = 0;
 
 for (const filePath of filesToPatch) {
@@ -157,6 +250,26 @@ for (const filePath of filesToPatch) {
     modified = true;
   }
 
+  if (content.includes(originalBoxedSnippet)) {
+    content = content.replace(originalBoxedSnippet, patchedBoxedSnippet);
+    modified = true;
+  }
+
+  if (content.includes(originalRaysSnippet)) {
+    content = content.replace(originalRaysSnippet, patchedRaysSnippet);
+    modified = true;
+  }
+
+  if (content.includes(originalPlaceRectSnippet)) {
+    content = content.replace(originalPlaceRectSnippet, patchedPlaceRectSnippet);
+    modified = true;
+  }
+
+  if (content.includes(originalRenderMemberSnippet)) {
+    content = content.replace(originalRenderMemberSnippet, patchedRenderMemberSnippet);
+    modified = true;
+  }
+
   if (modified) {
     fs.writeFileSync(filePath, content, "utf8");
     console.log(`[patch-glisse] Successfully patched: ${path.relative(rootDir, filePath)}`);
@@ -165,7 +278,11 @@ for (const filePath of filesToPatch) {
     if (fs.existsSync(viteCacheDir)) {
       fs.rmSync(viteCacheDir, { recursive: true, force: true });
     }
-  } else if (content.includes(patchMarker) && content.includes(canonicalBoxUnits)) {
+  } else if (
+    content.includes(patchMarker) &&
+    content.includes(canonicalBoxUnits) &&
+    content.includes("effAcross")
+  ) {
     patchedCount++;
   } else {
     console.warn(`[patch-glisse] Target pattern not found in: ${path.relative(rootDir, filePath)}`);
@@ -173,5 +290,5 @@ for (const filePath of filesToPatch) {
 }
 
 if (patchedCount > 0) {
-  console.log(`[patch-glisse] Glisse WebKit objectBoundingBox + multi-section backdrop patch verified (${patchedCount} file(s)).`);
+  console.log(`[patch-glisse] Glisse WebKit objectBoundingBox + multi-section backdrop + bleed containment patch verified (${patchedCount} file(s)).`);
 }
