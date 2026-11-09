@@ -58,6 +58,111 @@
   width: 100%;
 }
 
+.techListContainer {
+  position: relative;
+  width: 100%;
+}
+
+.techGridMore {
+  margin-top: 10px;
+}
+
+.techMoreWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition:
+    grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.32s ease;
+  opacity: 0;
+  width: 100%;
+}
+
+.techMoreWrapper.expanded {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.techMoreInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.techBlurOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 34px;
+  height: 68px;
+  background: linear-gradient(
+    to bottom,
+    rgba(8, 6, 20, 0) 0%,
+    rgba(8, 6, 20, 0.82) 55%,
+    rgba(8, 6, 20, 0.98) 100%
+  );
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+  transition:
+    opacity 0.3s ease,
+    visibility 0.3s ease;
+  z-index: 1;
+}
+
+.techBlurOverlay.blurHidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.techAction {
+  display: flex;
+  justify-content: center;
+  margin-top: 14px;
+  position: relative;
+  z-index: 2;
+}
+
+.techExpandBtn {
+  background: transparent;
+  border: none;
+  font-family: var(--mono, monospace);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #a1a1a8);
+  cursor: pointer;
+  padding: 10px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  user-select: none;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.techExpandBtn:hover {
+  color: #ffffff;
+}
+
+.techExpandBtn:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 4px;
+}
+
+.techArrowIcon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.techArrowIcon.arrowUp {
+  transform: rotate(180deg);
+}
+
 .techChip {
   display: inline-flex;
   align-items: center;

@@ -94,4 +94,22 @@ describe("TechStackSection", () => {
       expect(html).not.toContain(tech);
     }
   });
+
+  it("renders expand button with initial collapsed state and blur overlay for All category", () => {
+    const html = renderToStaticMarkup(<TechStackSection />);
+
+    expect(html).toContain("VIEW ALL TECHNOLOGIES (60)");
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).toContain("techBlurOverlay");
+    expect(html).toContain("techArrowIcon");
+    expect(html).toContain("techMoreWrapper");
+  });
+
+  it("does not render expand button for categories with 10 or fewer items like languages", () => {
+    const html = renderToStaticMarkup(<TechStackSection />);
+    // In Languages tab (5 items), there is no 'tech-more-languages'
+    expect(html).not.toContain('id="tech-more-languages"');
+    // But 'tech-more-all' is present
+    expect(html).toContain('id="tech-more-all"');
+  });
 });

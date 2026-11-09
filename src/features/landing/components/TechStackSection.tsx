@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/core/components/arc";
 import { TechIcon } from "./techIcons";
 import styles from "./techStack.module.css";
@@ -105,6 +106,8 @@ const TABS: { id: TechCategory; label: string }[] = [
 ];
 
 export function TechStackSection() {
+  const [isExpanded, setIsExpanded] = useState(false);
+
   return (
     <div className={styles.techSection}>
       <div className={styles.techHead}>
@@ -120,7 +123,7 @@ export function TechStackSection() {
         <span className={styles.techHint}>( select tab to filter )</span>
       </div>
 
-      <Tabs defaultValue="all">
+      <Tabs defaultValue="all" onValueChange={() => setIsExpanded(false)}>
         <TabsList aria-label="Tech Stack Categories">
           {TABS.map((tab) => (
             <TabsTrigger key={tab.id} value={tab.id}>
@@ -134,16 +137,80 @@ export function TechStackSection() {
             tab.id === "all"
               ? TECH_ITEMS
               : TECH_ITEMS.filter((item) => item.categories.includes(tab.id));
+          const hasMore = filteredItems.length > 10;
+          const firstTen = hasMore ? filteredItems.slice(0, 10) : filteredItems;
+          const remaining = hasMore ? filteredItems.slice(10) : [];
 
           return (
             <TabsContent key={tab.id} value={tab.id}>
-              <div className={styles.techGrid}>
-                {filteredItems.map((item) => (
-                  <div key={item.name} className={styles.techChip}>
-                    <TechIcon name={item.name} />
-                    <span>{item.name}</span>
+              <div className={styles.techListContainer}>
+                <div className={styles.techGrid}>
+                  {firstTen.map((item) => (
+                    <div key={item.name} className={styles.techChip}>
+                      <TechIcon name={item.name} />
+                      <span>{item.name}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {hasMore && (
+                  <div
+                    className={`${styles.techMoreWrapper} ${isExpanded ? styles.expanded : ""}`}
+                    id={`tech-more-${tab.id}`}
+                  >
+                    <div className={styles.techMoreInner}>
+                      <div className={`${styles.techGrid} ${styles.techGridMore}`}>
+                        {remaining.map((item) => (
+                          <div key={item.name} className={styles.techChip}>
+                            <TechIcon name={item.name} />
+                            <span>{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                ))}
+                )}
+
+                {hasMore && (
+                  <>
+                    <div
+                      className={`${styles.techBlurOverlay} ${isExpanded ? styles.blurHidden : ""}`}
+                      aria-hidden="true"
+                    />
+                    <div className={styles.techAction}>
+                      <button
+                        type="button"
+                        className={styles.techExpandBtn}
+                        onClick={() => setIsExpanded((prev) => !prev)}
+                        aria-expanded={isExpanded}
+                        aria-controls={`tech-more-${tab.id}`}
+                        aria-label={
+                          isExpanded
+                            ? "Collapse tech stack list"
+                            : `View all ${filteredItems.length} technologies in ${tab.label}`
+                        }
+                      >
+                        <span>
+                          {isExpanded
+                            ? "COLLAPSE STACK"
+                            : `VIEW ALL TECHNOLOGIES (${filteredItems.length})`}
+                        </span>
+                        <svg
+                          className={`${styles.techArrowIcon} ${isExpanded ? styles.arrowUp : ""}`}
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M4 6l4 4 4-4" />
+                        </svg>
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </TabsContent>
           );
