@@ -953,7 +953,7 @@
 
 /* Statement Section */
 .ldStatement {
-  padding: 96px 40px !important;
+  position: relative;
 }
 
 .ldStatementInner {
@@ -1111,17 +1111,16 @@
 
 /* Tech Stack Section */
 .ldTech {
-  padding: 80px 40px !important;
+  position: relative;
 }
 
 /* Github Activity Section */
 .ldActivity {
-  padding: 80px 40px !important;
+  position: relative;
 }
 
 /* Footer */
 .ldFoot {
-  padding: 120px 40px 32px !important;
   text-align: center;
 }
 
@@ -1263,6 +1262,11 @@
 
 /* Tablet & Smaller Screens (<= 1023px) */
 @media (max-width: 1023px) {
+  .ldWrap > section,
+  .ldWrap > footer {
+    padding: 60px 32px;
+  }
+
   .ldLinks {
     gap: 18px;
     font-size: 13px;
@@ -1474,6 +1478,11 @@
 
 /* Mobile Screens (<= 767px) */
 @media (max-width: 767px) {
+  .ldWrap > section,
+  .ldWrap > footer {
+    padding: 52px 24px;
+  }
+
   .ldLinks {
     display: none;
   }
@@ -1717,10 +1726,6 @@
     border-top: 1px solid var(--line);
   }
 
-  .ldStatement {
-    padding: 48px 14px !important;
-  }
-
   .ldStatement p {
     font-size: 15px;
     line-height: 1.6;
@@ -1741,6 +1746,66 @@
   }
 
   .ldSocial {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ldSocial a {
+    border-left: 1px solid var(--line);
+    border-top: 0;
+    padding: 14px 10px;
+    column-gap: 8px;
+    min-height: 52px;
+  }
+
+  .ldSocial a:nth-child(2n + 1) {
+    border-left: 0;
+  }
+
+  .ldSocial a:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
+  .ldSocial a svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .ldSocial a span {
+    font-size: 13.5px;
+  }
+
+  .ldSocial a em {
+    font-size: 11px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ldFootRow {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+}
+
+/* Narrow Mobile (< 375px, e.g. 320px iPhone SE) */
+@media (max-width: 374px) {
+  .ldTools {
+    grid-template-columns: 1fr;
+  }
+
+  .ldTools span {
+    height: 52px;
+    font-size: 13px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .ldTools span:first-child {
+    border-top: 0;
+  }
+
+  .ldSocial {
     grid-template-columns: 1fr;
   }
 
@@ -1748,16 +1813,11 @@
     border-left: 0;
     border-top: 1px solid var(--line);
     min-height: 48px;
+    padding: 12px 14px;
   }
 
   .ldSocial a:first-child {
     border-top: 0;
-  }
-
-  .ldFootRow {
-    flex-direction: column;
-    gap: 12px;
-    text-align: center;
   }
 }
 
