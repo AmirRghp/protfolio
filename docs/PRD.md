@@ -112,21 +112,30 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 
 ### 6.6. Digital Laser Portal Transition & Flat Landing Page (`features/landing`)
 - **Transition:** Seamless portal sweep with vertical laser scanlines transitioning from the 3D room to a full-bleed ASCII room loop video (`ascii-room.webm`).
-- **Liquid Grid & Magic Cursor:** WebGL2 ripple background canvas responsive to cursor velocity and angular rotation.
+- **Liquid Grid & Magic Cursor:** WebGL2 ripple background canvas responsive to cursor velocity and angular rotation. Suppressed on touch devices to avoid sticky artifacts.
 - **Dynamic Role Typography:** Physics-driven `DynamicText` cycling roles (AI Engineer, ML Specialist, Robotics Researcher).
 - **Tactile Glass Exit Bar:** Sleek black exit bar (`#000000`) featuring WebGL2 optical refractive `TactileButton` ("Exit The Room" / "Re-enter").
+- **Unified Column Geometry:** The Hero section (`.ldHero`) shares identical responsive max-width and auto-margin centering with `.ldWrap` (`width: min(1240px, calc(100% - 48px)); margin: 0 auto;`), guaranteeing flush vertical alignment across all screen sizes.
 
 ### 6.7. Interactive Tech Stack Section (`TechStackSection`)
 - **Navigation:** Spring-animated tab switcher powered by `@uiarc/tabs`.
 - **Agent Harness Focus:** Dedicated category showcasing AI agent harnesses (CODEX, Claude Code, Antigravity, zCode, Cursor, Open Code) with custom monochrome vector icons and reverse hover contrast.
+- **Progressive Truncation & Blur:** Displays the first 10 items initially for categories with $> 10$ technologies, accompanied by a soft frosted blur overlay (`backdrop-filter: blur(4px)`).
+- **Smooth Expand/Collapse:** A letter-spaced monospace button (`VIEW ALL TECHNOLOGIES (60)` / `COLLAPSE STACK`) triggers a hardware-accelerated 60fps CSS Grid transition (`grid-template-rows: 0fr -> 1fr`) with rotating chevron; tab switches automatically reset expansion.
 
 ### 6.8. 3D Isometric GitHub Activity Skyline (`GithubActivitySection`)
 - **Visualization:** Renders annual GitHub commit activity as a 3D isometric skyline ("As a city") with 3-face shaded cubes in GitHub green tones.
 - **Features:** Diagonal rising wave animation on scroll, pinned best-day callout indicator, and interactive replay control.
 
 ### 6.9. Autonomous AI Pixel Tetris Canvas (`PixelTetris`)
-- **Design:** Interactive bottom-of-page canvas running an automated Tetris AI that continuously clears rows within a 6-row ceiling to prevent overflow.
+- **Design:** Interactive bottom-of-page canvas running an automated Tetris AI that continuously clears rows within a controlled ceiling without overflowing upwards.
+- **Responsive Resolution:** Standard $20\text{px}$ circular dots on desktop; dynamically scales down to $10\text{px}$ on mobile screens ($< 768\text{px}$), doubling the board height to 16 total rows (with 8–9 rows of active stacked blocks) and expanding to 28–30 columns for a dense, retro arcade visual aesthetic.
 - **Footer:** High-tracking minimalist typography with smooth "Back to Top" scrolling.
+
+### 6.10. Responsive Device Engine & Mobile 3D Room Bypass (`src/core/utils/responsive.ts`)
+- **Dual-Condition Gate:** Evaluates $\text{allowRoom3D} = \text{isDesktop} \land \text{isFine} \land \neg\text{isTouch}$ via React 19 `useSyncExternalStore`.
+- **Zero-Overhead Mobile Flow:** Any touch device or viewport $< 1024\text{px}$ completely bypasses `<RoomPreview>`, freeing GPU and WebGL resources and directing users immediately to the fast, battery-efficient `FlatLanding` portfolio.
+- **Adaptive Touch Controls:** Replaces room re-entry buttons with a glass pill "Get in Touch" navigation CTA, collapses capabilities and social links to 2 columns on $\ge 375\text{px}$ and 1 column on $< 375\text{px}$, and includes a circular glass ✕ close button on the Work accordion.
 
 ---
 

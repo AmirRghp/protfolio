@@ -28,7 +28,9 @@ flowchart TD
     UserAction -- Presses ENTER / SPACE / ESC --> TriggerEnter
     UserAction -- Clicks Skip Button --> TriggerEnter
     
-    TriggerEnter --> RoomActive[Activate 3D Nocturnal Cyberpunk Room]
+    TriggerEnter --> CheckDevice{Device allows 3D? width >= 1024px & pointer: fine}
+    CheckDevice -- Yes --> RoomActive[Activate 3D Nocturnal Cyberpunk Room]
+    CheckDevice -- No (Mobile / Tablet / Touch) --> DirectFlat[Directly Enter Flat Landing & set #portfolio]
 ```
 
 ---
@@ -136,7 +138,9 @@ flowchart TD
     
     FlatLandingActive --> ScrollExplore[Scroll through Tech Stack, Experience, GitHub City]
     
-    FlatLandingActive --> ClickReenter[Click 'Re-enter' in header or 'Enter The Room' in footer]
+    FlatLandingActive --> CheckReenterDevice{Is device desktop with fine pointer?}
+    CheckReenterDevice -- No (Mobile / Tablet) --> MobileNav[Show 'Get in Touch' button; suppress room entry]
+    CheckReenterDevice -- Yes --> ClickReenter[Click 'Re-enter' in header or 'Enter The Room' in footer]
     ClickReenter --> ExpandVideo[Reverse portal transition: expand ASCII frame to 100svh]
     ExpandVideo --> RestoreRoom[Unpause WebGL canvas loop & resume 3D room navigation]
 ```

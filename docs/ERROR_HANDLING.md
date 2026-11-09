@@ -32,6 +32,11 @@ When WebGL is unavailable or the context cannot be restored:
 - An instant button to switch directly to the **Flat Landing Portfolio** is presented.
 - The CSS nocturnal wallpaper remains visible so the visual aesthetic is preserved.
 
+### Proactive GPU Deprivation Bypass on Mobile & Touch Devices
+Rather than relying on reactive context recovery after a mobile device experiences thermal throttling or Out-Of-Memory (OOM) browser crashes, the application proactively assesses device capabilities via `useResponsiveDevice`:
+- On any touch-first device (`pointer: coarse`, including iPads) or screen $< 1024\text{px}$, `<RoomPreview>` is strictly not rendered in the DOM (`null`).
+- This completely prevents WebGL context allocation, halts all requestAnimationFrame loops, and redirects the user directly into `FlatLanding`.
+
 ---
 
 ## 3. Sandboxed Iframe & Third-Party Embed Blocking

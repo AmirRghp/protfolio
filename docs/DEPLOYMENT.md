@@ -35,6 +35,12 @@ dist/
 ### Code Splitting Strategy
 To maintain lightning-fast initial load times, the heavy Three.js room bundle (`RoomScene`) is dynamically imported (`React.lazy`). This ensures that visitors loading the site on low-bandwidth connections or deep-linking directly to `#portfolio` do not download the 3D scene until needed.
 
+### Search Engine Optimization (SEO) & Crawler Directives
+Static hosting assets include production crawler directives and rich schema metadata:
+- **`public/robots.txt`**: Declares crawler permissions and points directly to the XML sitemap.
+- **`public/sitemap.xml`**: Indexes canonical routes (`/protfolio/` and `/#portfolio`) with change frequencies and priority weights.
+- **Structured Data (`index.html`)**: Emits JSON-LD metadata for `Person` and `WebSite` entities to optimize indexability for AI search engines and technical recruiters.
+
 ---
 
 ## 3. GitHub Actions CI/CD Pipeline

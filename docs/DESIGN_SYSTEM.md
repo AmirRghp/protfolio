@@ -93,11 +93,19 @@ Based on an 8-point harmonic grid:
 ### 5.2. Breakpoints & Viewport Boundaries
 | Viewport | Min Width | Target Verification Behavior |
 | :--- | :--- | :--- |
-| **Mobile Compact** | `320px – 375px` | Zero horizontal overflow; clean fallback HTML hierarchy |
-| **Mobile Wide** | `375px – 768px` | Touch-first drag handling; single-column layouts |
-| **Tablet** | `768px – 1024px` | Room scene aspect ratio clamping; visible status bar |
-| **Desktop Baseline**| `1024px – 1440px`| Full 3D room hero with curved monitor and arcade machine |
-| **Wide Desktop** | `1440px+` | Fixed field-of-view (`ROOM_FOV = 40`) preventing camera distortion |
+| **Mobile Compact** | `< 375px` (e.g. 320px) | Single-column collapse (`grid-template-columns: 1fr`) for tools and social links; stacked cards |
+| **Mobile Standard** | `375px – 480px` | 2-column side-by-side grids; container width `calc(100% - 20px)`; text-overflow ellipsis |
+| **Mobile Wide** | `481px – 767px` | 2-column tools, full-width touch targets (>=44px), inertia momentum scrolling |
+| **Tablet** | `768px – 1023px` | 3-column tools, 3D room bypass for touch, fluid project accordion columns |
+| **Desktop Baseline**| `1024px – 1440px`| Full 3D room hero with curved monitor; flush 1240px container alignment between Hero and sections |
+| **Wide Desktop** | `1440px+` | Fixed field-of-view (`ROOM_FOV = 40`); centered 1240px column (`min(1240px, calc(100% - 48px))`) |
+
+### 5.3. Section Padding Tokens
+Standardized responsive vertical and horizontal padding across all `.ldWrap > section` and `.ldWrap > footer` containers:
+- **Desktop ($\ge 1024\text{px}$):** `padding: 72px 40px`
+- **Tablet ($768\text{px} - 1023\text{px}$):** `padding: 60px 32px`
+- **Mobile Wide ($481\text{px} - 767\text{px}$):** `padding: 52px 24px`
+- **Mobile Compact ($< 481\text{px}$):** `padding: 44px 18px`
 
 ---
 
@@ -117,6 +125,22 @@ Based on an 8-point harmonic grid:
 - Spring-physics sliding active indicator pill.
 - Accessible ARIA tabs and keyboard arrow navigation.
 - High-contrast hover inversion for technology badge icons.
+
+### 6.4. Progressive Tech Stack Expander (`TechStackSection`)
+- Truncates initial display to first 10 items for categories with $> 10$ technologies.
+- Layered `.techBlurOverlay` (`backdrop-filter: blur(4px)`) softens the lower boundary.
+- Hardware-accelerated 60fps CSS Grid transition (`grid-template-rows: 0fr -> 1fr`) powered by cubic-bezier easing.
+- Minimalist uppercase letter-spaced monospace button (`VIEW ALL TECHNOLOGIES (60)` / `COLLAPSE STACK`) with rotating SVG chevron.
+
+### 6.5. Mobile Work Accordion Close Control (`WorkAccordion`)
+- Circular optical glass `✕` icon button ($36\text{px}$) with $50\%$ border radius.
+- Positioned in the header row directly opposite the branch title for instant thumb accessibility.
+- Branch titles maintain stabilized typography (`clamp(20px, 6.4vw, 24px)`) when sibling branches expand.
+
+### 6.6. High-Density Mobile Pixel Tetris (`PixelTetris`)
+- Circular matrix cells scale from standard $20\text{px}$ (desktop) to $10\text{px}$ (mobile).
+- Expands vertical board capacity from 8 to 16 rows and horizontal capacity to 28–30 columns.
+- Increases prefilled mid-game rows to 7 and stack ceiling to 9 rows, doubling active block density.
 
 ---
 

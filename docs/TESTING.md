@@ -22,7 +22,7 @@ Key testing principles:
   /         \    DOM testing, keyboard navigation, window drag
  /-----------\   
 /             \  Unit Tests (Vitest)
-/               \ 40 test files · 223 tests (3D math, audio, level data)
+/               \ 42 test files · 243 tests (3D math, audio, level data, responsive)
 -----------------
 ```
 
@@ -32,7 +32,14 @@ Key testing principles:
 
 Unit testing runs via **Vitest** with in-memory DOM simulation and isolated worker threads.
 
-### Test Suites Breakdown (40 Files, 223 Tests)
+### Test Suites Breakdown (42 Files, 243 Tests)
+- **Device & Responsive Engine:**
+  - `src/core/utils/responsive.test.ts`: Tests `useResponsiveDevice` hook, media query matching, snapshot overrides, and strict dual-condition calculation ($\text{allowRoom3D}$).
+- **Landing Page & UI Components:**
+  - `src/features/landing/components/FlatLanding.test.tsx`: Tests flat landing DOM structure, contact button routing, and room entry suppression.
+  - `src/features/landing/components/TechStackSection.test.tsx`: Tests 10-item truncation thresholds, category filtering, and expand/collapse button state.
+  - `src/features/landing/components/WorkAccordion.test.tsx`: Tests mobile accordion layout and circular glass close button interaction.
+  - `src/features/landing/effects/PixelTetris.test.tsx`: Tests SSR canvas rendering and responsive `mobileCellSize`, `mobileMaxStackHeight`, and `mobilePrefillRows` props.
 - **3D Room & Camera Math:**
   - `src/features/room/utils/roomCamera.test.ts`: Verifies camera poses, frustum calculations, aspect ratio scaling, and quintic smootherstep easing.
   - `src/features/room/utils/roomNavigation.test.ts`: Tests the navigation state machine and destination routing.
@@ -73,7 +80,7 @@ End-to-end tests run headless Chromium across responsive viewport configurations
 Run the following commands locally before any release or commit:
 
 ```bash
-# 1. Run all 223 Vitest unit & integration tests
+# 1. Run all 243 Vitest unit & integration tests
 npm run test
 
 # 2. Verify complete TypeScript type soundness (zero emits, zero errors)

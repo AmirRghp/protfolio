@@ -99,3 +99,47 @@ This document records the foundational architecture decisions, trade-offs, and d
 - **Consequences:**
   - *Positive:* Absolute professional credibility with senior engineering hiring managers.
   - *Negative:* Content must be manually updated whenever real-world accomplishments change.
+
+---
+
+## ADR-008: Responsive Mobile & Tablet 3D Room Bypass via Strict Dual-Condition (`allowRoom3D`)
+
+- **Status:** Accepted
+- **Date:** November 2026
+- **Context:**
+  The 3D room relies on multiple dynamic point lights, Three.js shaders, bloom post-processing, and real-time homography projections designed for mouse-driven desktop interaction. On touch devices (phones, tablets, and iPads), this architecture causes severe GPU thermal throttling, battery drain, and Safari WebGL memory exhaustion, while presenting a cramped and clumsy user experience.
+- **Decision:**
+  Implement a central `useResponsiveDevice` hook using React 19 `useSyncExternalStore` that enforces a strict dual-condition for 3D room access:
+  $$\text{allowRoom3D} = \text{isDesktop} \land \text{isFine} \land \neg\text{isTouch}$$
+  Any touch-first device (`pointer: coarse`, including iPad Pro/Air) or viewport $< 1024\text{px}$ evaluates to `allowRoom3D = false`. In this mode:
+  1. `<RoomPreview>` is completely unmounted (`null`) in `App.tsx`, freeing WebGL contexts and stopping render loops.
+  2. The entry lanyard badge skips the 3D room construction phase, navigating directly to `FlatLanding`.
+  3. URL hash `#room` dynamically synchronizes to `#portfolio`.
+  4. Room re-entry buttons and `Escape` room shortcuts are replaced with an accessible "Get in Touch" navigation pill.
+- **Consequences:**
+  - *Positive:* 100% elimination of mobile WebGL crashes, instant page loads on low-power devices, zero background battery drain, and pristine touch ergonomics.
+  - *Positive:* Seamless desktop experience remains completely intact with dedicated GPU acceleration.
+  - *Negative:* Touchscreen tablet users cannot navigate the 3D room spatial view, but receive a rich, fully responsive, and accessible 2D portfolio instead.
+
+---
+
+## ADR-009: Unified Desktop Container Geometry for Flat Landing Sections
+
+- **Status:** Accepted
+- **Date:** November 2026
+- **Context:**
+  On wide and ultrawide desktop monitors ($\ge 1440\text{px}$), the Hero section (`.ldHero`) was rendered with `padding: 0 16px`, causing it to expand across the full screen width ($1400\text{px} - 1880\text{px}$). In contrast, all lower sections were enclosed within `.ldWrap` with a fixed max-width (`width: min(1240px, calc(100% - 48px)); margin: 0 auto;`). This created jarring horizontal misalignment where the Hero card hung out past the vertical rails and registration marks of the content below.
+- **Decision:**
+  Standardize `.ldHero` to share the exact same responsive container geometry and auto-margin centering as `.ldWrap`:
+  ```css
+  .ldHero {
+    position: relative;
+    z-index: 30;
+    width: min(1240px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 0;
+  }
+  ```
+- **Consequences:**
+  - *Positive:* Clean, architectural column alignment across all sections on desktop, tablet, and mobile.
+  - *Positive:* Dynamic laser portal transition FLIP geometry seamlessly adapts to the centered docked frame rect without distortion.

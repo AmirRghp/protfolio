@@ -6,6 +6,48 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.7.0] - 2026-11-09
+
+### Added
+- **Responsive Mobile & Tablet 3D Room Bypass (`useResponsiveDevice`):**
+  - Added React 19 `useSyncExternalStore` hook enforcing strict dual-condition for 3D room access: $\text{allowRoom3D} = \text{isDesktop} \land \text{isFine} \land \neg\text{isTouch}$ (viewport $\ge 1024\text{px}$ AND pointer: fine).
+  - Touch devices (phones, iPads, tablets) and viewports $< 1024\text{px}$ completely unmount `<RoomPreview>`, freeing GPU resources, releasing WebGL contexts, and eliminating background Three.js render loops.
+  - Holographic lanyard badge (`LanyardIntro`) navigates directly into `FlatLanding` on mobile/tablet upon pull or skip.
+  - URL hash synchronization: `#room` automatically updates to `#portfolio` on mobile devices via `window.history.replaceState`.
+  - Replaced room re-entry buttons on mobile/tablet with an accessible glass pill **"Get in Touch"** button linked directly to `#ld-contact`.
+  - Suppressed custom `MagicCursor` and room `Escape` hotkey on touch screens to prevent sticky hover artifacts.
+- **Search Engine Optimization (SEO) & Structured Data:**
+  - Added comprehensive metadata, OpenGraph tags, and Twitter Cards to `index.html`.
+  - Implemented JSON-LD structured data schemas (`Person`, `WebSite`) highlighting Amirreza Gholipour's AI/ML engineering role and verified credentials.
+  - Generated static crawler directives (`public/robots.txt`) and sitemap (`public/sitemap.xml`).
+- **Tech Stack Truncation & Smooth Height Expansion (`TechStackSection`):**
+  - Truncated initial list view to the first 10 items for categories with $> 10$ technologies.
+  - Added `.techBlurOverlay` (`backdrop-filter: blur(4px)`) and uppercase monospace `VIEW ALL TECHNOLOGIES (60)` / `COLLAPSE STACK` text button matching footer styling.
+  - Implemented 60fps CSS Grid height transition (`grid-template-rows: 0fr -> 1fr`) with rotating chevron; tab switches automatically reset expansion state.
+- **High-Density Mobile Pixel Tetris (`PixelTetris`):**
+  - Scaled mobile cell size down from $20\text{px}$ to $10\text{px}$ (`mobileCellSize={10}`).
+  - Increased board resolution from 8 rows / 16 cols to **16 total rows** and **28–30 columns** on mobile devices.
+  - Adjusted prefilled rows to 7 (`mobilePrefillRows={7}`) and stack ceiling to 9 (`mobileMaxStackHeight={9}`), doubling the active Tetris block height from 4 rows to 8–9 rows of organic shapes.
+  - Dynamically distributed hole spacing across columns (`numHoles = Math.max(2, Math.floor(cols / 8))`) to prevent premature line clears at startup.
+
+### Changed
+- **Desktop Hero Container Alignment (`flatLanding.module.css`):**
+  - Unified `.ldHero` width and margins to match `.ldWrap` (`width: min(1240px, calc(100% - 48px)); margin: 0 auto; padding: 0;`), fixing wide-screen misalignment where the hero frame expanded to full viewport width.
+  - Flush vertical alignment across all breakpoints between `.ldHero` and `.ldWrap` ($1240\text{px}$ desktop, $\text{calc}(100\% - 48\text{px})$ tablet, $\text{calc}(100\% - 20\text{px})$ mobile).
+- **Unified Responsive Section Padding Tokens:**
+  - Removed hardcoded section padding overrides on `.ldTech`, `.ldActivity`, `.ldFoot`, and `.ldStatement`, standardizing all `.ldWrap > section` and `.ldWrap > footer` to responsive tokens: Desktop ($72\text{px}\;40\text{px}$), Tablet ($60\text{px}\;32\text{px}$), Mobile Wide ($52\text{px}\;24\text{px}$), and Mobile Compact ($44\text{px}\;18\text{px}$).
+- **Responsive Grid Breakpoints for Capabilities & Social Links:**
+  - Viewports $\ge 375\text{px}$: Formatted into balanced **2-column** grids (`.ldTools` 2 cols $\times$ 3 rows, `.ldSocial` 2 cols $\times$ 2 rows with ellipsis handle truncation).
+  - Viewports $< 375\text{px}$ (e.g. $320\text{px}$ iPhone SE): Automatically collapse into **1 single column** (`grid-template-columns: 1fr`) with stacked rows.
+- **Work Accordion Header & Mobile Experience Spacing (`WorkAccordion.tsx`):**
+  - Replaced text close button with a circular glass `✕` icon button ($36\text{px}$) aligned at top-right opposite the branch title.
+  - Stabilized closed accordion branch title typography across mobile/tablet to prevent font shrinkage when adjacent branches open.
+  - Replaced $0\text{px}$ padding on mobile experience items with symmetric $18\text{px}$ horizontal padding, aligning text with section headers while maintaining wall-to-wall dividers.
+- **Test Suite Expansion:**
+  - Expanded test coverage from 40 files / 223 tests to **42 files / 243 tests**, adding unit tests for `responsive.ts`, `FlatLanding.tsx`, `TechStackSection.tsx`, `WorkAccordion.tsx`, and `PixelTetris.tsx`.
+
+---
+
 ## [0.6.0] - 2026-11-08
 
 ### Added

@@ -56,7 +56,7 @@ The project enforces strict compiler settings:
 | `npm run preview` | Locally serves the production `dist/` bundle |
 | `npm run typecheck` | Executes `tsc --noEmit` to verify type safety across source and tests |
 | `npm run lint` | Runs ESLint across `src/`, `tests/`, and config files |
-| `npm run test` | Executes all 40 unit and integration test suites via Vitest |
+| `npm run test` | Executes all 42 unit and integration test suites (243 tests) via Vitest |
 | `npm run test:e2e` | Builds the application and executes the Playwright Chromium test suite |
 
 ---
