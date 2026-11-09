@@ -66,17 +66,24 @@ export function Tabs({ value, defaultValue, onValueChange, className, ...props }
   );
 }
 
-export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
+export function TabsList({ className, children, ...props }: ComponentPropsWithoutRef<typeof TabsPrimitive.List>) {
   const { active } = useContext(TabsContext);
   const reduced = useReducedMotion();
   const shell = useRef<HTMLDivElement>(null);
   const viewport = useRef<HTMLDivElement>(null);
   const list = useRef<HTMLDivElement>(null);
   const [edges, setEdges] = useState({ overflow: false, left: false, right: false });
+  const [indicator, setIndicator] = useState<{
+    left: number;
+    width: number;
+    top: number;
+    height: number;
+  } | null>(null);
 
   const update = useCallback(() => {
     const frame = shell.current;
     const scroll = viewport.current;
+    const content = list.current;
     if (!frame || !scroll) return;
     const max = Math.max(0, scroll.scrollWidth - scroll.clientWidth);
     const next = {
@@ -87,6 +94,18 @@ export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeo
     setEdges((prev) =>
       prev.overflow === next.overflow && prev.left === next.left && prev.right === next.right ? prev : next
     );
+
+    if (content) {
+      const tab = content.querySelector<HTMLElement>('[role="tab"][data-state="active"]');
+      if (tab) {
+        setIndicator({
+          left: tab.offsetLeft,
+          width: tab.offsetWidth,
+          top: tab.offsetTop,
+          height: tab.offsetHeight,
+        });
+      }
+    }
   }, []);
 
   const reveal = useCallback(
@@ -122,7 +141,18 @@ export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeo
   }, [update]);
 
   useLayoutEffect(() => {
-    reveal(list.current?.querySelector<HTMLElement>('[role="tab"][data-state="active"]') ?? null);
+    const content = list.current;
+    if (!content) return;
+    const tab = content.querySelector<HTMLElement>('[role="tab"][data-state="active"]');
+    if (tab) {
+      setIndicator({
+        left: tab.offsetLeft,
+        width: tab.offsetWidth,
+        top: tab.offsetTop,
+        height: tab.offsetHeight,
+      });
+      reveal(tab);
+    }
   }, [active, reveal]);
 
   const scrollTabs = (dir: number) => {
@@ -151,9 +181,8 @@ export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeo
           <NavArrowLeft width={17} height={17} aria-hidden="true" />
         </button>
       )}
-      <motion.div
+      <div
         ref={viewport}
-        layoutScroll
         className={styles.viewport}
         onFocusCapture={(event) => {
           if (event.target instanceof HTMLElement && event.target.getAttribute("role") === "tab") {
@@ -161,8 +190,24 @@ export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeo
           }
         }}
       >
-        <TabsPrimitive.List {...props} ref={list} className={[styles.list, className].filter(Boolean).join(" ")} />
-      </motion.div>
+        <TabsPrimitive.List {...props} ref={list} className={[styles.list, className].filter(Boolean).join(" ")}>
+          {indicator && (
+            <motion.span
+              className={styles.selection}
+              initial={false}
+              animate={{
+                x: indicator.left,
+                width: indicator.width,
+                top: indicator.top,
+                height: indicator.height,
+              }}
+              transition={reduced ? { duration: 0 } : motionTokens.spring.morph}
+              aria-hidden="true"
+            />
+          )}
+          {children}
+        </TabsPrimitive.List>
+      </div>
       {edges.overflow && (
         <button
           type="button"
@@ -179,9 +224,6 @@ export function TabsList({ className, ...props }: ComponentPropsWithoutRef<typeo
 }
 
 export function TabsTrigger({ className, children, value, ...props }: ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger>) {
-  const { active } = useContext(TabsContext);
-  const reduced = useReducedMotion();
-
   return (
     <TabsPrimitive.Trigger
       {...props}
@@ -189,15 +231,6 @@ export function TabsTrigger({ className, children, value, ...props }: ComponentP
       data-value={value}
       className={[styles.trigger, className].filter(Boolean).join(" ")}
     >
-      {active === value && (
-        <motion.span
-          className={styles.selection}
-          layoutId="selection"
-          layoutDependency={active}
-          transition={reduced ? { duration: 0 } : motionTokens.spring.morph}
-          aria-hidden="true"
-        />
-      )}
       <span className={styles.triggerLabel}>{children}</span>
     </TabsPrimitive.Trigger>
   );
