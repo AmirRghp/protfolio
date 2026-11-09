@@ -186,20 +186,27 @@ export default function WorkAccordion() {
 
             <div className={styles.ldColBody}>
               <div className={styles.ldColInfo}>
-                <span className={styles.ldColChip}>{branch.icon}</span>
-                <h3>{branch.name}</h3>
-                <p>{branch.line}</p>
-                <span className={styles.ldColCount}>{branch.projects.length} projects</span>
-                <button
-                  className={styles.ldColClose}
-                  type="button"
-                  onClick={() => setOpenIndex(-1)}
-                >
-                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-                    <path d="M4 4l8 8M12 4l-8 8" />
-                  </svg>
-                  Close
-                </button>
+                <div className={styles.ldColHead}>
+                  <div className={styles.ldColTitleGroup}>
+                    <span className={styles.ldColChip}>{branch.icon}</span>
+                    <div className={styles.ldColTitleTexts}>
+                      <h3>{branch.name}</h3>
+                      <span className={styles.ldColCount}>{branch.projects.length} projects</span>
+                    </div>
+                  </div>
+                  <button
+                    className={styles.ldColClose}
+                    type="button"
+                    onClick={() => setOpenIndex(-1)}
+                    aria-label={`Close ${branch.name}`}
+                    title="Close"
+                  >
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                      <path d="M4 4l8 8M12 4l-8 8" />
+                    </svg>
+                  </button>
+                </div>
+                <p className={styles.ldColLine}>{branch.line}</p>
               </div>
               <div className={styles.ldColCar}>
                 <ProjectCarousel projects={branch.projects} color={branch.color} autoFocus={isOpen} />
