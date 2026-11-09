@@ -675,9 +675,9 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
 
       </header>
 
-      <main className="intro" aria-labelledby="name" data-glisse-backdrop>
+      <main className="intro" aria-labelledby="name">
         <div className={styles.ldPage}>
-          <section className={styles.ldHero} id="ld-top">
+          <section className={styles.ldHero} id="ld-top" data-glisse-backdrop>
             <div ref={frameRef} className={styles.ldFrame}>
               <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
                 <img
@@ -746,14 +746,14 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
           <div ref={wrapRef} className={styles.ldWrap}>
 
             {/* Capabilities Ticker Strip */}
-            <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities">
+            <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities" data-glisse-backdrop>
               {CAPABILITIES.map((c) => (
                 <span key={c}>{c}</span>
               ))}
             </section>
 
             {/* Work Section */}
-            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work">
+            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work" data-glisse-backdrop>
               <div className={`${styles.ldHead} ${styles.ldRise}`}>
                 <div>
                   <div className={styles.ldKicker}>
@@ -778,7 +778,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Statement Quote Section */}
-            <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me">
+            <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me" data-glisse-backdrop>
               <div className={styles.ldStatementInner}>
                 <div className={`${styles.ldKicker} ${styles.ldRise}`}>
                   <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -794,7 +794,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Numbers Metric Cards */}
-            <section className={`${styles.ldNumbers} ${styles.ldX}`} id="ld-numbers" aria-label="Key Numbers">
+            <section className={`${styles.ldNumbers} ${styles.ldX}`} id="ld-numbers" aria-label="Key Numbers" data-glisse-backdrop>
               {STATS.map((st) => (
                 <div key={st.label} className={`${styles.ldStat} ${styles.ldRise}`}>
                   <span className={styles.ldK}>{st.note}</span>
@@ -807,7 +807,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Experience & Education */}
-            <section className={`${styles.ldProcess} ${styles.ldX}`} id="ld-experience" aria-label="Experience & Education">
+            <section className={`${styles.ldProcess} ${styles.ldX}`} id="ld-experience" aria-label="Experience & Education" data-glisse-backdrop>
               <div className={`${styles.ldKicker} ${styles.ldRise}`}>
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
@@ -844,21 +844,21 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Tech Stack Section */}
-            <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack">
+            <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack" data-glisse-backdrop>
               <div className={styles.ldRise}>
                 <TechStackSection />
               </div>
             </section>
 
             {/* Github Activity Section */}
-            <section className={`${styles.ldActivity} ${styles.ldX}`} id="ld-activity" aria-label="Github Activity">
+            <section className={`${styles.ldActivity} ${styles.ldX}`} id="ld-activity" aria-label="Github Activity" data-glisse-backdrop>
               <div className={styles.ldRise}>
                 <GithubActivitySection />
               </div>
             </section>
 
             {/* Footer Section */}
-            <footer className={`${styles.ldFoot} ${styles.ldX}`} id="ld-contact">
+            <footer className={`${styles.ldFoot} ${styles.ldX}`} id="ld-contact" data-glisse-backdrop>
               <h2 className={styles.ldRise}>Have a project or opportunity in mind?</h2>
               <a className={`${styles.ldMail} ${styles.ldRise}`} href={`mailto:${portfolioContent.owner.email}`}>
                 {portfolioContent.owner.email}

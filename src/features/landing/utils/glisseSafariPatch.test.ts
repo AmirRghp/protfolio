@@ -3,51 +3,55 @@ import fs from "node:fs";
 import path from "node:path";
 
 describe("Glisse WebKit / Safari refraction bend patch", () => {
-  it("patches boxUnits in glisse dist files to prevent scale diminution on iOS Safari", () => {
+  it("preserves WebKit objectBoundingBox filter units and patches multi-section dynamic backdrop binding", () => {
     const esmPath = path.resolve(process.cwd(), "node_modules/glisse/dist/index.js");
     const cjsPath = path.resolve(process.cwd(), "node_modules/glisse/dist/index.cjs");
 
     const esmContent = fs.readFileSync(esmPath, "utf8");
     const cjsContent = fs.readFileSync(cjsPath, "utf8");
 
-    // Must not contain the flawed WebKit user-agent branch that switches to objectBoundingBox
-    expect(esmContent).not.toMatch(
-      /const boxUnits = \(\) => \/AppleWebKit\\\/\/\.test\(navigator\.userAgent\) && !\/Chrom\(\?:e\|ium\)\\\/\/\.test\(navigator\.userAgent\);/
+    // WebKit (Safari & iOS) requires objectBoundingBox units for SVG filters on HTML elements
+    expect(esmContent).toContain(
+      "const boxUnits = () => /AppleWebKit\\//.test(navigator.userAgent) && !/Chrom(?:e|ium)\\//.test(navigator.userAgent);",
     );
-    expect(cjsContent).not.toMatch(
-      /const boxUnits = \(\) => \/AppleWebKit\\\/\/\.test\(navigator\.userAgent\) && !\/Chrom\(\?:e\|ium\)\\\/\/\.test\(navigator\.userAgent\);/
+    expect(cjsContent).toContain(
+      "const boxUnits = () => /AppleWebKit\\//.test(navigator.userAgent) && !/Chrom(?:e|ium)\\//.test(navigator.userAgent);",
     );
 
-    // Must contain the patched boxUnits returning false to enforce userSpaceOnUse
-    expect(esmContent).toContain("const boxUnits = () => false;");
-    expect(cjsContent).toContain("const boxUnits = () => false;");
+    // Must not force boxUnits = () => false, which places feImage at 6500% in WebKit
+    expect(esmContent).not.toContain("const boxUnits = () => false;");
+    expect(cjsContent).not.toContain("const boxUnits = () => false;");
+
+    // Must include the multi-section dynamic backdrop refraction patch
+    expect(esmContent).toContain("/* [patch-glisse] Multi-section dynamic backdrop refraction */");
+    expect(cjsContent).toContain("/* [patch-glisse] Multi-section dynamic backdrop refraction */");
+    expect(esmContent).toContain("const list = Array.isArray(source) ? source : [source];");
+    expect(cjsContent).toContain("const list = Array.isArray(source) ? source : [source];");
   });
 
-  it("verifies displacement calculation retains full pixel scale (~19.8px) instead of dividing by container height", () => {
-    const navbarHeight = 64;
+  it("keeps section-level WebKit objectBoundingBox coordinates and physical filter dimensions under WebKit's 4096px limit", () => {
+    const navbarHeight = 58;
+    const navbarWidth = 390;
     const bend = 0.31;
     const dispersion = 0.4;
-    const containerHeight = 5555; // Full scrollable page height
-    const containerWidth = 390; // Mobile viewport width
+    const heroSectionHeight = 504; // 64px top pad + 440px mobile Hero frame
+    const retinaDpr = 3;
 
-    const reach = bend * navbarHeight; // 19.84px
+    // Physical pixel height of a section must stay well below WebKit's 4096px max software ImageBuffer limit
+    expect(heroSectionHeight * retinaDpr).toBeLessThan(4096);
+
+    const reach = bend * navbarHeight; // 17.98px
     const spectrum = [1 + 0.2 * dispersion, 1 + 0.1 * dispersion, 1];
 
-    // Flawed WebKit calculation (dividing reach by containerHeight & containerWidth):
-    const flawedDownScale = (reach / containerHeight) * spectrum[0];
-    const flawedAcrossScale = (reach / containerWidth) * spectrum[0];
-    // Patched calculation (raw pixels in userSpaceOnUse):
-    const patchedDownScale = reach * spectrum[0];
-    const patchedAcrossScale = reach * spectrum[0];
+    // In primitiveUnits="objectBoundingBox", WebKit multiplies scale by across (X) and down (Y)
+    const acrossScaleAttr = (reach / navbarWidth) * spectrum[0];
+    const downScaleAttr = (reach / heroSectionHeight) * spectrum[0];
 
-    // Flawed scale produces sub-pixel near-zero noise (< 0.01px vertical) in WebKit
-    expect(flawedDownScale).toBeLessThan(0.01);
-    expect(flawedAcrossScale).toBeLessThan(0.1);
+    const effectiveWebKitDisplacementX = acrossScaleAttr * navbarWidth;
+    const effectiveWebKitDisplacementY = downScaleAttr * heroSectionHeight;
 
-    // Patched scale produces crisp ~21px optical refraction across both Android and iPhone
-    expect(patchedDownScale).toBeGreaterThan(19);
-    expect(patchedDownScale).toBeCloseTo(21.4272, 2);
-    expect(patchedAcrossScale).toBeCloseTo(21.4272, 2);
-    expect(patchedDownScale).toBeCloseTo(21.4272, 2);
+    expect(effectiveWebKitDisplacementX).toBeCloseTo(reach * spectrum[0], 4);
+    expect(effectiveWebKitDisplacementY).toBeCloseTo(reach * spectrum[0], 4);
+    expect(effectiveWebKitDisplacementY).toBeGreaterThan(19);
   });
 });

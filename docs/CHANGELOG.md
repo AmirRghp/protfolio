@@ -19,12 +19,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Animated indicator geometry with Framer Motion spring physics using `initial={false}` to suppress mount fly-in artifacts.
 
 ### Fixed
-- **iOS Safari / WebKit Scale Diminution in Glisse Optical Liquid Glass (`FlatLanding`):**
-  - Resolved an issue where the liquid glass `bend` (optical displacement refraction) rendered visibly on Android (Chromium) but failed completely on iPhone (iOS / Safari WebKit), leaving text passing beneath the navbar straight without warping.
-  - Root cause: Glisse's internal `boxUnits` branched on WebKit user agents, setting `filterUnits="objectBoundingBox"` and dividing displacement scale by the container height (`down = 5555px`), producing a sub-pixel near-zero displacement of $\approx 0.0035\text{px}$.
-  - Added an automated idempotent patch script (`scripts/patch-glisse.js`) invoked during `postinstall` that forces `boxUnits = () => false`, unifying all platforms into `userSpaceOnUse` with full physical pixel displacement ($19.8\text{px}$–$21.4\text{px}$) across the entire page (Hero, Work, Numbers, Experience, Tech Stack, Activity, Contact, Footer).
-  - Added `-webkit-transform: translateZ(0); transform: translateZ(0); will-change: filter;` to `.ld main.intro` to guarantee hardware-composited GPU stability on iOS during continuous touch scrolling.
-  - Updated `--lg-blur` to `16px` for an intensified frosted glass aesthetic and added automated Vitest regression test `src/features/landing/utils/glisseSafariPatch.test.ts`.
+- **iOS Safari / WebKit SVG Filter Refraction in Glisse Optical Liquid Glass (`FlatLanding`):**
+  - Resolved an issue where the liquid glass `bend` (optical displacement refraction) rendered visibly on Android (Chromium) and on `glisse.kelvinzhang.ca`, but failed on iPhone (iOS / Safari WebKit).
+  - Root causes: (1) WebKit only renders HTML SVG filters (`feImage` subregions and `feDisplacementMap`) in `objectBoundingBox` units (`boxUnits() === true`), so forcing `boxUnits = () => false` placed the lens at `6500%` of the element height; (2) placing `data-glisse-backdrop` on the $5,555\text{px}$-tall `<main>` container exceeded WebKit's $4096\text{px}$ CPU software `ImageBuffer` limit at Retina DPR; (3) rounded-corner `overflow: hidden` clipping and hardware-composited sublayers (`translateZ(0)`, `translate3d`, `<video>`, and nested `-webkit-backdrop-filter`) inside the Hero prevented WebKit's CPU SVG filter from sampling `SourceGraphic`.
+  - Restored WebKit `objectBoundingBox` filter units in `scripts/patch-glisse.js` and patched `findBackdrop` / `bend` to dynamically track multiple compact section-level `[data-glisse-backdrop]` elements ($200\text{px}$–$850\text{px}$ tall), activating the SVG filter only on the section(s) currently overlapping the visible sticky navbar.
+  - Eliminated conflicting hardware compositing layers and corner-clipping inside `.ldHero` once `.ld.ready` is active, and updated automated regression tests in `src/features/landing/utils/glisseSafariPatch.test.ts`.
 - **GPU Compositor Layer Isolation on Scrolled Navbar:**
   - Resolved an issue where `--lg-blur` on `<Glass>` failed to blur page elements passing beneath (causing text like "See my work" to remain sharp with chromatic-only fringing).
   - Removed `will-change: transform, opacity` from `.ldNav` to prevent Chromium/Blink from trapping the header in an isolated compositor layer.

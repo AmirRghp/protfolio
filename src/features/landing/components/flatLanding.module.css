@@ -68,7 +68,7 @@
   object-fit: cover;
   display: block;
   pointer-events: none;
-  filter: brightness(1.22) contrast(1.06) saturate(1.14);
+  border-radius: inherit;
 }
 
 .ld main,
@@ -80,9 +80,6 @@
   margin: 0 !important;
   padding: 0 !important;
   gap: 0 !important;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  will-change: filter;
 }
 
 .ldPage {
@@ -91,7 +88,7 @@
   min-width: 0;
   max-width: 100%;
   width: 100%;
-  padding-top: 64px;
+  padding-top: 0;
   overflow-x: hidden;
 }
 
@@ -119,11 +116,13 @@
   z-index: 0;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
 .ldNavGlass.visible {
   opacity: 1;
+  visibility: visible;
 }
 
 .ldLogo {
@@ -218,9 +217,10 @@
 .ldHero {
   position: relative;
   z-index: 30;
-  width: min(1240px, calc(100% - 48px));
-  margin: 0 auto;
-  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 64px max(24px, calc((100% - 1240px) / 2)) 0;
 }
 
 .ldFrame {
@@ -234,6 +234,11 @@
     inset 0 0 0 1px rgba(255, 255, 255, 0.08),
     0 0 0 1px rgba(255, 255, 255, 0.05),
     0 24px 60px -20px rgba(0, 0, 0, 0.7);
+}
+
+.ld.ready .ldFrame {
+  overflow: visible;
+  will-change: auto;
 }
 
 .ldFrame::after {
@@ -263,6 +268,10 @@
   background: #05060b;
 }
 
+.ld.ready .ldReel {
+  overflow: visible;
+}
+
 .ldReelVideo {
   position: relative;
   z-index: 2;
@@ -271,7 +280,12 @@
   object-fit: cover;
   display: block;
   border-radius: inherit;
-  filter: brightness(1.22) contrast(1.06) saturate(1.14);
+}
+
+@supports (-webkit-touch-callout: none) {
+  .ld.ready .ldReelVideo {
+    display: none;
+  }
 }
 
 .ldPortalFx {
@@ -284,6 +298,10 @@
   container-type: size;
   opacity: 0;
   will-change: opacity;
+}
+
+.ld.ready .ldPortalFx {
+  display: none;
 }
 
 .ldMatrixGrid {
@@ -366,8 +384,14 @@
 
 .ld.ready .ldHeroOverlay {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
   pointer-events: auto;
+}
+
+.ldHeroOverlay :global(.lg-glass) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background-color: rgba(40, 40, 44, 0.78);
 }
 
 .ldHeroStack {
@@ -439,6 +463,10 @@
   border-left: 1px solid var(--line);
   border-right: 1px solid var(--line);
   will-change: transform, opacity;
+}
+
+.ld.ready .ldWrap {
+  will-change: auto;
 }
 
 .ldWrap > section,
@@ -1521,7 +1549,7 @@
   }
 
   .ldHero {
-    padding: 0;
+    padding: 64px max(24px, calc((100% - 1240px) / 2)) 0;
   }
 
   .ldFrame {
@@ -1639,9 +1667,13 @@
 
 /* Mobile Compact & Narrow Phones (<= 480px, including 320px & 375px) */
 @media (max-width: 480px) {
-  .ldWrap,
-  .ldHero {
+  .ldWrap {
     width: calc(100% - 20px);
+  }
+
+  .ldHero {
+    width: 100%;
+    padding: 64px 10px 0;
   }
 
   .ldWrap > section {

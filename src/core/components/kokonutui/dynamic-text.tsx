@@ -234,7 +234,7 @@ function paint(g: Glyph) {
   }
   const sy = 1 + g.sq;
   const sx = 1 - g.sq * 0.6;
-  g.el.style.transform = `translate3d(${g.x.toFixed(2)}px, ${g.y.toFixed(2)}px, 0) rotate(${g.r.toFixed(2)}deg) scale(${sx.toFixed(3)}, ${sy.toFixed(3)})`;
+  g.el.style.transform = `translate(${g.x.toFixed(2)}px, ${g.y.toFixed(2)}px) rotate(${g.r.toFixed(2)}deg) scale(${sx.toFixed(3)}, ${sy.toFixed(3)})`;
   g.el.style.opacity = g.o.toFixed(3);
 }
 
