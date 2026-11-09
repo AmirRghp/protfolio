@@ -4,7 +4,7 @@ import FlatLanding from "./FlatLanding";
 import { portfolioContent } from "@/data/content";
 
 describe("FlatLanding component", () => {
-  it("renders the sticky header with Re-enter button and logo", () => {
+  it("renders the sticky header with Re-enter button, logo, and glisse Glass backdrop", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
     );
@@ -12,6 +12,9 @@ describe("FlatLanding component", () => {
     expect(html).toContain("AG");
     expect(html).toContain("AI Engineer");
     expect(html).toContain("Re-enter");
+    expect(html).toContain("ldNavGlass");
+    expect(html).toContain("lg-glass");
+    expect(html).toContain("data-glisse-backdrop");
   });
 
   it("renders hero frame with looping ASCII room video and without featured card badge", () => {
@@ -31,7 +34,8 @@ describe("FlatLanding component", () => {
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
     );
 
-    expect(html).toContain('<main class="intro" aria-labelledby="name">');
+    expect(html).toContain('<main class="intro"');
+    expect(html).toContain('data-glisse-backdrop');
     expect(html).toContain('id="name"');
     expect(html).toContain(portfolioContent.owner.name);
     expect(html).toContain(portfolioContent.owner.role);

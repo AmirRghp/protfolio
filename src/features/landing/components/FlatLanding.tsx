@@ -13,7 +13,7 @@ import {
 } from "@/features/landing/utils";
 import { getAssetUrl } from "@/core/utils";
 import { portfolioContent } from "@/data";
-import { Button as GlisseButton } from "glisse";
+import { Button as GlisseButton, Glass } from "glisse";
 import "glisse/styles.css";
 import DynamicText from "@/core/components/kokonutui";
 import { useResponsiveDevice } from "@/core/utils/responsive";
@@ -603,6 +603,22 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
       )}
 
       <header ref={navRef} className={`${styles.ldNav} ${isScrolled ? styles.scrolled : ""}`}>
+        <Glass
+          className={`${styles.ldNavGlass} ${isScrolled ? styles.visible : ""}`}
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 0,
+            pointerEvents: "none",
+            borderRadius: 0,
+            background: "none",
+            "--lg-glass-bend": 0.31,
+            "--lg-glass-dispersion": 0.4,
+            "--lg-blur": "3px",
+            "--lg-rim-shine": 0,
+          } as CSSProperties}
+          aria-hidden="true"
+        />
         <a className={styles.ldLogo} href="#top" onClick={(e) => scrollToSection("top", e)}>
           <svg viewBox="0 0 20 20" aria-hidden="true">
             <path d="M10 1.5v17M1.5 10h17M4 4l12 12M16 4 4 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
@@ -659,7 +675,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
 
       </header>
 
-      <main className="intro" aria-labelledby="name">
+      <main className="intro" aria-labelledby="name" data-glisse-backdrop>
         <div className={styles.ldPage}>
           <section className={styles.ldHero} id="ld-top">
             <div ref={frameRef} className={styles.ldFrame}>
