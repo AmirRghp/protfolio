@@ -198,7 +198,9 @@
 .ldHero {
   position: relative;
   z-index: 30;
-  padding: 0 16px;
+  width: min(1240px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 0;
 }
 
 .ldFrame {
@@ -1499,7 +1501,7 @@
   }
 
   .ldHero {
-    padding: 0 12px;
+    padding: 0;
   }
 
   .ldFrame {
@@ -1617,7 +1619,8 @@
 
 /* Mobile Compact & Narrow Phones (<= 480px, including 320px & 375px) */
 @media (max-width: 480px) {
-  .ldWrap {
+  .ldWrap,
+  .ldHero {
     width: calc(100% - 20px);
   }
 
@@ -1650,10 +1653,6 @@
     min-height: 38px;
     padding: 0 14px;
     font-size: 12.5px;
-  }
-
-  .ldHero {
-    padding: 0 8px;
   }
 
   .ldFrame {
