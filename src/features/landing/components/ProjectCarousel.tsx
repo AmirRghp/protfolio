@@ -182,6 +182,7 @@ export default function ProjectCarousel({ projects, color, autoFocus = false }: 
                 target="_blank"
                 rel="noopener noreferrer"
                 className={styles.wcCard}
+                aria-label={`View ${project.title} on GitHub`}
                 onClick={(e) => {
                   if (!isCurrent) {
                     e.preventDefault();

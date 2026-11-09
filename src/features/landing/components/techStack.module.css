@@ -120,9 +120,23 @@
     margin-bottom: 20px;
   }
 
+  .techGrid {
+    gap: 8px;
+    margin-top: 16px;
+  }
+
   .techChip {
     font-size: 13px;
-    padding: 7px 12px;
+    padding: 8px 12px;
     gap: 7px;
   }
 }
+
+@media (max-width: 380px) {
+  .techChip {
+    font-size: 12px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+}
+

@@ -24,6 +24,7 @@ export type FlatLandingProps = {
   isOpen: boolean;
   snapshotCanvas?: HTMLCanvasElement | null;
   onReenter: () => void;
+  allowRoomEntry?: boolean;
 };
 
 const DYNAMIC_ROLES = [
@@ -100,7 +101,7 @@ function StatCounter({ st, inView }: { st: StatItem; inView: boolean }) {
   return <b data-count={st.num > 0 ? st.num : undefined}>{display}</b>;
 }
 
-export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
+export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }: FlatLandingProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const transitionImgRef = useRef<HTMLImageElement>(null);
@@ -505,7 +506,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
 
   // Global Escape key returns to room when at root flat landing
   useEffect(() => {
-    if (transitionState !== "open") return;
+    if (!allowRoomEntry || transitionState !== "open") return;
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
       const tag = document.activeElement?.tagName?.toLowerCase();
       if (tag === "input" || tag === "textarea") return;
@@ -515,7 +516,8 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [transitionState, handleReenter]);
+  }, [allowRoomEntry, transitionState, handleReenter]);
+
 
   // Scroll listener for nav glass styling & intersection observer for rise elements
   useEffect(() => {
@@ -629,18 +631,30 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
         </nav>
 
         <div className={styles.ldNavCta}>
-          <TactileButton
-            onClick={handleReenter}
-            style={{
-              "--btn-h": "38px",
-              "--btn-pad-h": "18px",
-              "--btn-radius": "999px",
-              fontSize: "13px",
-            } as CSSProperties}
-          >
-            Re-enter
-          </TactileButton>
+          {allowRoomEntry ? (
+            <TactileButton
+              onClick={handleReenter}
+              style={{
+                "--btn-h": "38px",
+                "--btn-pad-h": "18px",
+                "--btn-radius": "999px",
+                fontSize: "13px",
+              } as CSSProperties}
+            >
+              Re-enter
+            </TactileButton>
+          ) : (
+            <a
+              href="#ld-contact"
+              className={styles.ldNavContactBtn}
+              onClick={(e) => scrollToSection("ld-contact", e)}
+              aria-label="Get in Touch"
+            >
+              Get in Touch
+            </a>
+          )}
         </div>
+
       </header>
 
       <main className="intro" aria-labelledby="name">
@@ -782,7 +796,7 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                 </svg>
                 Career & Education
               </div>
-              <h2 className={styles.ldRise}>Experience & Background</h2>
+              <h2 className={styles.ldRise}>Experience</h2>
               <ol>
                 {portfolioContent.owner.experience.map((exp) => (
                   <li key={`${exp.company}-${exp.title}`} className={styles.ldRise}>
@@ -870,11 +884,14 @@ export default function FlatLanding({ isOpen, onReenter }: FlatLandingProps) {
                 </a>
               </nav>
 
-              <div className={`${styles.ldFootCta} ${styles.ldRise}`}>
-                <TactileButton onClick={handleReenter}>
-                  Enter The Room
-                </TactileButton>
-              </div>
+              {allowRoomEntry && (
+                <div className={`${styles.ldFootCta} ${styles.ldRise}`}>
+                  <TactileButton onClick={handleReenter}>
+                    Enter The Room
+                  </TactileButton>
+                </div>
+              )}
+
 
               {/* Floor Pixel Tetris Canvas */}
               <div className={styles.ldFootTetris} aria-hidden="true">

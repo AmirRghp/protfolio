@@ -541,9 +541,8 @@ export function PixelTetris({
         }
 
         draw();
+        raf = requestAnimationFrame(loop);
       }
-
-      raf = requestAnimationFrame(loop);
     }
 
     build();
@@ -557,13 +556,25 @@ export function PixelTetris({
     });
     ro.observe(canvas);
 
-    const io = new IntersectionObserver(
-      ([entry]) => {
-        isIntersecting = entry.isIntersecting;
-      },
-      { threshold: 0.1 },
-    );
-    io.observe(containerEl);
+    isIntersecting = true;
+    const io = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver(
+          ([entry]) => {
+            const wasIntersecting = isIntersecting;
+            isIntersecting = entry.isIntersecting;
+            if (!wasIntersecting && isIntersecting && alive) {
+              last = performance.now();
+              cancelAnimationFrame(raf);
+              raf = requestAnimationFrame(loop);
+            }
+          },
+          { threshold: 0.05 },
+        )
+      : null;
+
+    if (io) {
+      io.observe(containerEl);
+    }
 
     raf = requestAnimationFrame(loop);
 
@@ -571,8 +582,9 @@ export function PixelTetris({
       alive = false;
       cancelAnimationFrame(raf);
       ro.disconnect();
-      io.disconnect();
+      if (io) io.disconnect();
     };
+
   }, [
     boardColor,
     stableColors,

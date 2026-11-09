@@ -34,6 +34,7 @@
 
 .ld.ready {
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .ld a {
@@ -138,6 +139,45 @@
 .ldNavCta {
   justify-self: end;
 }
+
+.ldNavContactBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #ffffff;
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+
+.ldNavContactBtn:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.28);
+  transform: translateY(-1px);
+}
+
+.ldNavContactBtn:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ldNavContactBtn:focus-visible {
+  outline: 2px solid #22c55e;
+  outline-offset: 2px;
+}
+
 
 /* Hero Frame */
 .ldHero {
@@ -1166,40 +1206,59 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 960px) {
+
+/* Tablet & Smaller Screens (<= 1023px) */
+@media (max-width: 1023px) {
   .ldLinks {
-    display: none;
+    gap: 18px;
+    font-size: 13px;
   }
+
   .ldNav {
-    grid-template-columns: 1fr auto;
+    padding: 0 20px;
   }
+
   .ldIntro {
     grid-template-columns: 1fr;
     gap: 28px;
   }
+
   .ldTools {
     grid-template-columns: repeat(3, 1fr);
   }
-  .ldTools span:nth-child(4) {
+
+  .ldTools span {
+    height: 80px;
+    font-size: 15px;
+    border-left: 1px solid var(--line);
+  }
+
+  .ldTools span:nth-child(3n + 1) {
     border-left: 0;
   }
+
   .ldTools span:nth-child(n + 4) {
     border-top: 1px solid var(--line);
   }
+
   .ldCols {
     flex-direction: column;
     height: auto;
   }
+
   .ldCol,
   .ldCols.hasOpen .ldCol {
-    flex: 0 0 96px;
+    flex: 0 0 92px;
   }
+
   .ldCols.hasOpen .ldCol.open {
-    flex: 0 0 620px;
+    flex: 0 0 580px;
   }
+
   .ldCols:not(.hasOpen) .ldCol:hover {
     flex-grow: 0;
   }
+
   .ldColCloth,
   .ldCol:hover .ldColCloth {
     left: 18px;
@@ -1208,6 +1267,7 @@
     padding-top: 14px;
     clip-path: none;
   }
+
   .ldColText,
   .ldCols.hasOpen .ldCol:not(.open) .ldColText {
     left: 66px;
@@ -1216,13 +1276,17 @@
     transform: translateY(50%);
     writing-mode: horizontal-tb;
   }
+
+  .ldColText span,
   .ldCols.hasOpen .ldCol:not(.open) .ldColText span {
     display: block;
   }
+
   .ldColBody {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
   }
+
   .ldColInfo {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1231,76 +1295,303 @@
     border-right: 0;
     border-bottom: 1px solid var(--line);
   }
+
   .ldColInfo h3 {
     margin: 0;
     font-size: 22px;
   }
+
   .ldColInfo p,
   .ldColCount {
     display: none;
   }
+
   .ldColClose {
     margin: 0 0 0 auto;
+    min-height: 44px;
+    padding: 0 16px;
   }
+
   .ldSocial {
     grid-template-columns: repeat(2, 1fr);
   }
-  .ldSocial a:nth-child(3) {
+
+  .ldSocial a:nth-child(2n + 1) {
     border-left: 0;
   }
+
   .ldSocial a:nth-child(n + 3) {
     border-top: 1px solid var(--line);
   }
+
   .ldNumbers {
     grid-template-columns: repeat(2, 1fr);
   }
+
   .ldStat {
-    height: 260px;
+    height: 240px;
   }
-  .ldStat:nth-child(3) {
+
+  .ldStat:nth-child(2n + 1) {
     border-left: 0;
   }
+
   .ldStat:nth-child(n + 3) {
     border-top: 1px solid var(--line);
   }
+
   .ldProcessItem {
     grid-template-columns: 1fr auto;
     row-gap: 8px;
   }
+
   .ldProcessItem p {
     grid-column: 1 / 2;
   }
+
   .ldProcessItem svg {
     display: none;
   }
+
   .ldHead {
     flex-direction: column;
     align-items: flex-start;
   }
 }
 
-@media (max-width: 560px) {
-  .ldWrap > section,
-  .ldWrap > footer {
-    padding: 56px 20px;
+/* Mobile Screens (<= 767px) */
+@media (max-width: 767px) {
+  .ldLinks {
+    display: none;
   }
-  .ldIntro {
-    padding: 40px 20px 48px !important;
+
+  .ldNav {
+    grid-template-columns: 1fr auto;
+    height: 58px;
+    padding: 0 16px;
   }
-  .ldStatement {
-    padding: 88px 20px !important;
+
+  .ldLogo {
+    font-size: 16px;
+    gap: 7px;
   }
+
   .ldHero {
-    padding: 0 10px;
+    padding: 0 12px;
   }
+
   .ldFrame {
-    height: clamp(320px, 62vh, 620px);
+    height: auto;
+    min-height: 440px;
   }
+
   .ldHeroOverlay {
-    padding: 24px 16px;
+    position: relative;
+    inset: auto;
+    min-height: 440px;
+    padding: 32px 20px;
+    align-items: flex-start;
   }
-  .ldHeroName {
-    font-size: clamp(26px, 8vw, 36px);
+
+  .ldHeroName,
+  .ld h1 {
+    font-size: clamp(28px, 7vw, 42px);
+    white-space: normal !important;
+    text-wrap: balance !important;
+    line-height: 1.1;
+    max-width: none !important;
+    word-break: break-word;
+  }
+
+  .ldHeroRoleWrap {
+    min-height: 34px;
+    margin-bottom: 14px;
+  }
+
+  .ldDynamicText {
+    font-size: clamp(19px, 4.6vw, 25px);
+  }
+
+  .ldHeroBio {
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 20px !important;
+    max-width: 100%;
+  }
+
+  .ldTools {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ldTools span {
+    height: 72px;
+    font-size: 14px;
+    border-left: 1px solid var(--line);
+    border-top: 0;
+  }
+
+  .ldTools span:nth-child(2n + 1) {
+    border-left: 0;
+  }
+
+  .ldTools span:nth-child(n + 3) {
+    border-top: 1px solid var(--line);
+  }
+
+  .ldCol,
+  .ldCols.hasOpen .ldCol {
+    flex: 0 0 80px;
+  }
+
+  .ldCols.hasOpen .ldCol.open {
+    flex: 0 0 auto;
+    min-height: 520px;
+    height: 540px;
+  }
+
+  .ldStat {
+    height: 200px;
+  }
+}
+
+/* Mobile Compact & Narrow Phones (<= 480px, including 320px & 375px) */
+@media (max-width: 480px) {
+  .ldWrap {
+    width: calc(100% - 20px);
+  }
+
+  .ldWrap > section {
+    padding: 44px 14px;
+  }
+
+  .ldWrap > footer {
+    padding: 44px 14px max(44px, calc(44px + env(safe-area-inset-bottom, 0px)));
+  }
+
+  .ldNav {
+    padding: 0 12px;
+  }
+
+  .ldLogo span {
+    display: none;
+  }
+
+  .ldNavContactBtn {
+    height: 38px;
+    min-height: 38px;
+    padding: 0 14px;
+    font-size: 12.5px;
+  }
+
+  .ldHero {
+    padding: 0 8px;
+  }
+
+  .ldFrame {
+    min-height: 400px;
+  }
+
+  .ldHeroOverlay {
+    padding: 24px 14px;
+    min-height: 400px;
+  }
+
+  .ldHeroEyebrow {
+    font-size: 12.5px;
+    margin-bottom: 8px !important;
+  }
+
+  .ldHeroName,
+  .ld h1 {
+    font-size: clamp(24px, 7.8vw, 32px);
+    line-height: 1.1;
+  }
+
+  .ldDynamicText {
+    font-size: clamp(17px, 5.2vw, 22px);
+  }
+
+  .ldHeroBio {
+    font-size: 13.5px;
+    line-height: 1.5;
+    margin-bottom: 18px !important;
+  }
+
+  .ldActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .ldActions > * {
+    width: 100% !important;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .ldGhostBtn {
+    width: 100%;
+    height: 44px;
+    font-size: 13.5px;
+  }
+
+  .ldTools {
+    grid-template-columns: 1fr;
+  }
+
+  .ldTools span {
+    height: 52px;
+    font-size: 13px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .ldTools span:first-child {
+    border-top: 0;
+  }
+
+  .ldStatement {
+    padding: 48px 14px !important;
+  }
+
+  .ldStatement p {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .ldNumbers {
+    grid-template-columns: 1fr;
+  }
+
+  .ldStat {
+    height: 140px;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .ldStat:first-child {
+    border-top: 0;
+  }
+
+  .ldSocial {
+    grid-template-columns: 1fr;
+  }
+
+  .ldSocial a {
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    min-height: 48px;
+  }
+
+  .ldSocial a:first-child {
+    border-top: 0;
+  }
+
+  .ldFootRow {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
   }
 }
 
@@ -1311,27 +1602,3 @@
   }
 }
 
-@media (max-width: 860px) {
-  .ldFrame {
-    height: auto;
-    min-height: 480px;
-  }
-  .ldHeroOverlay {
-    position: relative;
-    inset: auto;
-    min-height: 480px;
-    padding: 32px 24px;
-    align-items: flex-start;
-  }
-  .ldHeroName,
-  .ld h1 {
-    font-size: clamp(32px, 7vw, 50px);
-    max-width: none;
-  }
-  .ldDynamicText {
-    font-size: clamp(20px, 4.5vw, 26px);
-  }
-  .ldHeroBio {
-    margin-bottom: 22px !important;
-  }
-}

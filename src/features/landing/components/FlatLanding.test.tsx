@@ -211,4 +211,41 @@ describe("FlatLanding component", () => {
     expect(html).toContain("ldMatrixGrid");
     expect(html).toContain("ldScanCrest");
   });
+
+  it("suppresses room re-entry buttons and provides Get in Touch pill when allowRoomEntry is false", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        allowRoomEntry={false}
+      />,
+    );
+
+    // Header CTA: No Re-enter button, has Get in Touch anchor
+    expect(html).not.toContain("Re-enter");
+    expect(html).toContain("Get in Touch");
+    expect(html).toContain('href="#ld-contact"');
+    expect(html).toContain("ldNavContactBtn");
+
+    // Footer CTA: No Enter The Room container
+    expect(html).not.toContain("Enter The Room");
+    expect(html).not.toContain("ldFootCta");
+  });
+
+  it("renders Re-enter in header and Enter The Room in footer when allowRoomEntry is true", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        allowRoomEntry={true}
+      />,
+    );
+
+    expect(html).toContain("Re-enter");
+    expect(html).toContain("Enter The Room");
+    expect(html).toContain("ldFootCta");
+  });
 });
+

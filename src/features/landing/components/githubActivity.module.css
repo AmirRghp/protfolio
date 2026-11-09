@@ -147,7 +147,7 @@
   }
 
   .stage {
-    min-height: 300px;
+    min-height: 280px;
     aspect-ratio: 16 / 8;
   }
 
@@ -155,3 +155,24 @@
     padding-bottom: 0;
   }
 }
+
+@media (max-width: 480px) {
+  .stage {
+    min-height: 240px;
+    aspect-ratio: 16 / 10;
+  }
+
+  .replayButton {
+    bottom: 10px;
+    right: 10px;
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .cardFoot {
+    bottom: 10px;
+    left: 10px;
+    font-size: 10px;
+  }
+}
+

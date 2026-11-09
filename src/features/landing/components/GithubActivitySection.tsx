@@ -183,8 +183,8 @@ export function GithubActivitySection() {
       if (pinCoords && pinProgress > 0) {
         const [pinX, pinY] = pinCoords;
         const targetY = 0.12 * height;
-        const isRightAligned = pinX > 0.65 * width;
-        const textX = pinX + (isRightAligned ? -10 : 10);
+        const isRightAligned = pinX > 0.55 * width;
+        const textX = Math.max(14, Math.min(width - 14, pinX + (isRightAligned ? -10 : 10)));
 
         ctx.globalAlpha = pinProgress;
         ctx.strokeStyle = "rgba(255, 255, 255, 0.85)";
@@ -203,7 +203,7 @@ export function GithubActivitySection() {
         ctx.textAlign = isRightAligned ? "right" : "left";
         ctx.textBaseline = "alphabetic";
         ctx.fillStyle = "#ffffff";
-        const titleFontSize = Math.round(Math.max(22, Math.min(36, 0.026 * width)));
+        const titleFontSize = Math.round(Math.max(16, Math.min(36, 0.026 * width)));
         ctx.font = `400 ${titleFontSize}px "Instrument Serif", "Georgia", serif`;
         ctx.fillText(`${bestCount} commits`, textX, targetY - 10 + 0.8 * titleFontSize);
 
@@ -214,6 +214,7 @@ export function GithubActivitySection() {
           textX,
           targetY - 10 + 0.8 * titleFontSize + 14,
         );
+
 
         ctx.globalAlpha = 1;
       }

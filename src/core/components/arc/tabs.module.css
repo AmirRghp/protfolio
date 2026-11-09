@@ -20,9 +20,11 @@
 .viewport {
   min-width: 0;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   border-radius: inherit;
   scrollbar-width: none;
 }
+
 
 .viewport::-webkit-scrollbar {
   display: none;

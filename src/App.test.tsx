@@ -1,9 +1,14 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import App from "./App";
 import { portfolioContent } from "@/data/content";
+import { setDeviceSnapshotForTesting } from "@/core";
 
 describe("portfolio entry page", () => {
+  afterEach(() => {
+    setDeviceSnapshotForTesting(null);
+  });
+
   it("renders the owner's name and current role as semantic content", () => {
     const html = renderToStaticMarkup(<App />);
 
@@ -50,4 +55,90 @@ describe("portfolio entry page", () => {
     expect(html).toContain('data-testid="lanyard-intro"');
     expect(html).toContain("Pull down to enter");
   });
+
+  it("completely unmounts RoomPreview, disables MagicCursor, and forces flat view on mobile", () => {
+    setDeviceSnapshotForTesting({
+      isMobile: true,
+      isTablet: false,
+      isMobileOrTablet: true,
+      isDesktop: false,
+      isTouch: true,
+      allowRoom3D: false,
+    });
+
+    const html = renderToStaticMarkup(<App />);
+
+    // View mode is forced to flat
+    expect(html).toContain('data-view-mode="flat"');
+
+    // RoomPreview is completely unmounted: no Exit The Room button from RoomPreview's ExitBar
+    expect(html).not.toContain("Exit The Room");
+
+    // MagicCursor is not rendered on mobile / touch
+    expect(html).not.toContain('data-testid="magic-cursor-frame"');
+
+    // Room re-entry buttons suppressed in FlatLanding
+    expect(html).not.toContain("Re-enter");
+    expect(html).toContain("Get in Touch");
+    expect(html).not.toContain("Enter The Room");
+  });
+
+  it("completely unmounts RoomPreview and disables MagicCursor on touch tablets (e.g. iPad)", () => {
+    setDeviceSnapshotForTesting({
+      isMobile: false,
+      isTablet: true,
+      isMobileOrTablet: true,
+      isDesktop: false,
+      isTouch: true,
+      allowRoom3D: false,
+    });
+
+    const html = renderToStaticMarkup(<App />);
+
+    expect(html).toContain('data-view-mode="flat"');
+    expect(html).not.toContain("Exit The Room");
+    expect(html).not.toContain('data-testid="magic-cursor-frame"');
+    expect(html).not.toContain("Re-enter");
+    expect(html).toContain("Get in Touch");
+  });
+
+  it("mounts RoomPreview and MagicCursor on desktop baseline with fine pointer", () => {
+    setDeviceSnapshotForTesting({
+      isMobile: false,
+      isTablet: false,
+      isMobileOrTablet: false,
+      isDesktop: true,
+      isTouch: false,
+      allowRoom3D: true,
+    });
+
+    const html = renderToStaticMarkup(<App />);
+
+    expect(html).toContain('data-view-mode="room"');
+    expect(html).toContain("Exit The Room");
+    expect(html).toContain('data-testid="magic-cursor-frame"');
+    expect(html).toContain("Re-enter");
+    expect(html).toContain("Enter The Room");
+  });
+
+  it("unmounts RoomPreview and disables MagicCursor on large touch screens (e.g. iPad Pro landscape)", () => {
+    setDeviceSnapshotForTesting({
+      isMobile: false,
+      isTablet: false,
+      isMobileOrTablet: false,
+      isDesktop: true,
+      isTouch: true,
+      allowRoom3D: false,
+    });
+
+    const html = renderToStaticMarkup(<App />);
+
+    expect(html).toContain('data-view-mode="flat"');
+    expect(html).not.toContain("Exit The Room");
+    expect(html).not.toContain('data-testid="magic-cursor-frame"');
+    expect(html).not.toContain("Re-enter");
+    expect(html).toContain("Get in Touch");
+    expect(html).not.toContain("Enter The Room");
+  });
 });
+

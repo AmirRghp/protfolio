@@ -2,11 +2,12 @@
   position: relative;
   height: 100%;
   min-height: 0;
-  touch-action: none;
+  touch-action: pan-y;
   user-select: none;
   -webkit-user-select: none;
   overflow: hidden;
 }
+
 
 .wcTrack {
   position: absolute;
@@ -31,8 +32,9 @@
 .wcCard {
   display: block;
   width: 100%;
-  max-width: 480px;
+  max-width: min(480px, calc(100vw - 48px));
   pointer-events: auto;
+
   overflow: hidden;
   background: rgba(13, 14, 16, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -203,3 +205,24 @@
   mask-image: linear-gradient(to top, black 0%, transparent 100%);
   -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
 }
+
+@media (max-width: 480px) {
+  .wcCard {
+    max-width: calc(100vw - 36px);
+  }
+
+  .wcBody {
+    padding: 12px 14px 14px;
+    gap: 6px;
+  }
+
+  .wcTop b {
+    font-size: 16px;
+  }
+
+  .wcBody p {
+    font-size: 12.5px;
+    -webkit-line-clamp: 2;
+  }
+}
+
