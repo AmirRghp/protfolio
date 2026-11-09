@@ -35,4 +35,20 @@ describe("PixelTetris component", () => {
     expect(html).toContain("test-tetris-class");
     expect(html).toContain("height:220px");
   });
+
+  it("supports responsive mobileCellSize, mobileMaxStackHeight, and mobilePrefillRows props", () => {
+    const html = renderToStaticMarkup(
+      <PixelTetris
+        cellSize={20}
+        mobileCellSize={10}
+        maxStackHeight={6}
+        mobileMaxStackHeight={9}
+        prefillRows={5}
+        mobilePrefillRows={7}
+      />,
+    );
+
+    expect(html).toContain("<canvas");
+    expect(html).toContain('role="presentation"');
+  });
 });

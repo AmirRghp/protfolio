@@ -109,11 +109,14 @@ export interface PixelTetrisProps {
   colors?: string[];
   movement?: number;
   cellSize?: number;
+  mobileCellSize?: number;
   gap?: number;
   rounded?: number;
   dropSpeed?: number;
   maxStackHeight?: number;
+  mobileMaxStackHeight?: number;
   prefillRows?: number;
+  mobilePrefillRows?: number;
   style?: CSSProperties;
   className?: string;
 }
@@ -140,11 +143,14 @@ export function PixelTetris({
   colors = ["#FFFFFF", "#FFFFFF"],
   movement = 4,
   cellSize = 20,
+  mobileCellSize,
   gap = 1,
   rounded = 20,
   dropSpeed = 2,
   maxStackHeight = 6,
+  mobileMaxStackHeight,
   prefillRows = 5,
+  mobilePrefillRows,
   style,
   className,
 }: PixelTetrisProps) {
@@ -170,9 +176,11 @@ export function PixelTetris({
     const blockRGB = source.map(parseColor);
 
     const rand = mulberry32(0x7e7415);
-    const pitch = cellSize + gap;
     const dropEvery = 1000 / Math.max(1, dropSpeed * 4);
     const wander = Math.min(10, Math.max(0, movement)) / 10;
+
+    let activeMaxStack = maxStackHeight;
+    let activePrefill = prefillRows;
 
     let alive = true;
     let isIntersecting = false;
@@ -357,8 +365,8 @@ export function PixelTetris({
         if (solid) full.push(r);
       }
 
-      // Height capping safeguard: if stack climbs above maxStackHeight, clear top overflow
-      const targetMaxHeight = Math.min(maxStackHeight, Math.floor(rows * 0.58));
+      // Height capping safeguard: if stack climbs above activeMaxStack, clear top overflow
+      const targetMaxHeight = Math.min(activeMaxStack, Math.floor(rows * 0.58));
       const ceilingRow = rows - targetMaxHeight;
       for (let r = 0; r < ceilingRow; r++) {
         for (let c = 0; c < cols; c++) {
@@ -390,7 +398,7 @@ export function PixelTetris({
     /** Pre-populates the bottom rows with realistic mid-game clusters and holes */
     function populateGrid() {
       grid = new Array(cols * rows).fill(-1);
-      const fillCount = Math.min(prefillRows, Math.floor(rows * 0.5));
+      const fillCount = Math.min(activePrefill, Math.floor(rows * 0.5));
       for (let r = rows - fillCount; r < rows; r++) {
         const depth = rows - 1 - r;
         const density = 0.88 - depth * 0.12;
@@ -399,11 +407,12 @@ export function PixelTetris({
             grid[r * cols + c] = 0;
           }
         }
-        // Guarantee at least 2 empty holes per prefilled row
-        const hole1 = Math.floor(rand() * cols);
-        const hole2 = (hole1 + Math.floor(cols / 2)) % cols;
-        grid[r * cols + hole1] = -1;
-        grid[r * cols + hole2] = -1;
+        // Guarantee empty holes per prefilled row
+        const numHoles = Math.max(2, Math.floor(cols / 8));
+        for (let h = 0; h < numHoles; h++) {
+          const hole = (Math.floor(rand() * cols) + h * Math.floor(cols / numHoles)) % cols;
+          grid[r * cols + hole] = -1;
+        }
       }
     }
 
@@ -415,6 +424,18 @@ export function PixelTetris({
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+      const isNarrow = w < 768;
+      const activeCellSize = isNarrow
+        ? (mobileCellSize ?? (cellSize > 12 ? 10 : cellSize))
+        : cellSize;
+      activeMaxStack = isNarrow
+        ? (mobileMaxStackHeight ?? (cellSize > 12 ? 9 : maxStackHeight))
+        : maxStackHeight;
+      activePrefill = isNarrow
+        ? (mobilePrefillRows ?? (cellSize > 12 ? 7 : prefillRows))
+        : prefillRows;
+
+      const pitch = activeCellSize + gap;
       cols = Math.max(6, Math.floor((w + gap) / pitch));
       rows = Math.max(6, Math.floor((h + gap) / pitch));
       cellW = Math.max(1, (w - gap * (cols - 1)) / cols);
@@ -590,11 +611,14 @@ export function PixelTetris({
     stableColors,
     movement,
     cellSize,
+    mobileCellSize,
     gap,
     rounded,
     dropSpeed,
     maxStackHeight,
+    mobileMaxStackHeight,
     prefillRows,
+    mobilePrefillRows,
   ]);
 
   return (

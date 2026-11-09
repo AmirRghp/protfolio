@@ -16,6 +16,7 @@ import { portfolioContent } from "@/data";
 import { Button as GlisseButton } from "glisse";
 import "glisse/styles.css";
 import DynamicText from "@/core/components/kokonutui";
+import { useResponsiveDevice } from "@/core/utils/responsive";
 import { TechStackSection } from "./TechStackSection";
 import { GithubActivitySection } from "./GithubActivitySection";
 import styles from "./flatLanding.module.css";
@@ -102,6 +103,7 @@ function StatCounter({ st, inView }: { st: StatItem; inView: boolean }) {
 }
 
 export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }: FlatLandingProps) {
+  const device = useResponsiveDevice();
   const rootRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
   const transitionImgRef = useRef<HTMLImageElement>(null);
@@ -896,15 +898,18 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
               {/* Floor Pixel Tetris Canvas */}
               <div className={styles.ldFootTetris} aria-hidden="true">
                 <PixelTetris
-                  cellSize={20}
+                  cellSize={device.isMobile ? 10 : 20}
+                  mobileCellSize={10}
                   gap={1}
                   rounded={20}
                   boardColor="transparent"
                   colors={["#FFFFFF", "#FFFFFF"]}
                   movement={4}
                   dropSpeed={2}
-                  maxStackHeight={6}
-                  prefillRows={5}
+                  maxStackHeight={device.isMobile ? 9 : 6}
+                  mobileMaxStackHeight={9}
+                  prefillRows={device.isMobile ? 7 : 5}
+                  mobilePrefillRows={7}
                 />
               </div>
 
