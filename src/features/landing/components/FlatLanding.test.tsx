@@ -14,7 +14,7 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Re-enter");
     expect(html).toContain("ldNavGlass");
     expect(html).toContain("lg-glass");
-    expect(html).toContain("--lg-blur:16px");
+    expect(html).toContain("--lg-blur:3px");
     expect(html).not.toContain("data-glisse-backdrop");
   });
 

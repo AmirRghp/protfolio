@@ -147,7 +147,7 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 ### 6.7. Optical Refractive Liquid Glass Scrolled Navbar (`glisse`)
 - True physical light refraction with chromatic dispersion (`--lg-glass-bend: 0.31`, `--lg-glass-dispersion: 0.4`, `--lg-rim-shine: 0`).
 - Seamless rectangular geometry (`borderRadius: 0`, `background: "none"`) mounted inside the sticky header.
-- High-intensity frosted diffusion (`--lg-blur: 16px`) providing smooth milky blur for underlying text, ASCII room video, and cards.
+- Calibrated frosted diffusion (`--lg-blur: 3px`) providing authentic Apple-grade optical blur for underlying text, ASCII room video, and cards.
 - Non-isolated GPU compositor architecture (`z-index: 0` glass with `z-index: 1` interactive controls, zero `will-change`) allowing hardware-accelerated sampling over the underlying page canvas.
 
 ---

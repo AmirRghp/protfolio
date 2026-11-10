@@ -203,8 +203,8 @@ This document records the foundational architecture decisions, trade-offs, and d
   3. **Official Library Architecture:** In-depth research of Glisse's official source code and demo site (`glisse.kelvinzhang.ca`) proved that the author never places `data-glisse-backdrop` under a sticky navbar or on scrolling page containers. Glisse natively falls back to `-webkit-backdrop-filter: blur(...) saturate(...)` with its canvas-painted lit rim (`--lg-rim`) on WebKit, reserving live SVG backdrop refraction for Chromium browsers that support it in CSS `backdrop-filter`.
 - **Decision:**
   1. Remove `data-glisse-backdrop` from all 9 scrolling page sections (`.ldHero`, `.ldTools`, `.ldWork`, `.ldStatement`, `.ldNumbers`, `.ldProcess`, `.ldTech`, `.ldActivity`, `.ldFoot`).
-  2. Allow `<Glass>` to execute Glisse's authentic dual-engine mode: Chromium / Android receives live GPU displacement in `backdrop-filter`, while iOS Safari receives hardware-accelerated `-webkit-backdrop-filter: blur(16px) saturate(180%)` accompanied by Glisse's photorealistic lit rim (`--lg-rim`).
-  3. Upgrade `--lg-blur` to `16px` with a dark nocturnal glass tint (`rgba(8, 6, 20, 0.55)`), ensuring pronounced frosted diffusion without graphical artifacts.
+  2. Allow `<Glass>` to execute Glisse's authentic dual-engine mode: Chromium / Android receives live GPU displacement in `backdrop-filter`, while iOS Safari receives hardware-accelerated `-webkit-backdrop-filter: blur(var(--lg-blur, 3px)) saturate(180%)` accompanied by Glisse's photorealistic lit rim (`--lg-rim`).
+  3. Calibrate `--lg-blur` to `3px` with a dark nocturnal glass tint (`rgba(8, 6, 20, 0.55)`), ensuring subtle, authentic Apple Liquid Glass diffusion without graphical artifacts.
 - **Consequences:**
   - *Positive:* Completely eliminates touch-scroll distortion drift; the glass effect remains perfectly pinned within the sticky header bounds (`inset: 0`).
   - *Positive:* Completely eliminates dropped layers; all sections, cards, accordions, and text remain 100% visible and stable at all scroll positions.

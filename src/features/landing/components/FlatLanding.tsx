@@ -614,7 +614,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             background: "none",
             "--lg-glass-bend": 0.31,
             "--lg-glass-dispersion": 0.4,
-            "--lg-blur": "16px",
+            "--lg-blur": "3px",
             "--lg-rim-shine": 0,
           } as CSSProperties}
           aria-hidden="true"

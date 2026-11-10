@@ -17,8 +17,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Resolution:
     1. Decoupled all scrolling page sections from `data-glisse-backdrop`, adopting Glisse's authentic dual-pipeline architecture (as used on `glisse.kelvinzhang.ca`).
     2. Chromium / Android continues to receive live GPU optical refraction via `backdrop-filter: blur() url(#glisse-backdrop)`.
-    3. iOS Safari receives hardware-accelerated `-webkit-backdrop-filter: blur(16px) saturate(180%)` accompanied by Glisse's canvas-drawn chromatic lit rim (`--lg-rim`).
-    4. Upgraded `--lg-blur` to `16px` and added a nocturnal glass tint (`rgba(8, 6, 20, 0.55)`), completely eliminating all drift, memory exhaustion, and layer dropping while delivering fluid 120 FPS scrolling.
+    3. iOS Safari receives hardware-accelerated `-webkit-backdrop-filter: blur(var(--lg-blur, 3px)) saturate(180%)` accompanied by Glisse's canvas-drawn chromatic lit rim (`--lg-rim`).
+    4. Calibrated `--lg-blur` to `3px` and added a nocturnal glass tint (`rgba(8, 6, 20, 0.55)`), completely eliminating all drift, memory exhaustion, and layer dropping while delivering fluid 120 FPS scrolling.
 
 ## [0.8.0] - 2026-11-09
 

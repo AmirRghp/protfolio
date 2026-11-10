@@ -140,7 +140,7 @@ flowchart TD
     
     ScrollExplore --> ScrollThreshold{Scroll offset > 12px?}
     ScrollThreshold -- Yes --> ScrolledNav[Activate .ldNav.scrolled: Fade in Glisse Optical Liquid Glass backdrop]
-    ScrolledNav --> OpticRefraction[Sample and blur passing elements with 16px frosted dispersion]
+    ScrolledNav --> OpticRefraction[Sample and blur passing elements with 3px frosted dispersion]
     ScrollThreshold -- No --> TransparentNav[Header remains clean and transparent at hero top]
     
     FlatLandingActive --> CheckReenterDevice{Is device desktop with fine pointer?}
