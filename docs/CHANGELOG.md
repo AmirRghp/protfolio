@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [0.8.2] - 2026-11-11
 
 ### Fixed
+- **Removal of Framed Border, Rim Outline & Box-Shadow from Scrolled Navbar:**
+  - Removed all enclosing rectangular borders, outlines, bottom hairline dividers, and Glisse perimeter canvas rims from `.ldNav` and `.ldNavGlass`.
+  - Suppressed `.ldNav.scrolled` bottom border (`box-shadow: none`), set `--lg-rim-shine: 0`, `--lg-edge: "transparent"`, `--lg-drop: "transparent"`, `backgroundImage: "none"`, and `box-shadow: none !important; border: none !important; outline: none !important;`.
+  - The sticky navbar now floats over page content as a completely seamless, frameless, borderless liquid glass optical slab.
 - **Chromium Live Optical Refraction Restoration (Scrolled Navbar):**
   - Resolved an issue on Chrome, Edge, and Android (Chromium) where the optical `bend` (refraction displacement) was inadvertently suppressed when the navbar became visible on scroll.
   - Root cause: In `flatLanding.module.css`, `.ldNavGlass.visible` previously defined an explicit `backdrop-filter: blur(var(--lg-blur, 3px)) saturate(180%)`, which overrode Glisse's internal `.lg-glass` backdrop-filter rule (`backdrop-filter: blur(var(--lg-blur, 3px)) var(--lg-filter, saturate(1.5))`). Because `--lg-filter` (which holds `url("#glisse-backdrop-N")`) was omitted from the override rule, Chromium never evaluated the SVG displacement map. Furthermore, inline `background: "none"` and CSS `background: rgba(...)` reset `background-image`, stripping Glisse's chromatic edge rim (`--lg-rim`).

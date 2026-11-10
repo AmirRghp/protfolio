@@ -107,7 +107,7 @@
 }
 
 .ldNav.scrolled {
-  box-shadow: 0 1px 0 var(--line);
+  box-shadow: none;
 }
 
 .ldNavGlass {
@@ -118,6 +118,10 @@
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s ease, visibility 0.3s ease;
+  box-shadow: none !important;
+  border: none !important;
+  outline: none !important;
+  background-image: none !important;
   -webkit-backdrop-filter: blur(var(--lg-blur, 3px)) var(--lg-filter, saturate(1.8));
   backdrop-filter: blur(var(--lg-blur, 3px)) var(--lg-filter, saturate(1.8));
 }
