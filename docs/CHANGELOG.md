@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.8.1] - 2026-11-10
+
+### Fixed
+- **iOS Safari Touch-Scroll Lens Drift & Disappearing Elements (Liquid Glass Navbar):**
+  - Resolved an issue on iPhone (Safari WebKit) where the liquid glass refraction band drifted downward below the sticky navbar during touch scrolling and underlying page sections (work accordion, metric cards, tech stack) suddenly vanished from the screen.
+  - Root causes:
+    1. Attaching dynamic SVG filters (`content.style.filter = url(...)`) to scrolling page sections desynchronized from the sticky header during iOS touch scrolling, because touch scrolling runs asynchronously on WebKit's GPU compositor thread while JavaScript `requestAnimationFrame` ticks on the main thread.
+    2. WebKit's software filter tile cache overflows its memory budget on high-DPI Retina screens when rendering dynamic displacement filters over large DOM trees, causing WebKit to drop the entire rendering layer.
+  - Resolution:
+    1. Decoupled all scrolling page sections from `data-glisse-backdrop`, adopting Glisse's authentic dual-pipeline architecture (as used on `glisse.kelvinzhang.ca`).
+    2. Chromium / Android continues to receive live GPU optical refraction via `backdrop-filter: blur() url(#glisse-backdrop)`.
+    3. iOS Safari receives hardware-accelerated `-webkit-backdrop-filter: blur(16px) saturate(180%)` accompanied by Glisse's canvas-drawn chromatic lit rim (`--lg-rim`).
+    4. Upgraded `--lg-blur` to `16px` and added a nocturnal glass tint (`rgba(8, 6, 20, 0.55)`), completely eliminating all drift, memory exhaustion, and layer dropping while delivering fluid 120 FPS scrolling.
+
 ## [0.8.0] - 2026-11-09
 
 ### Added

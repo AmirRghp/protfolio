@@ -13,7 +13,9 @@ describe("portfolio entry page", () => {
     const html = renderToStaticMarkup(<App />);
 
     expect(html).toContain('<main class="intro"');
-    expect(html).toContain('data-glisse-backdrop');
+    expect(html).toContain("ldNavGlass");
+    expect(html).toContain("lg-glass");
+    expect(html).not.toContain("data-glisse-backdrop");
     expect(html).toContain(`<h1 id="name">${portfolioContent.owner.name}</h1>`);
     expect(html).toContain(portfolioContent.owner.role);
   });

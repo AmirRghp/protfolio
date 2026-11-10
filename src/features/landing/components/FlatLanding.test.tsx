@@ -14,7 +14,8 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Re-enter");
     expect(html).toContain("ldNavGlass");
     expect(html).toContain("lg-glass");
-    expect(html).toContain("data-glisse-backdrop");
+    expect(html).toContain("--lg-blur:16px");
+    expect(html).not.toContain("data-glisse-backdrop");
   });
 
   it("renders hero frame with looping ASCII room video and without featured card badge", () => {
@@ -35,7 +36,6 @@ describe("FlatLanding component", () => {
     );
 
     expect(html).toContain('<main class="intro"');
-    expect(html).toContain('data-glisse-backdrop');
     expect(html).toContain('id="name"');
     expect(html).toContain(portfolioContent.owner.name);
     expect(html).toContain(portfolioContent.owner.role);

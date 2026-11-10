@@ -614,7 +614,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             background: "none",
             "--lg-glass-bend": 0.31,
             "--lg-glass-dispersion": 0.4,
-            "--lg-blur": "3px",
+            "--lg-blur": "16px",
             "--lg-rim-shine": 0,
           } as CSSProperties}
           aria-hidden="true"
@@ -677,70 +677,70 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
 
       <main className="intro" aria-labelledby="name">
         <div className={styles.ldPage}>
-          <section className={styles.ldHero} id="ld-top" data-glisse-backdrop>
+          <section className={styles.ldHero} id="ld-top">
             <div className={styles.ldHeroInner}>
               <div ref={frameRef} className={styles.ldFrame}>
-              <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
-                <img
-                  ref={transitionImgRef}
-                  className={styles.ldTransitionImg}
-                  src={getAssetUrl("assets/ascii-room.webp")}
-                  alt=""
-                  aria-hidden="true"
-                />
-                <video
-                  ref={videoRef}
-                  className={styles.ldReelVideo}
-                  src={getAssetUrl("assets/ascii-room.webm")}
-                  poster={getAssetUrl("assets/ascii-room.webp")}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  aria-label="Nocturnal Room ASCII Loop"
-                />
-                <div ref={portalFxRef} className={styles.ldPortalFx} aria-hidden="true">
-                  <div className={styles.ldMatrixGrid} />
-                  <div ref={scanCrestRef} className={styles.ldScanCrest} />
-                  <div className={styles.ldPortalSheen} />
+                <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
+                  <img
+                    ref={transitionImgRef}
+                    className={styles.ldTransitionImg}
+                    src={getAssetUrl("assets/ascii-room.webp")}
+                    alt=""
+                    aria-hidden="true"
+                  />
+                  <video
+                    ref={videoRef}
+                    className={styles.ldReelVideo}
+                    src={getAssetUrl("assets/ascii-room.webm")}
+                    poster={getAssetUrl("assets/ascii-room.webp")}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    aria-label="Nocturnal Room ASCII Loop"
+                  />
+                  <div ref={portalFxRef} className={styles.ldPortalFx} aria-hidden="true">
+                    <div className={styles.ldMatrixGrid} />
+                    <div ref={scanCrestRef} className={styles.ldScanCrest} />
+                    <div className={styles.ldPortalSheen} />
+                  </div>
                 </div>
-              </div>
 
-              {/* Hero Intro Overlay */}
-              <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
-                <div className={styles.ldHeroStack}>
-                  <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
-                  <h1 id="name">{portfolioContent.owner.name}</h1>
-                  <div className={styles.ldHeroRoleWrap} aria-label="Role focus">
-                    <DynamicText
-                      mode="morph"
-                      words={DYNAMIC_ROLES}
-                      interval={2400}
-                      loop={true}
-                      className={styles.ldDynamicText}
-                    />
-                    <span className="sr-only">{portfolioContent.owner.role} · {portfolioContent.owner.headline}</span>
-                  </div>
-                  <p className={styles.ldHeroBio}>
-                    I love solving challenging, real-world problems where data meets human experience.
-                    <br />
-                    Currently building intelligent systems, autonomous agents, and clean backend architectures.
-                  </p>
-                  <div className={styles.ldActions} data-theme="dark">
-                    <GlisseButton onClick={(e) => scrollToSection("ld-work", e)}>
-                      See my work
-                    </GlisseButton>
-                    <a
-                      className={styles.ldGhostBtn}
-                      href="#ld-contact"
-                      onClick={(e) => scrollToSection("ld-contact", e)}
-                    >
-                      Get in Touch
-                    </a>
+                {/* Hero Intro Overlay */}
+                <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
+                  <div className={styles.ldHeroStack}>
+                    <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
+                    <h1 id="name">{portfolioContent.owner.name}</h1>
+                    <div className={styles.ldHeroRoleWrap} aria-label="Role focus">
+                      <DynamicText
+                        mode="morph"
+                        words={DYNAMIC_ROLES}
+                        interval={2400}
+                        loop={true}
+                        className={styles.ldDynamicText}
+                      />
+                      <span className="sr-only">{portfolioContent.owner.role} · {portfolioContent.owner.headline}</span>
+                    </div>
+                    <p className={styles.ldHeroBio}>
+                      I love solving challenging, real-world problems where data meets human experience.
+                      <br />
+                      Currently building intelligent systems, autonomous agents, and clean backend architectures.
+                    </p>
+                    <div className={styles.ldActions} data-theme="dark">
+                      <GlisseButton onClick={(e) => scrollToSection("ld-work", e)}>
+                        See my work
+                      </GlisseButton>
+                      <a
+                        className={styles.ldGhostBtn}
+                        href="#ld-contact"
+                        onClick={(e) => scrollToSection("ld-contact", e)}
+                      >
+                        Get in Touch
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
               </div>
             </div>
           </section>
@@ -748,14 +748,14 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
           <div ref={wrapRef} className={styles.ldWrap}>
 
             {/* Capabilities Ticker Strip */}
-            <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities" data-glisse-backdrop>
+            <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities">
               {CAPABILITIES.map((c) => (
                 <span key={c}>{c}</span>
               ))}
             </section>
 
             {/* Work Section */}
-            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work" data-glisse-backdrop>
+            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work">
               <div className={`${styles.ldHead} ${styles.ldRise}`}>
                 <div>
                   <div className={styles.ldKicker}>
@@ -780,7 +780,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Statement Quote Section */}
-            <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me" data-glisse-backdrop>
+            <section className={`${styles.ldStatement} ${styles.ldX}`} id="ld-about" aria-label="About Me">
               <div className={styles.ldStatementInner}>
                 <div className={`${styles.ldKicker} ${styles.ldRise}`}>
                   <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
@@ -796,7 +796,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Numbers Metric Cards */}
-            <section className={`${styles.ldNumbers} ${styles.ldX}`} id="ld-numbers" aria-label="Key Numbers" data-glisse-backdrop>
+            <section className={`${styles.ldNumbers} ${styles.ldX}`} id="ld-numbers" aria-label="Key Numbers">
               {STATS.map((st) => (
                 <div key={st.label} className={`${styles.ldStat} ${styles.ldRise}`}>
                   <span className={styles.ldK}>{st.note}</span>
@@ -809,7 +809,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Experience & Education */}
-            <section className={`${styles.ldProcess} ${styles.ldX}`} id="ld-experience" aria-label="Experience & Education" data-glisse-backdrop>
+            <section className={`${styles.ldProcess} ${styles.ldX}`} id="ld-experience" aria-label="Experience & Education">
               <div className={`${styles.ldKicker} ${styles.ldRise}`}>
                 <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
                   <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
@@ -846,21 +846,21 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
             </section>
 
             {/* Tech Stack Section */}
-            <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack" data-glisse-backdrop>
+            <section className={`${styles.ldTech} ${styles.ldX}`} id="ld-techstack" aria-label="Tech Stack">
               <div className={styles.ldRise}>
                 <TechStackSection />
               </div>
             </section>
 
             {/* Github Activity Section */}
-            <section className={`${styles.ldActivity} ${styles.ldX}`} id="ld-activity" aria-label="Github Activity" data-glisse-backdrop>
+            <section className={`${styles.ldActivity} ${styles.ldX}`} id="ld-activity" aria-label="Github Activity">
               <div className={styles.ldRise}>
                 <GithubActivitySection />
               </div>
             </section>
 
             {/* Footer Section */}
-            <footer className={`${styles.ldFoot} ${styles.ldX}`} id="ld-contact" data-glisse-backdrop>
+            <footer className={`${styles.ldFoot} ${styles.ldX}`} id="ld-contact">
               <h2 className={styles.ldRise}>Have a project or opportunity in mind?</h2>
               <a className={`${styles.ldMail} ${styles.ldRise}`} href={`mailto:${portfolioContent.owner.email}`}>
                 {portfolioContent.owner.email}

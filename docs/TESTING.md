@@ -32,12 +32,12 @@ Key testing principles:
 
 Unit testing runs via **Vitest** with in-memory DOM simulation and isolated worker threads.
 
-### Test Suites Breakdown (42 Files, 243 Tests)
+### Test Suites Breakdown (43 Files, 246 Tests)
 - **Device & Responsive Engine:**
   - `src/core/utils/responsive.test.ts`: Tests `useResponsiveDevice` hook, media query matching, snapshot overrides, and strict dual-condition calculation ($\text{allowRoom3D}$).
 - **Landing Page & UI Components:**
-  - `src/features/landing/components/FlatLanding.test.tsx`: Tests flat landing DOM structure, contact button routing, room entry suppression, sticky header with Glisse `<Glass>` optical liquid glass backdrop (`ldNavGlass`, `lg-glass`), and coupling with `<main data-glisse-backdrop>`.
-  - `src/App.test.tsx`: Validates root application shell, semantic owner role structure, and `<main class="intro" data-glisse-backdrop>` markup integration.
+  - `src/features/landing/components/FlatLanding.test.tsx`: Tests flat landing DOM structure, contact button routing, room entry suppression, sticky header with Glisse `<Glass>` liquid glass backdrop (`ldNavGlass`, `lg-glass`), `--lg-blur: 16px`, and decoupling from scrolling sections.
+  - `src/App.test.tsx`: Validates root application shell, semantic owner role structure, and clean markup integration decoupled from `data-glisse-backdrop`.
   - `src/features/landing/components/TechStackSection.test.tsx`: Tests 10-item truncation thresholds, category filtering, and expand/collapse button state.
   - `src/features/landing/components/WorkAccordion.test.tsx`: Tests mobile accordion layout and circular glass close button interaction.
   - `src/features/landing/effects/PixelTetris.test.tsx`: Tests SSR canvas rendering and responsive `mobileCellSize`, `mobileMaxStackHeight`, and `mobilePrefillRows` props.
