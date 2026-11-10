@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.8.2] - 2026-11-11
+
+### Fixed
+- **Chromium Live Optical Refraction Restoration (Scrolled Navbar):**
+  - Resolved an issue on Chrome, Edge, and Android (Chromium) where the optical `bend` (refraction displacement) was inadvertently suppressed when the navbar became visible on scroll.
+  - Root cause: In `flatLanding.module.css`, `.ldNavGlass.visible` previously defined an explicit `backdrop-filter: blur(var(--lg-blur, 3px)) saturate(180%)`, which overrode Glisse's internal `.lg-glass` backdrop-filter rule (`backdrop-filter: blur(var(--lg-blur, 3px)) var(--lg-filter, saturate(1.5))`). Because `--lg-filter` (which holds `url("#glisse-backdrop-N")`) was omitted from the override rule, Chromium never evaluated the SVG displacement map. Furthermore, inline `background: "none"` and CSS `background: rgba(...)` reset `background-image`, stripping Glisse's chromatic edge rim (`--lg-rim`).
+  - Resolution:
+    1. Updated `.ldNavGlass` in `flatLanding.module.css` to use `-webkit-backdrop-filter: blur(var(--lg-blur, 3px)) var(--lg-filter, saturate(1.8))` and `backdrop-filter: blur(var(--lg-blur, 3px)) var(--lg-filter, saturate(1.8))`, preserving `--lg-filter` on Chromium while providing a graceful hardware-accelerated `saturate(1.8)` fallback on Safari.
+    2. Streamlined `.ldNavGlass.visible` to toggle only `opacity` and `visibility`, allowing Glisse's dual-engine pipeline to manage filter and rim states undisturbed.
+    3. Moved the nocturnal tint to `--lg-glass: "rgba(8, 6, 20, 0.55)"` on `<Glass>`, preserving Glisse's `background-image: var(--lg-rim, none)`.
+    4. Verified live optical displacement and chromatic rim reflection in real-time Chromium DevTools.
+
 ## [0.8.1] - 2026-11-10
 
 ### Fixed
