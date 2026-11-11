@@ -153,6 +153,15 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - Non-isolated GPU compositor architecture (`z-index: 0` glass with `z-index: 1` interactive controls, zero `will-change`) allowing hardware-accelerated sampling over the underlying page canvas.
 - Minimalist typographic identity (`.ldLogo` displaying `AG / AI Engineer` directly without decorative prefix iconography) and focused section navigation (`Work`, `Experience`, `Tech Stack`, `Activity`, `Contact`).
 
+### 6.8. Spatial Calibration Wireframe Loader & Roller-Shutter Exit Transition (`PortfolioLoader`)
+- **Nocturnal Obsidian Calibration Surface (`.plSheet`):** `#07080d` canvas with micro-dot grid ($24\text{px}$) and architectural sub-grid ($96\text{px}$) accented by cyan radial lighting (`rgba(56, 189, 248, 0.055)`).
+- **Active Downward Spatial Laser Scanner Beam (`.plScanBeam`):** A razor-sharp cyan-white horizontal beam with phosphor trailing wash sweeping down the viewport ($0\% \to 100\%$) during the mapping phase.
+- **Precision 1.5px L-Bracket Corner Reticles (`.corners`):** Crisp cyan L-brackets on all four corners of every scanned box (`8px × 1.5px` and `1.5px × 8px` arms).
+- **Hero Banner Spatial Calibration HUD:** True pixel-aspect SVG grid inside the hero banner box with rule-of-thirds dashed lines, corner vector ticks, and a concentric circular target reticle (`<circle>`) preserving circular geometry across desktop and mobile viewports.
+- **Bespoke AI/Spatial Telemetry Labels:** Specialized system labels tailored to Amirreza Gholipour's AI portfolio (`VIEWPORT // ASCII_CORE`, `IDENTITY // H1`, `ROLE // STREAM`, `NODE // 01..N`, `CTA // 01..N`, `BRAND`, `NAV // 01..N`, `SURFACE // CARD`).
+- **Blur-to-Crisp Typography Lock & Spectral Reveal Wipe:** Boxes initialize with blur (`filter: blur(2.5px) -> blur(0px)`), with live DOM typography sharpening from `blur(3px)` to crisp focus at $86\%$ progress, followed by a cyan-white spectral edge (`.plEdge`) wiping open the view at $100\%$ (`cubic-bezier(0.77, 0, 0.175, 1)`).
+- **Black Roller-Shutter Exit Transition (`ExitBar`):** Upward curtain sweep (`scaleY(0) \to scaleY(1)` with `cubic-bezier(0.77, 0, 0.175, 1)`) originating from the full-width `#000000` baseline, smoothly occluding the 3D room before unveiling the landing loader.
+
 ---
 
 ## 7. Motion & Physics Tokens
@@ -162,7 +171,13 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - **Easing Curve:** Quintic smootherstep ($6t^5 - 15t^4 + 10t^3$) guaranteeing zero second-derivative acceleration spikes ($C^2$ continuity).
 - **Parallax Dampening:** Exponential easing with time constant $\tau = 0.12\text{s}$; maximum idle travel limited to $\pm 0.24$ horizontal and $\pm 0.12$ vertical world units.
 
-### 7.2. Accessibility & Reduced Motion
+### 7.2. Roller-Shutter & Loader Motion Curves
+- **Roller-Shutter Upward Curtain:** $0.78\text{s}$ duration with `cubic-bezier(0.77, 0, 0.175, 1)`.
+- **Loader Downward Laser Scanner Beam:** $0.0\text{s} \to 2.2\text{s}$ cubic ease-in-out sweep (`computeScannerLinePercent`).
+- **Typography Sharpening Lock:** At $86\%$ progress threshold, `blur(3px) \to blur(0px)` over $0.42\text{s}$ cubic-bezier.
+- **Spectral Edge Wipe:** $0.98\text{s}$ duration with `cubic-bezier(0.77, 0, 0.175, 1)`.
+
+### 7.3. Accessibility & Reduced Motion
 When `prefers-reduced-motion: reduce` is detected:
 - Idle camera parallax is completely disabled.
 - Camera destination transitions jump instantaneously or resolve via brief crossfade.

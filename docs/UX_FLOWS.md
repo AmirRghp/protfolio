@@ -127,18 +127,23 @@ sequenceDiagram
 
 ---
 
-### Flow 6: Digital Laser Portal Transition to Flat Landing
+### Flow 6: Black Roller-Shutter Room-Exit & Spatial Calibration Portfolio Loader
 
 ```mermaid
 flowchart TD
     InRoom[Visitor inside 3D Room] --> ClickExit[Clicks WebGL2 'Exit The Room' TactileButton]
-    ClickExit --> Snapshot[Capture WebGL canvas snapshot to memory]
-    ClickExit --> StartPortal[Execute vertical laser scanline sweep: calc 100cqh + 40px]
-    ClickExit --> UpdateHash[Set window.location.hash = '#portfolio']
+    ClickExit --> ShutterSweep[Upward Black Roller-Shutter Curtain sweep: cubic-bezier 0.77, 0, 0.175, 1]
+    ShutterSweep --> UpdateHash[Set window.location.hash = '#portfolio']
+    UpdateHash --> MountLanding[Mount Flat Landing Portfolio & Initialize PortfolioLoader]
     
-    StartPortal --> RevealFlat[Crossfade to full-bleed ASCII room loop video]
-    RevealFlat --> FlatLandingActive[Mount Flat Landing Portfolio]
+    MountLanding --> CalibrateSurface[Mount Obsidian Grid Canvas .plSheet: 24px dots & 96px sub-grid]
+    CalibrateSurface --> ScanLaser[Downward Cyan-White Laser Scanner Beam .plScanBeam sweeps 0% -> 100%]
+    ScanLaser --> BoxMaterialize[Spatial-Sequential Materialization: L-Bracket reticles, dimension badges & telemetry labels]
+    BoxMaterialize --> BannerHUD[Render True Pixel-Aspect Rule-of-Thirds SVG & Concentric Target Reticle]
+    BoxMaterialize --> TextLock[Progress >= 86%: Sharpens typography from blur 3px to 0px]
+    TextLock --> SpectralWipe[Progress = 100%: Cyan-White Spectral Edge .plEdge wipes sheet open vertically]
     
+    SpectralWipe --> FlatLandingActive[Interactive Flat Landing Live with ASCII room video & LiquidGrid]
     FlatLandingActive --> ScrollExplore[Scroll through Tech Stack, Experience, GitHub City]
     
     ScrollExplore --> ScrollThreshold{Scroll offset > 12px?}
@@ -149,6 +154,7 @@ flowchart TD
     FlatLandingActive --> CheckReenterDevice{Is device desktop with fine pointer?}
     CheckReenterDevice -- No (Mobile / Tablet) --> MobileNav[Show 'Get in Touch' button; suppress room entry]
     CheckReenterDevice -- Yes --> ClickReenter[Click 'Re-enter' in header or 'Enter The Room' in footer]
-    ClickReenter --> ExpandVideo[Reverse portal transition: expand ASCII frame to 100svh]
-    ExpandVideo --> RestoreRoom[Unpause WebGL canvas loop & resume 3D room navigation]
+    ClickReenter --> ShutterDown[Down Shutter / Curtain Transition to 3D room]
+    ShutterDown --> RestoreRoom[Unpause WebGL canvas loop & resume 3D room navigation]
 ```
+

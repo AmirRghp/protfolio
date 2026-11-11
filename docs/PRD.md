@@ -21,7 +21,7 @@ For an AI Engineer specializing in autonomous agent harnesses, machine learning,
 ### How do we solve it?
 By providing a **dual-mode interactive journey**:
 1. An immersive **3D Nocturnal Cyberpunk Room** powered by Three.js / React Three Fiber, allowing visitors to inspect projects on a virtual curved monitor desktop, play Canvas games on a retro arcade cabinet, and interact with physics-based props.
-2. A sleek, high-performance **Flat Landing Portfolio** accessible via a digital laser scanline portal transition, featuring fluid liquid grid effects, an Arc UI tech stack tabbed explorer, and a 3D isometric GitHub contribution skyline.
+2. A sleek, high-performance **Flat Landing Portfolio** accessible via a cinematic black roller-shutter room-exit transition and an elevated AI spatial-calibration wireframe loader, featuring fluid liquid grid effects, an Arc UI tech stack tabbed explorer, and a 3D isometric GitHub contribution skyline.
 
 ---
 
@@ -108,10 +108,11 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 
 ### 6.5. Musical Oiia Cat Easter Egg (`features/room/props/OiiaCat`)
 - **Interaction:** Clicking the cat triggers a 160 BPM rhythmic spin and bounce animation.
-- **Disco Drop Sync:** During the music drop (seconds 33–57 and 81–105), the entire room shifts into dynamic disco strobe lighting, while the monitor enters Drop Sync mode with a synchronized 2D dancing cat.
+- **Disco Drop Sync:** During the music drop (seconds 33–57 and 106–132 / 01:46–02:12), the entire room shifts into dynamic disco strobe lighting, while the monitor enters Drop Sync mode with a synchronized 2D dancing cat.
 
-### 6.6. Digital Laser Portal Transition & Flat Landing Page (`features/landing`)
-- **Transition:** Seamless portal sweep with vertical laser scanlines transitioning from the 3D room to a full-bleed ASCII room loop video (`ascii-room.webm`).
+### 6.6. Roller-Shutter Exit Transition, Spatial Calibration Loader & Flat Landing Page (`features/landing`)
+- **Room-to-Landing Exit Transition:** Cinematic black roller-shutter curtain (`ExitBar`) sweeping smoothly upward (`cubic-bezier(0.77, 0, 0.175, 1)`) from the full-width black baseline (`#000000`) to cover the 3D room before mounting the landing page.
+- **Bespoke Spatial Calibration Wireframe Loader (`PortfolioLoader`):** Deep obsidian canvas (`#07080d`) with micro-dot grid ($24\text{px}$) and architectural sub-grid ($96\text{px}$). Features an active downward horizontal laser scanner beam (`.plScanBeam`) sweeping $0\% \to 100\%$ with phosphor trailing wash. Boxes materialize via a hybrid spatial-sequential activation algorithm with precision 1.5px cyan L-bracket corner reticles, live component `{w}×{h}` dimension badges, bespoke AI telemetry labels (`VIEWPORT // ASCII_CORE`, `IDENTITY // H1`, `ROLE // STREAM`, `NODE // 01..N`, `CTA // 01..N`, `BRAND`, `NAV // 01..N`), and a true pixel-aspect rule-of-thirds SVG grid with a concentric target reticle. Progressively sharpens live DOM typography from blur to crisp at $86\%$ and reveals the page via a cyan-white spectral edge wipe at $100\%$.
 - **Liquid Grid & Magic Cursor:** WebGL2 ripple background canvas responsive to cursor velocity and angular rotation. Suppressed on touch devices to avoid sticky artifacts.
 - **Dynamic Role Typography:** Physics-driven `DynamicText` cycling roles (`AI Engineer`, `ML Engineer`, `Software Engineer`, `Creative Developer`).
 - **Tactile Glass Exit Bar:** Sleek black exit bar (`#000000`) featuring WebGL2 optical refractive `TactileButton` ("Exit The Room" / "Re-enter").

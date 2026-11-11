@@ -267,3 +267,39 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* Zero layout collisions with the 3D isometric GitHub activity city section (`#ld-activity`).
   - *Positive:* All 254 Vitest unit tests, TypeScript compilation, and ESLint checks pass with 0 warnings or errors.
 
+---
+
+### ADR-017: Elevated Bespoke Spatial Calibration Wireframe Loader & Black Roller-Shutter Room-Exit Transition
+- **Status:** Accepted (2026-11-11)
+- **Context:**
+  1. **Room-to-Landing Exit Transition:** The prior room-to-landing transition used an aggressive laser scanline FLIP portal sweep that caused jarring visual jumps when transitioning from the full-screen 3D room to the flat landing page. The user requested replacing this with a smooth, cinematic black roller-shutter curtain (`کرکره`) that sweeps upward cleanly from the full-width black exit bar (`#000000`).
+  2. **Elevated Wireframe Loading Animation:** The initial landing loader was an identical recreation of a reference site (`harshitr.me`). While mathematically accurate in DOM rect mapping, it lacked personal brand identity and aesthetic cohesion with Amirreza Gholipour's nocturnal cyberpunk AI engineering portfolio. The user requested elevating the wireframe animation with creative, distinctive enhancements rather than retaining a 1:1 replica of the external reference.
+- **Decision:**
+  1. **Black Roller-Shutter Exit Transition (`ExitBar`):**
+     - When the visitor activates "Exit The Room" (`TactileButton`), an opaque obsidian curtain (`#000000`) rolls upward from the bottom baseline to cover the 100svh viewport with a custom cubic-bezier curve (`cubic-bezier(0.77, 0, 0.175, 1)`), smoothly occluding the WebGL canvas before mounting `FlatLanding` and handing off to the loader.
+  2. **Nocturnal Obsidian Calibration Surface (`.plSheet`):**
+     - Set the loader background to `#07080d` with an integrated micro-dot matrix ($24\text{px}$) and architectural sub-grid ($96\text{px}$) accented by a subtle cyan radial glow (`rgba(56, 189, 248, 0.055)`).
+  3. **Active Downward Spatial Laser Scanner Beam (`.plScanBeam`):**
+     - Render an active horizontal laser scanline beam with a soft trailing phosphor wash that sweeps downward across the viewport ($0\% \to 100\%$) during the mapping phase.
+     - Drive box activation via a blended algorithm (`isBlueprintBoxActive`) that combines sequential index progression ($55\%$) with vertical spatial Y-position ($45\%$), causing wireframe elements to materialize in the wake of the descending laser beam.
+  4. **Precision 1.5px L-Bracket Corner Reticles (`.corners`) & Dimension Badges (`.dimBadge`):**
+     - Replace generic box outlines with razor-sharp cyan L-brackets on all four corners of every scanned box.
+     - Display live component dimension badges (`{w}×{h}`) on larger elements to emphasize precision engineering.
+  5. **Bespoke AI/Spatial Telemetry Labels:**
+     - Replace generic labels with domain-specific AI systems vocabulary: `VIEWPORT // ASCII_CORE`, `IDENTITY // H1`, `ROLE // STREAM`, `NODE // 01..N`, `CTA // 01..N`, `BRAND`, `NAV // 01..N`, and `SURFACE // CARD`.
+  6. **Hero Banner Spatial Calibration HUD:**
+     - Overlay a true pixel-aspect SVG grid inside the hero banner box with rule-of-thirds dashed lines, corner vector ticks, and a concentric circular target reticle (`<circle>`) that preserves circular geometry on both desktop and mobile viewports.
+  7. **Blur-to-Crisp Typography Lock & Spectral Reveal Wipe:**
+     - Box fills enter with initial blur (`filter: blur(2.5px) \to blur(0px)`). At $86\%$ progress, live typography transitions from `blur(3px)` into crisp, high-contrast text (`blur(0px)`).
+     - At $100\%$ progress, a brilliant cyan-white spectral edge crest (`.plEdge`) wipes the sheet open vertically ($100svh$), seamlessly unveiling the interactive flat landing page.
+  8. **Bottom Telemetry Status HUD & Column Rulers:**
+     - Render a real-time status bar with progress readout (`SYS.CALIBRATE // 000%..100% · MAPPING DOM / LOCKING TYPE / REVEALING`), mini progress fill track, matrix node count (`MATRIX {width}PX · {count} NODES`), and column coordinate rulers (`X:{coord}`).
+  9. **Mobile Viewport Optimization:**
+     - Clamp minimum brand/nav chip widths to $48\text{px}$ to prevent clipping on narrow screens ($320\text{px}–390\text{px}$), and anchor column ruler labels above the bottom HUD bar to guarantee zero overlap with sticky navigation controls.
+- **Consequences:**
+  - *Positive:* Replaces a generic external clone with a distinctive, high-end AI/Spatial-Calibration visual identity perfectly aligned with the nocturnal cyberpunk room.
+  - *Positive:* Cinematic, smooth upward roller-shutter curtain eliminates visual jumping during room exits.
+  - *Positive:* 100% responsive and verified across desktop ($1440\text{px}$) and mobile ($390\text{px}$ and $320\text{px}$) viewports.
+  - *Positive:* All 262 Vitest unit tests, TypeScript compilation, and ESLint checks pass with 0 errors.
+
+

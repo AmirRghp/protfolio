@@ -4,6 +4,26 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.7] - 2026-11-11
+
+### Added
+- **Elevated Bespoke Spatial Calibration Wireframe Loader (`PortfolioLoader` & `portfolioLoaderUtils`):**
+  - Transformed the wireframe loading animation from a generic replica into an original, bespoke AI/Spatial-Calibration experience matching the nocturnal cyberpunk aesthetic.
+  - **Nocturnal Obsidian Calibration Canvas (`.plSheet`):** Deep `#07080d` background with integrated micro-dot matrix ($24\text{px}$), architectural sub-grid ($96\text{px}$), and subtle cyan radial glow (`rgba(56, 189, 248, 0.055)`).
+  - **Active Downward Spatial Laser Scanner Beam (`.plScanBeam`):** A razor-sharp cyan-white horizontal beam with phosphor trailing wash sweeping down the viewport ($0\% \to 100\%$) during the mapping phase.
+  - **Spatial-Sequential Box Materialization (`isBlueprintBoxActive`):** Combines sequential index progression ($55\%$) with vertical spatial Y-position ($45\%$), causing wireframe elements to materialize progressively in the wake of the descending laser beam.
+  - **Precision 1.5px L-Bracket Corner Reticles (`.corners`) & Dimension Badges (`.dimBadge`):** Crisp cyan L-brackets on all four corners of every scanned box plus real-time `{w}×{h}` coordinate badges on larger components.
+  - **Hero Banner Spatial Calibration HUD:** True pixel-aspect SVG grid inside the hero banner box with rule-of-thirds dashed lines, corner vector ticks, and a concentric circular target reticle (`<circle>`) that preserves true circular geometry on both desktop and mobile viewports.
+  - **Bespoke AI/Spatial Telemetry Labels:** Specialized system labels tailored to Amirreza Gholipour's AI portfolio (`VIEWPORT // ASCII_CORE`, `IDENTITY // H1`, `ROLE // STREAM`, `NODE // 01..N`, `CTA // 01..N`, `BRAND`, `NAV // 01..N`, `SURFACE // CARD`).
+  - **Blur-to-Crisp Typography Lock & Spectral Reveal Wipe:** Boxes initialize with blur (`filter: blur(2.5px) -> blur(0px)`), with live DOM typography sharpening from `blur(3px)` to crisp focus at $86\%$ progress, followed by a cyan-white spectral edge (`.plEdge`) wiping open the view at $100\%$ to reveal the flat landing.
+  - **Bottom Telemetry Status HUD & Column Rulers:** Live progress telemetry (`SYS.CALIBRATE // 000%..100% · MAPPING DOM / LOCKING TYPE / REVEALING`), mini progress fill track, matrix node counter (`MATRIX {width}PX · {count} NODES`), and column coordinate rulers (`X:{coord}`).
+  - **Mobile Viewport Optimization:** Calibrated minimum widths ($48\text{px}$ for brand/nav chips), relocated ruler coordinate labels above the bottom HUD bar, and dynamically computed SVG viewports to prevent distortion or overlap down to $320\text{px}$ mobile screens.
+
+### Changed
+- **Black Roller-Shutter Room-Exit Transition (`ExitBar`):**
+  - Replaced the prior laser portal FLIP sweep with a sleek, cinematic vertical black roller-shutter curtain (`کرکره`) originating from the full-width black exit bar (`#000000`).
+  - Implemented smooth upward wipe (`cubic-bezier(0.77, 0, 0.175, 1)`) seamlessly covering the 3D room before mounting the flat landing and initializing the spatial calibration loader.
+
 ## [0.8.6] - 2026-11-11
 
 ### Changed
