@@ -73,6 +73,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
   const containerRef = useRef<HTMLDivElement>(null);
   const playButtonRef = useRef<HTMLButtonElement>(null);
   const exitButtonRef = useRef<HTMLButtonElement>(null);
+  const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const loadTimeout = useRef<number | null>(null);
 
   useImperativeHandle(forwardedRef, () => containerRef.current as HTMLDivElement);
@@ -184,7 +185,11 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
             event.key === "ArrowDown"
               ? (currentIndex + 1) % ARCADE_GAMES.length
               : (currentIndex - 1 + ARCADE_GAMES.length) % ARCADE_GAMES.length;
-          return ARCADE_GAMES[nextIndex].id;
+          const nextId = ARCADE_GAMES[nextIndex].id;
+          queueMicrotask(() => {
+            optionRefs.current[nextId]?.focus({ preventScroll: true });
+          });
+          return nextId;
         });
       } else if (event.key === "Enter") {
         if (target && (target.tagName === "BUTTON" || target.tagName === "A")) return;
@@ -223,7 +228,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
       data-outside-hover={outsideHover ? "true" : undefined}
       onKeyDown={handleKeyDown}
       role={active ? "region" : undefined}
-      aria-label={active ? "Crash Bandicoot arcade screen" : undefined}
+      aria-label={active ? `${selectedGame.title} arcade screen` : undefined}
       aria-hidden={!active}
     >
       {playing ? (
@@ -332,12 +337,21 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
               {/* Left Column: Games list */}
               <div className={styles.listPanel}>
                 <div className={styles.panelHeader}>Arcade Select</div>
-                <div className={styles.gamesList} role="listbox" aria-label="Games list">
+                <div
+                  className={styles.gamesList}
+                  role="listbox"
+                  aria-label="Games list"
+                  aria-activedescendant={`arcade-option-${selectedGame.id}`}
+                >
                   {ARCADE_GAMES.map((game) => {
                     const isSelected = game.id === selectedGameId;
                     return (
                       <button
                         key={game.id}
+                        id={`arcade-option-${game.id}`}
+                        ref={(el) => {
+                          optionRefs.current[game.id] = el;
+                        }}
                         type="button"
                         role="option"
                         aria-selected={isSelected}

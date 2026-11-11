@@ -15,7 +15,7 @@ The project is configured for modern JavaScript/TypeScript runtimes with strict 
 
 ### 2.1. Vite Bundler Setup (`vite.config.ts`)
 ```typescript
-import path from "node:path";
+import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
@@ -24,7 +24,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(__dirname, "./src"), // Canonical path alias for clean imports
+      "@": fileURLToPath(new URL("./src", import.meta.url)), // Canonical path alias for clean imports
     },
     dedupe: ["react", "react-dom"],
   },
@@ -56,7 +56,7 @@ The project enforces strict compiler settings:
 | `npm run preview` | Locally serves the production `dist/` bundle |
 | `npm run typecheck` | Executes `tsc --noEmit` to verify type safety across source and tests |
 | `npm run lint` | Runs ESLint across `src/`, `tests/`, and config files |
-| `npm run test` | Executes all 42 unit and integration test suites (243 tests) via Vitest |
+| `npm run test` | Executes all 45 unit and integration test suites (252 tests) via Vitest |
 | `npm run test:e2e` | Builds the application and executes the Playwright Chromium test suite |
 
 ---
@@ -83,10 +83,10 @@ The application runs purely client-side without any backend database or microser
 
 ## 5. Third-Party API & Network Constraints
 
-### GitHub REST API (Public Contribution Fetcher)
-- **Endpoint:** `https://api.github.com/users/AmirRghp/events/public`
-- **Rate Limiting:** Unauthenticated public requests are limited to **60 requests per hour** per IP.
+### GitHub Contributions API (Public Contribution Fetcher)
+- **Endpoint:** `https://github-contributions-api.jogruber.de/v4/AmirRghp?y=last`
+- **Rate Limiting & Retry Cooldown:** Unauthenticated public requests are cached and protected by a 60-second failure retry cooldown (`FAILURE_RETRY_COOLDOWN_MS`) to prevent redundant network requests when offline.
 - **Resilience Strategy:**
-  1. Responses are cached in browser `localStorage` under `gh_contributions_cache` with a 4-hour time-to-live (TTL).
-  2. If the request fails, times out, or exceeds rate limits, the client transparently switches to the bundled offline fallback dataset (`src/data/githubContributionsFallback.json`).
+  1. Responses are cached in browser `localStorage` under `portfolio_github_contributions_v1` with a 4-hour time-to-live (TTL).
+  2. If the request fails, times out, or is rate-limited, the client transparently switches to stale cache or the bundled offline fallback dataset (`src/data/githubContributionsFallback.json`).
   3. No network errors are surfaced to the user.

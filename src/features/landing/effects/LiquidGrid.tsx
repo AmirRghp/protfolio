@@ -1,4 +1,5 @@
 import { useEffect, useRef, type CSSProperties } from "react";
+import { parseRgba255 } from "@/core/utils/webglUtils";
 
 export interface LiquidGridProps {
   mode?: "lines" | "dots";
@@ -13,16 +14,6 @@ export interface LiquidGridProps {
   clickRipple?: boolean;
   className?: string;
   style?: CSSProperties;
-}
-
-function parseColor(color: string | undefined): [number, number, number] {
-  const s = String(color || "").trim();
-  const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-  if (m) return [+m[1], +m[2], +m[3]];
-  const h = s.replace("#", "");
-  const f = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
-  const n = parseInt(f, 16) || 0;
-  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
 }
 
 function clamp(n: unknown, min: number, max: number, fallback: number): number {
@@ -134,12 +125,6 @@ export default function LiquidGrid(props: LiquidGridProps) {
       rip.live = true;
     }
     resize();
-
-    let ro: ResizeObserver | null = null;
-    if (typeof ResizeObserver !== "undefined") {
-      ro = new ResizeObserver(() => resize());
-      ro.observe(canvas);
-    }
 
     function addDrop(cx: number, cy: number, radius: number, strength: number, collide: boolean) {
       const { W, H, rW, rH, gW, gH, cur } = rip;
@@ -281,7 +266,7 @@ export default function LiquidGrid(props: LiquidGridProps) {
       const base = new Path2D();
       const glow: Path2D[] = [];
       for (let b = 0; b < BUCKETS; b++) glow.push(new Path2D());
-      const [gr, gg, gb] = parseColor(S.glowColor);
+      const [gr, gg, gb] = parseRgba255(S.glowColor);
 
       if (S.mode === "dots") {
         const numH = Math.ceil(H / cs);
@@ -382,13 +367,28 @@ export default function LiquidGrid(props: LiquidGridProps) {
       ctx.lineJoin = "miter";
     }
 
+    let rect = canvas.getBoundingClientRect();
+    function updateRect() {
+      if (canvas) rect = canvas.getBoundingClientRect();
+    }
+
     const paint = () => {
       resize();
+      updateRect();
       drawFrame(settingsFor(propsRef.current));
     };
     repaintRef.current = paint;
 
-    let rect = canvas.getBoundingClientRect();
+    let ro: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== "undefined") {
+      ro = new ResizeObserver(() => {
+        resize();
+        updateRect();
+        drawFrame(settingsFor(propsRef.current));
+      });
+      ro.observe(canvas);
+    }
+
     function toLocal(clientX: number, clientY: number) {
       if (
         clientX < rect.left ||
@@ -401,45 +401,63 @@ export default function LiquidGrid(props: LiquidGridProps) {
       return { x: clientX - rect.left, y: clientY - rect.top };
     }
 
-    let queued: { x: number; y: number } | null = null;
-    function onMove(e: MouseEvent) {
-      queued = toLocal(e.clientX, e.clientY);
-    }
-    function onClick(e: MouseEvent) {
-      const S = settingsFor(propsRef.current);
-      if (!S.click) return;
-      const local = toLocal(e.clientX, e.clientY);
-      if (local) addDrop(local.x, local.y, S.radius * 1.6, 2.5, S.collide);
-    }
-
     const reducedMotion =
       typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
 
     drawFrame(settingsFor(propsRef.current));
 
     let raf = 0;
+    let queued: { x: number; y: number } | null = null;
+
+    const loop = () => {
+      raf = 0;
+      if (!canvas) return;
+      const S = settingsFor(propsRef.current);
+      const { W, H } = rip;
+      if (W > 0 && H > 0) {
+        if (queued) {
+          addDrop(queued.x, queued.y, S.radius, S.hoverStrength, S.collide);
+          queued = null;
+        }
+        if (rip.live) {
+          updateRipple(S.collide);
+          drawFrame(S);
+        }
+      }
+      if (rip.live || queued) {
+        raf = requestAnimationFrame(loop);
+      }
+    };
+
+    function scheduleLoop() {
+      if (!raf && !reducedMotion) {
+        raf = requestAnimationFrame(loop);
+      }
+    }
+
+    function onMove(e: MouseEvent) {
+      const local = toLocal(e.clientX, e.clientY);
+      if (local) {
+        queued = local;
+        scheduleLoop();
+      }
+    }
+    function onClick(e: MouseEvent) {
+      const S = settingsFor(propsRef.current);
+      if (!S.click) return;
+      const local = toLocal(e.clientX, e.clientY);
+      if (local) {
+        addDrop(local.x, local.y, S.radius * 1.6, 2.5, S.collide);
+        scheduleLoop();
+      }
+    }
+
     if (!reducedMotion) {
       window.addEventListener("mousemove", onMove, { passive: true });
       window.addEventListener("click", onClick);
-
-      const loop = () => {
-        if (!canvas) return;
-        rect = canvas.getBoundingClientRect();
-        const S = settingsFor(propsRef.current);
-        const { W, H } = rip;
-        if (W > 0 && H > 0) {
-          if (queued) {
-            addDrop(queued.x, queued.y, S.radius, S.hoverStrength, S.collide);
-            queued = null;
-          }
-          if (rip.live) {
-            updateRipple(S.collide);
-            drawFrame(S);
-          }
-        }
-        raf = requestAnimationFrame(loop);
-      };
-      raf = requestAnimationFrame(loop);
+      window.addEventListener("scroll", updateRect, { passive: true });
+      window.addEventListener("resize", updateRect, { passive: true });
+      scheduleLoop();
     }
 
     return () => {
@@ -449,6 +467,8 @@ export default function LiquidGrid(props: LiquidGridProps) {
       if (!reducedMotion) {
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("click", onClick);
+        window.removeEventListener("scroll", updateRect);
+        window.removeEventListener("resize", updateRect);
       }
     };
   }, []);

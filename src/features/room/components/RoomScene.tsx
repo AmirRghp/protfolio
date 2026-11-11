@@ -37,9 +37,9 @@ import {
   evaluateRoomBuildState,
   type RoomBuildStage,
 } from "@/features/room/utils/roomBuildAnimation";
-import type { IntroPhase } from "@/features/lanyard/lanyardPull";
-import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "@/features/monitor/utils/monitorProjection";
-import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "@/features/arcade/utils/arcadeProjection";
+import type { IntroPhase } from "@/features/lanyard";
+import { monitorOverlayLayout, projectedScreenSize, readMonitorSurface, type MonitorSurface } from "@/features/monitor";
+import { ARCADE_SCREEN_SURFACE, arcadeOverlayLayout, projectedArcadeSize } from "@/features/arcade";
 import {
   MONITOR_SCENE_POSITION,
   MONITOR_YAW,
@@ -1199,6 +1199,7 @@ export default function RoomScene({
   onBuildStageChange,
   onDesktopOpacityChange,
   onBuildComplete,
+  onExitToFlat,
 }: {
   destination: RoomDestination;
   onNavigate: (destination: RoomDestination) => void;
@@ -1206,6 +1207,7 @@ export default function RoomScene({
   desktopRef: RefObject<HTMLDivElement | null>;
   arcadeRef?: RefObject<HTMLDivElement | null>;
   onUnavailable?: () => void;
+  onExitToFlat?: () => void;
   introPhase?: IntroPhase;
   onBuildStageChange?: (stage: RoomBuildStage) => void;
   onDesktopOpacityChange?: (opacity: number) => void;
@@ -1227,14 +1229,13 @@ export default function RoomScene({
     if (destination !== "room" || introPhase !== "ready") reportHotspotHover(null);
   }, [destination, introPhase, reportHotspotHover]);
 
-  if (contextLost) return <RoomUnavailable />;
+  if (contextLost) return <RoomUnavailable onExitToFlat={onExitToFlat} />;
   return (
     <Canvas
       shadows={isSoftwareGl ? false : "percentage"}
       frameloop="demand"
       dpr={isSoftwareGl ? 1 : [1, 1.5]}
       camera={{ fov: ROOM_FOV, near: 0.1, far: 100, position: [0, 2.7, 15] }}
-      gl={{ preserveDrawingBuffer: true }}
       onCreated={({ gl, scene, invalidate }) => {
         gl.outputColorSpace = SRGBColorSpace;
         gl.toneMapping = ACESFilmicToneMapping;
@@ -1250,7 +1251,7 @@ export default function RoomScene({
         }
         invalidate();
       }}
-      fallback={<RoomUnavailable />}
+      fallback={<RoomUnavailable onExitToFlat={onExitToFlat} />}
       aria-label="Frontal study with workstation and arcade"
     >
       <CameraFocus destination={destination} onHotspotHover={reportHotspotHover} />

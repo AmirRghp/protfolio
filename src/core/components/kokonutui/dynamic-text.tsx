@@ -758,10 +758,10 @@ function MorphLayer({
   }, [live, text]);
 
   return (
-    <span className="relative inline-block align-baseline" ref={rootRef}>
+    <span className="dt-relative dt-inline-block dt-align-baseline" ref={rootRef}>
       <span
         aria-hidden="true"
-        className="pointer-events-none invisible absolute top-0 left-0"
+        className="dt-pointer-events-none dt-invisible dt-absolute dt-top-0 dt-left-0"
         ref={measureRef}
       >
         {chars.map((char, i) => (
@@ -771,13 +771,13 @@ function MorphLayer({
       </span>
       {live ? (
         <>
-          <span aria-hidden="true" className="inline-block w-0">
+          <span aria-hidden="true" className="dt-inline-block dt-w-0">
             {"​"}
           </span>
           {views.map((view) => (
             <span
               aria-hidden="true"
-              className="absolute top-0 left-0 origin-[50%_80%]"
+              className="dt-absolute dt-top-0 dt-left-0 dt-origin-glyph"
               key={view.id}
               ref={(el) => engineRef.current?.attach(view.id, el)}
             >
@@ -933,10 +933,10 @@ function DecodeLayer({
   }, [text, running, reducedRef]);
 
   return (
-    <span aria-hidden="true" className="font-mono" ref={hostRef}>
+    <span aria-hidden="true" className="dt-font-mono" ref={hostRef}>
       {chars.map((char, i) => (
         <span
-          className="inline-block w-[1ch] text-center data-flash:text-(--dynamic-text-accent) data-scramble:opacity-45"
+          className="dt-inline-block dt-w-1ch dt-text-center"
           // biome-ignore lint/suspicious/noArrayIndexKey: cells are positional.
           key={i}
         >
@@ -1001,7 +1001,7 @@ const DynamicText = ({
   return (
     <span
       className={cn(
-        "inline-block whitespace-pre tabular-nums [--dynamic-text-accent:var(--color-emerald-600)] dark:[--dynamic-text-accent:var(--color-emerald-400)]",
+        "dt-inline-block dt-whitespace-pre dt-tabular-nums",
         className
       )}
       lang={current.lang}

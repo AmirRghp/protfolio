@@ -185,6 +185,21 @@ export function formatTooltipDate(dateStr: string): string {
   return `${monthName} ${parts.day}, ${parts.year}`;
 }
 
+export function formatBestDayDate(dateStr: string): string {
+  const parts = parseDateParts(dateStr);
+  if (!parts) return dateStr;
+  const monthName = MONTH_NAMES_TITLE[parts.month - 1] ?? "";
+  return `${parts.day} ${monthName} ${parts.year}`;
+}
+
+export function clampUnit(val: number, min = 0, max = 1): number {
+  return Math.max(min, Math.min(max, val));
+}
+
+export function easeOutCubic(x: number): number {
+  return 1 - Math.pow(1 - x, 3);
+}
+
 export function calculateStreaks(days: ContributionDay[]): { activeStreak: number; longestStreak: number } {
   if (!days || days.length === 0) return { activeStreak: 0, longestStreak: 0 };
 
@@ -340,6 +355,8 @@ export function formatContributionDateRange(days: ContributionDay[]): string {
   return `${m1} ${p1.year} TO ${m2} ${p2.year}`;
 }
 
+const FAILURE_RETRY_COOLDOWN_MS = 60_000;
+
 export function useContributions(username = GITHUB_USERNAME) {
   const [data, setData] = useState<{ total: number; contributions: ContributionDay[] }>(() => {
     const cached = getStoredContributions();
@@ -351,10 +368,16 @@ export function useContributions(username = GITHUB_USERNAME) {
 
   useEffect(() => {
     let unmounted = false;
+    let lastAttemptAt = 0;
 
     const checkAndUpdate = () => {
+      const now = Date.now();
+      if (now - lastAttemptAt < FAILURE_RETRY_COOLDOWN_MS) {
+        return;
+      }
       const cached = getStoredContributions();
       if (!cached || !cached.isFresh) {
+        lastAttemptAt = now;
         fetchContributions(username).then((result) => {
           if (!unmounted && result) {
             setData(result);

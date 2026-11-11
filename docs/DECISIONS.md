@@ -28,7 +28,7 @@ This document records the foundational architecture decisions, trade-offs, and d
   Reorganize into a domain-driven, feature-based hierarchy (`features/arcade`, `features/monitor`, `features/room`, `features/lanyard`, `features/landing`) supported by a shared `core/` layer and isolated `data/` module. Path aliases (`@/*`) and barrel export files (`index.ts`) enforce clean module boundaries.
 - **Consequences:**
   - *Positive:* High cohesion, clear domain boundaries, test colocation, and effortless future extension (e.g. adding a new mini-game or desktop app).
-  - *Positive:* 100% of the 223 unit tests pass without coupling issues.
+  - *Positive:* 100% of the 45 test files (252 unit tests) pass without coupling issues.
 
 ---
 
@@ -130,14 +130,18 @@ This document records the foundational architecture decisions, trade-offs, and d
 - **Context:**
   On wide and ultrawide desktop monitors ($\ge 1440\text{px}$), the Hero section (`.ldHero`) was rendered with `padding: 0 16px`, causing it to expand across the full screen width ($1400\text{px} - 1880\text{px}$). In contrast, all lower sections were enclosed within `.ldWrap` with a fixed max-width (`width: min(1240px, calc(100% - 48px)); margin: 0 auto;`). This created jarring horizontal misalignment where the Hero card hung out past the vertical rails and registration marks of the content below.
 - **Decision:**
-  Standardize `.ldHero` to share the exact same responsive container geometry and auto-margin centering as `.ldWrap`:
+  Standardize `.ldHero` and `.ldHeroInner` to align horizontally with `.ldWrap` (`1240px` max-width with `24px` minimum side gutters):
   ```css
   .ldHero {
     position: relative;
     z-index: 30;
-    width: min(1240px, calc(100% - 48px));
+    width: 100%;
     margin: 0 auto;
     padding: 0;
+  }
+  .ldHeroInner {
+    width: 100%;
+    padding: 64px max(24px, calc((100% - 1240px) / 2)) 0;
   }
   ```
 - **Consequences:**
@@ -168,7 +172,7 @@ This document records the foundational architecture decisions, trade-offs, and d
 
 ## ADR-011: Refractive Optical Liquid Glass Scrolled Navbar via Glisse & GPU Compositing Optimization
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-013 (for section backdrop attachment and blur intensity; compositor layer fix in `.ldNav` remains active)
 - **Date:** November 2026
 - **Context:**
   The portfolio previously used a standard CSS backdrop blur (`rgba(10, 10, 11, 0.85)` + `backdrop-filter: blur(14px)`). To elevate the nocturnal cyberpunk visual language into authentic Apple-grade optical glass matching the hero CTA button, we integrated Glisse's refractive `<Glass>` component. However, the initial implementation suffered from stacking context isolation: `will-change: transform, opacity` on `.ldNav` combined with `position: absolute; z-index: -1` on `<Glass>` forced Chromium to isolate the glass into an unbacked compositor layer. Because `.ldNav` had a transparent background, `backdrop-filter: blur(...)` had no pixels to sample in its local layer, preventing blur from rendering over underlying page content (causing "See my work" to remain 100% sharp with only chromatic fringing).

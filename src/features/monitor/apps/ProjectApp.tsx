@@ -111,6 +111,14 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
     setEmbedState("loaded");
   };
 
+  const embedFailed = () => {
+    if (timeout.current !== null) {
+      window.clearTimeout(timeout.current);
+      timeout.current = null;
+    }
+    setEmbedState("failed");
+  };
+
   return (
     <div className={styles.app}>
       <div className={styles.addressBar}>
@@ -133,6 +141,7 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
             src={target}
             title={`${project.title} preview`}
             onLoad={embedLoaded}
+            onError={embedFailed}
             sandbox="allow-scripts allow-forms allow-popups"
             referrerPolicy="no-referrer"
           />

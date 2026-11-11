@@ -65,40 +65,10 @@ function mulberry32(seed: number) {
   };
 }
 
-/** Colors arrive as hex or rgb/rgba; fold either to [r, g, b, a]. */
+import { parseRgba255 } from "@/core/utils/webglUtils";
+
 function parseColor(color: string): [number, number, number, number] {
-  const value = (color ?? "").trim().toLowerCase();
-  if (!value || value === "transparent") {
-    return [0, 0, 0, 0];
-  }
-  const hex = value.replace("#", "");
-  if (/^[0-9a-f]{8}$/i.test(hex)) {
-    return [
-      parseInt(hex.slice(0, 2), 16),
-      parseInt(hex.slice(2, 4), 16),
-      parseInt(hex.slice(4, 6), 16),
-      parseInt(hex.slice(6, 8), 16) / 255,
-    ];
-  }
-  if (/^[0-9a-f]{6}$/i.test(hex)) {
-    return [
-      parseInt(hex.slice(0, 2), 16),
-      parseInt(hex.slice(2, 4), 16),
-      parseInt(hex.slice(4, 6), 16),
-      1,
-    ];
-  }
-  const match = value.match(/rgba?\(([^)]+)\)/i);
-  if (match) {
-    const parts = match[1].split(",").map((p) => parseFloat(p));
-    return [
-      parts[0] || 0,
-      parts[1] || 0,
-      parts[2] || 0,
-      parts[3] === undefined ? 1 : parts[3],
-    ];
-  }
-  return [255, 255, 255, 1];
+  return parseRgba255(color, [255, 255, 255, 1]);
 }
 
 const rgba = (c: [number, number, number, number], alpha = 1) =>

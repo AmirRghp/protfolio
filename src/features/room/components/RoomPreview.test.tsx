@@ -88,4 +88,15 @@ describe("RoomPreview component", () => {
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain("Go Back (ESC)");
   });
+
+  it("renders RoomUnavailable with status message and direct 2D portfolio button when onExitToFlat is provided", async () => {
+    const { default: RoomUnavailable } = await import("./RoomUnavailable");
+    const htmlWithExit = renderToStaticMarkup(<RoomUnavailable onExitToFlat={() => {}} />);
+    expect(htmlWithExit).toContain("The 3D view is unavailable. You can read the full portfolio below.");
+    expect(htmlWithExit).toContain("Open 2D Portfolio");
+
+    const htmlWithoutExit = renderToStaticMarkup(<RoomUnavailable />);
+    expect(htmlWithoutExit).toContain("The 3D view is unavailable. You can read the full portfolio below.");
+    expect(htmlWithoutExit).not.toContain("Open 2D Portfolio");
+  });
 });

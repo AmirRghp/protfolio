@@ -106,3 +106,51 @@ export function parseColor(
 ): [number, number, number] {
   return parseNullableColor(value, fallback) ?? fallback;
 }
+
+/** Parses hex (#rgb, #rrggbb, #rrggbbaa) or rgb/rgba() into 0..255 RGB channels and 0..1 alpha. */
+export function parseRgba255(
+  color: string | undefined,
+  fallback: [number, number, number, number] = [0, 0, 0, 1],
+): [number, number, number, number] {
+  const value = String(color ?? "").trim().toLowerCase();
+  if (!value || value === "transparent") {
+    return [0, 0, 0, 0];
+  }
+  const hex = value.replace("#", "");
+  if (/^[0-9a-f]{8}$/i.test(hex)) {
+    return [
+      parseInt(hex.slice(0, 2), 16),
+      parseInt(hex.slice(2, 4), 16),
+      parseInt(hex.slice(4, 6), 16),
+      parseInt(hex.slice(6, 8), 16) / 255,
+    ];
+  }
+  if (/^[0-9a-f]{6}$/i.test(hex)) {
+    return [
+      parseInt(hex.slice(0, 2), 16),
+      parseInt(hex.slice(2, 4), 16),
+      parseInt(hex.slice(4, 6), 16),
+      1,
+    ];
+  }
+  if (/^[0-9a-f]{3}$/i.test(hex)) {
+    return [
+      parseInt(hex[0] + hex[0], 16),
+      parseInt(hex[1] + hex[1], 16),
+      parseInt(hex[2] + hex[2], 16),
+      1,
+    ];
+  }
+  const match = value.match(/rgba?\(([^)]+)\)/i);
+  if (match) {
+    const parts = match[1].split(",").map((p) => parseFloat(p));
+    return [
+      parts[0] || 0,
+      parts[1] || 0,
+      parts[2] || 0,
+      parts[3] === undefined ? 1 : parts[3],
+    ];
+  }
+  return fallback;
+}
+

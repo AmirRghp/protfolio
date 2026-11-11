@@ -13,10 +13,9 @@ import {
   type LocalRect,
   type WindowRect,
 } from "@/features/monitor/utils/desktopDrag";
-import GradientWaves from "@/features/room/props/GradientWaves";
+import { GradientWaves, oiiaAudio } from "@/features/room";
 import ContributionRing from "@/features/monitor/apps/ContributionRing";
 import MonitorOiiaSync from "./MonitorOiiaSync";
-import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 import styles from "./MonitorDesktop.module.css";
 
 export type DesktopApp = {
@@ -87,6 +86,16 @@ function CloseIcon() {
   );
 }
 
+function BatteryIcon() {
+  return (
+    <svg className={styles.indicator} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <rect x="2.5" y="7" width="16.5" height="10" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8" />
+      <rect x="5" y="9.5" width="11.5" height="5" rx="1" fill="currentColor" />
+      <path d="M21 10.2v3.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 function StatusBar({ ref, className }: { ref?: Ref<HTMLElement>; className?: string }) {
   const now = useLiveClock();
   const timestamp = formatStatusTimestamp(now);
@@ -97,6 +106,7 @@ function StatusBar({ ref, className }: { ref?: Ref<HTMLElement>; className?: str
       <span className={styles.statusMeta}>
         <WifiIcon />
         <VolumeIcon />
+        <BatteryIcon />
         <time className={styles.clock} dateTime={timestamp.iso}>{timestamp.label}</time>
       </span>
     </header>

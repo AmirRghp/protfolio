@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { LanyardIntro, getInitialIntroPhaseFromSearch, type IntroPhase } from "@/features/lanyard";
 import { RoomPreview, roomNavigationReducer, initialRoomNavigation, oiiaAudio, type RoomDestination, type RoomNavigationState } from "@/features/room";
-import { FlatLanding, captureSceneSnapshot } from "@/features/landing";
+import { FlatLanding } from "@/features/landing";
 import { MagicCursor, useResponsiveDevice } from "@/core";
 
 function getInitialNavigation(): RoomNavigationState {
@@ -39,7 +39,6 @@ export default function App() {
     () => getInitialIntroPhase() !== "active",
   );
   const [viewMode, setViewMode] = useState<"room" | "flat">(getInitialViewMode);
-  const [snapshotCanvas, setSnapshotCanvas] = useState<HTMLCanvasElement | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // When 3D room is not allowed (mobile/tablet/touch), force viewMode to "flat"
@@ -78,8 +77,6 @@ export default function App() {
 
   const handleExitToFlat = useCallback(() => {
     oiiaAudio.reset();
-    const snapshot = captureSceneSnapshot(previewContainerRef.current);
-    setSnapshotCanvas(snapshot);
     setViewMode("flat");
     if (typeof window !== "undefined") {
       try {
@@ -167,7 +164,6 @@ export default function App() {
         )}
         <FlatLanding
           isOpen={activeViewMode === "flat"}
-          snapshotCanvas={snapshotCanvas}
           onReenter={handleReenterRoom}
           allowRoomEntry={device.allowRoom3D}
         />

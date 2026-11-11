@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { GITHUB_USERNAME, useContributions } from "@/data/githubContributions";
+import {
+  GITHUB_USERNAME,
+  clampUnit as clamp,
+  easeOutCubic,
+  formatBestDayDate,
+  useContributions,
+} from "@/data/githubContributions";
 import styles from "./githubActivity.module.css";
 
 // 3D Cuboid face colors for GitHub contribution levels 0 to 4: [front, top, side]
@@ -11,30 +17,6 @@ const CUBE_COLORS: [string, string, string][] = [
   ["#26a641", "#38c257", "#1d8333"], // Level 3 (bright green)
   ["#39d353", "#59e56f", "#2ea043"], // Level 4 (vibrant green)
 ];
-
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
-function formatBestDayDate(dateStr: string): string {
-  if (!dateStr) return "";
-  const parts = dateStr.split("-").map(Number);
-  if (parts.length !== 3 || Number.isNaN(parts[0]) || Number.isNaN(parts[1]) || Number.isNaN(parts[2])) {
-    return dateStr;
-  }
-  const [year, month, day] = parts;
-  const monthName = MONTH_NAMES[month - 1] ?? "";
-  return `${day} ${monthName} ${year}`;
-}
-
-function clamp(val: number, min = 0, max = 1): number {
-  return Math.max(min, Math.min(max, val));
-}
-
-function easeOutCubic(x: number): number {
-  return 1 - Math.pow(1 - x, 3);
-}
 
 function fillPolygon(ctx: CanvasRenderingContext2D, points: number[]): void {
   ctx.beginPath();

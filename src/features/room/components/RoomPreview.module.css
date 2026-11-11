@@ -226,13 +226,54 @@
   }
 }
 
+.unavailableBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  height: 100%;
+  padding: 4rem 1.5rem;
+  text-align: center;
+}
+
 .message {
   display: grid;
   place-content: center;
-  height: 100%;
   margin: 0;
-  padding: 4rem 1.5rem;
   color: var(--color-muted);
   text-align: center;
 }
+
+.unavailableActionBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  padding: 0.65rem 1.35rem;
+  border: 1px solid rgb(56 189 248 / 55%);
+  border-radius: 999px;
+  background: rgb(14 11 32 / 90%);
+  color: #f3f1ff;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.unavailableActionBtn:hover {
+  background: rgb(22 18 48 / 96%);
+  border-color: rgb(56 189 248 / 90%);
+}
+
+.unavailableActionBtn:focus-visible {
+  outline: 2px solid #38bdf8;
+  outline-offset: 2px;
+}
+
 

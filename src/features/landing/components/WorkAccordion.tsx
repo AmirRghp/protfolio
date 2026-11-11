@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { portfolioContent } from "@/data/content";
 import ProjectCarousel, { type CarouselProject } from "./ProjectCarousel";
 import styles from "./flatLanding.module.css";
 
@@ -10,6 +11,26 @@ type BranchData = {
   icon: ReactNode;
   projects: CarouselProject[];
 };
+
+function buildCarouselProject(
+  id: string,
+  badge: string,
+  tag: string,
+): CarouselProject {
+  const found = portfolioContent.projects.find((p) => p.id === id);
+  if (!found) {
+    throw new Error(`Unknown project id in WorkAccordion: ${id}`);
+  }
+  return {
+    id: found.id,
+    title: found.title,
+    brief: found.brief,
+    badge,
+    tag,
+    githubUrl: found.githubUrl,
+    cta: "View on GitHub",
+  };
+}
 
 const WORK_BRANCHES: BranchData[] = [
   {
@@ -24,26 +45,8 @@ const WORK_BRANCHES: BranchData[] = [
       </svg>
     ),
     projects: [
-      {
-        id: "omnidoc-rag",
-        title: "OmniDoc RAG",
-        brief:
-          "An enterprise-grade, bilingual (Persian & English) technical RAG and evaluation engine for DevOps and infrastructure documentation. Features dual-channel hybrid retrieval (dense BGE-M3 + sparse BM25 with RRF and cross-encoder reranking), LangGraph Corrective RAG (CRAG) state machine, Qdrant vector store, local vLLM inference, and automated Ragas evaluation.",
-        badge: "Featured",
-        tag: "LangGraph · Qdrant · vLLM · Ragas",
-        githubUrl: "https://github.com/AmirRghp/omnidoc-rag",
-        cta: "View on GitHub",
-      },
-      {
-        id: "enterprise-knowledge-copilot",
-        title: "Enterprise Knowledge Copilot",
-        brief:
-          "A self-hosted assistant that retrieves from authorized documents and answers with source links and verified quotes. It includes manager tools for accounts and documents. Citation checks confirm quote support, not the semantic correctness of every model answer.",
-        badge: "Self-Hosted",
-        tag: "Document QA · Verified Quotes",
-        githubUrl: "https://github.com/AmirRghp/enterprise-knowledge-copilot",
-        cta: "View on GitHub",
-      },
+      buildCarouselProject("omnidoc-rag", "Featured", "LangGraph · Qdrant · vLLM · Ragas"),
+      buildCarouselProject("enterprise-knowledge-copilot", "Self-Hosted", "Document QA · Verified Quotes"),
     ],
   },
   {
@@ -58,26 +61,8 @@ const WORK_BRANCHES: BranchData[] = [
       </svg>
     ),
     projects: [
-      {
-        id: "covid-image-classification",
-        title: "COVID-19 Image Classification",
-        brief:
-          "A deep learning medical imaging pipeline using PyTorch for classifying COVID-19 radiology scans. Features custom dataset loaders, pre-trained CNN architectures (ResNet-50, VGG-19, EfficientNet), and stacking ensemble classification with accuracy/loss tracking and confusion matrix evaluations.",
-        badge: "PyTorch",
-        tag: "ResNet · EfficientNet · Radiology",
-        githubUrl: "https://github.com/AmirRghp/COVID-Image-Classification-with-PyTorch",
-        cta: "View on GitHub",
-      },
-      {
-        id: "omnidoc-vision",
-        title: "OmniDoc-Vision",
-        brief:
-          "A production-grade, bilingual (Persian & English) Multimodal Document Intelligence and Adaptive Visual RAG platform engineered to extract, index, and reason over complex technical PDFs with multi-header tables, architecture diagrams, and throughput charts under a 16GB VRAM budget.",
-        badge: "Multimodal",
-        tag: "Visual RAG · Complex PDF Parsing",
-        githubUrl: "https://github.com/AmirRghp/omnidoc_vision",
-        cta: "View on GitHub",
-      },
+      buildCarouselProject("covid-image-classification", "PyTorch", "ResNet · EfficientNet · Radiology"),
+      buildCarouselProject("omnidoc-vision", "Multimodal", "Visual RAG · Complex PDF Parsing"),
     ],
   },
   {
@@ -93,16 +78,7 @@ const WORK_BRANCHES: BranchData[] = [
       </svg>
     ),
     projects: [
-      {
-        id: "omniops-sre-agent",
-        title: "OmniOps SRE Agent",
-        brief:
-          "An autonomous incident response and Site Reliability Engineering platform built on FastMCP (Model Context Protocol) and LangGraph. Features autonomous alert triage, telemetry log correlation, runbook consultation, and deterministic remediation tools guarded by human-in-the-loop safety approvals.",
-        badge: "FastMCP",
-        tag: "LangGraph · SRE · HITL Safety",
-        githubUrl: "https://github.com/AmirRghp/omniops-sre-agent",
-        cta: "View on GitHub",
-      },
+      buildCarouselProject("omniops-sre-agent", "FastMCP", "LangGraph · SRE · HITL Safety"),
     ],
   },
   {
@@ -118,16 +94,7 @@ const WORK_BRANCHES: BranchData[] = [
       </svg>
     ),
     projects: [
-      {
-        id: "laya-finetuning-pipeline",
-        title: "Laya Fine-tuning Pipeline",
-        brief:
-          "A reproducible pipeline for preparing Persian RAG data and fine-tuning and evaluating the Laya Multilingual decision model. It uses Laya's training API; saved run timings are historical estimates, not a current benchmark.",
-        badge: "Fine-Tuning",
-        tag: "Persian RAG · Model Evaluation",
-        githubUrl: "https://github.com/AmirRghp/laya-finetune",
-        cta: "View on GitHub",
-      },
+      buildCarouselProject("laya-finetuning-pipeline", "Fine-Tuning", "Persian RAG · Model Evaluation"),
     ],
   },
 ];

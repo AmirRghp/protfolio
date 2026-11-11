@@ -11,12 +11,12 @@ import {
   WebGLRenderer,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 import {
+  oiiaAudio,
   calculateCatBounce,
   calculateMonitorRaveColor,
   calculateSpinVelocity,
-} from "@/features/room/utils/oiiaCatLogic";
+} from "@/features/room";
 import styles from "./MonitorDesktop.module.css";
 
 function disposeSceneObjects(root: Group | Scene) {

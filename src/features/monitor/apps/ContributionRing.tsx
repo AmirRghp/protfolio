@@ -3,6 +3,7 @@ import {
   buildContributionMatrix,
   calculateMonthLabels,
   calculateStreaks,
+  easeOutCubic,
   formatContributionDateRange,
   formatTooltipDate,
   useContributions,
@@ -60,10 +61,6 @@ function annularSectorPath(
   const y3 = cy + rin * Math.sin(a0);
 
   return `M ${x0.toFixed(2)} ${y0.toFixed(2)} A ${rout.toFixed(2)} ${rout.toFixed(2)} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)} L ${x2.toFixed(2)} ${y2.toFixed(2)} A ${rin.toFixed(2)} ${rin.toFixed(2)} 0 0 0 ${x3.toFixed(2)} ${y3.toFixed(2)} Z`;
-}
-
-function easeOutCubic(x: number): number {
-  return 1 - Math.pow(1 - x, 3);
 }
 
 export default function ContributionRing({

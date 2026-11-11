@@ -274,6 +274,11 @@ export default function AboutMeApp() {
                   <p className={styles.projectBrief}>{item.summary}</p>
                 </div>
               ))}
+              {projects.length === 0 && owner.academicProjects.length === 0 && (
+                <p className={styles.projectBrief} role="status">
+                  No projects available in this view.
+                </p>
+              )}
             </div>
           </section>
 

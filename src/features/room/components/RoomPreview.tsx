@@ -1,8 +1,7 @@
 import { Component, lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import ArcadeMenu from "@/features/arcade/components/ArcadeMenu";
+import { ArcadeMenu } from "@/features/arcade";
 import { portfolioContent } from "@/data/content";
-import { desktopApps } from "@/features/monitor/components/desktopApps";
-import MonitorDesktop from "@/features/monitor/components/MonitorDesktop";
+import { desktopApps, MonitorDesktop } from "@/features/monitor";
 import RoomUnavailable from "./RoomUnavailable";
 import {
   backCursorHintPosition,
@@ -13,14 +12,17 @@ import {
 } from "@/features/room/utils/roomHover";
 import styles from "./RoomPreview.module.css";
 import type { RoomDestination, RoomNavigationState } from "@/features/room/utils/roomNavigation";
-import type { IntroPhase } from "@/features/lanyard/lanyardPull";
+import type { IntroPhase } from "@/features/lanyard";
 import type { RoomBuildStage } from "@/features/room/utils/roomBuildAnimation";
 import { oiiaAudio } from "@/features/room/audio/oiiaAudio";
 import { ExitBar } from "@/core";
 
 const RoomScene = lazy(() => import("./RoomScene"));
 
-class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => void }, { failed: boolean }> {
+class SceneBoundary extends Component<
+  { children: ReactNode; onFailure: () => void; onExitToFlat?: () => void },
+  { failed: boolean }
+> {
   state = { failed: false };
 
   static getDerivedStateFromError() {
@@ -32,7 +34,7 @@ class SceneBoundary extends Component<{ children: ReactNode; onFailure: () => vo
   }
 
   render() {
-    return this.state.failed ? <RoomUnavailable /> : this.props.children;
+    return this.state.failed ? <RoomUnavailable onExitToFlat={this.props.onExitToFlat} /> : this.props.children;
   }
 }
 
@@ -290,13 +292,14 @@ export default function RoomPreview({
         </header>
       )}
       <div className={styles.scene}>
-        <SceneBoundary onFailure={failScene}>
+        <SceneBoundary onFailure={failScene} onExitToFlat={onExitToFlat}>
           <Suspense fallback={<p className={styles.message} role="status">Loading study…</p>}>
             <RoomScene
               destination={navigation.destination}
               desktopRef={desktopRef}
               arcadeRef={arcadeRef}
               onUnavailable={failScene}
+              onExitToFlat={onExitToFlat}
               onHotspotHover={handleHotspotHover}
               onNavigate={(destination) => {
                 navigate(destination);

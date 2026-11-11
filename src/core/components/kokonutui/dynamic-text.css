@@ -1,19 +1,19 @@
-/* KokonutUI DynamicText styles */
-.relative { position: relative; }
-.absolute { position: absolute; }
-.inline-block { display: inline-block; }
-.align-baseline { vertical-align: baseline; }
-.pointer-events-none { pointer-events: none; }
-.invisible { visibility: hidden; }
-.top-0 { top: 0; }
-.left-0 { left: 0; }
-.origin-\[50\%_80\%\] { transform-origin: 50% 80%; }
-.w-0 { width: 0; }
-.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
-.w-\[1ch\] { width: 1ch; }
-.text-center { text-align: center; }
-.whitespace-pre { white-space: pre; }
-.tabular-nums { font-variant-numeric: tabular-nums; }
+/* KokonutUI DynamicText scoped styles */
+.dt-relative { position: relative; }
+.dt-absolute { position: absolute; }
+.dt-inline-block { display: inline-block; }
+.dt-align-baseline { vertical-align: baseline; }
+.dt-pointer-events-none { pointer-events: none; }
+.dt-invisible { visibility: hidden; }
+.dt-top-0 { top: 0; }
+.dt-left-0 { left: 0; }
+.dt-origin-glyph { transform-origin: 50% 80%; }
+.dt-w-0 { width: 0; }
+.dt-font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.dt-w-1ch { width: 1ch; }
+.dt-text-center { text-align: center; }
+.dt-whitespace-pre { white-space: pre; }
+.dt-tabular-nums { font-variant-numeric: tabular-nums; }
 .sr-only {
   position: absolute;
   width: 1px;
@@ -25,3 +25,4 @@
   white-space: nowrap;
   border-width: 0;
 }
+
