@@ -3,7 +3,6 @@ import { TactileButton } from "tactile-glass-ui";
 import { LiquidGrid, PixelTetris } from "@/features/landing/effects";
 import WorkAccordion from "./WorkAccordion";
 import { PortfolioLoader } from "./PortfolioLoader";
-import { EASE_CRISP_OUT } from "@/features/landing/utils";
 import { getAssetUrl } from "@/core/utils";
 import { portfolioContent } from "@/data";
 import { Button as GlisseButton, Glass } from "glisse";
@@ -20,6 +19,7 @@ export type FlatLandingProps = {
   onReenter: () => void;
   allowRoomEntry?: boolean;
   isIntroDismissed?: boolean;
+  isReentering?: boolean;
 };
 
 const DYNAMIC_ROLES = [
@@ -101,6 +101,7 @@ export default function FlatLanding({
   onReenter,
   allowRoomEntry = true,
   isIntroDismissed = true,
+  isReentering = false,
 }: FlatLandingProps) {
   const device = useResponsiveDevice();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -115,47 +116,16 @@ export default function FlatLanding({
   const navRef = useRef<HTMLElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const [isClosing, setIsClosing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [numbersInView, setNumbersInView] = useState(false);
-  const runningAnimationsRef = useRef<Animation[]>([]);
 
+  const isClosing = Boolean(isReentering);
   const transitionState: "closed" | "opening" | "open" | "closing" = isClosing
     ? "closing"
     : isOpen
       ? "open"
       : "closed";
-  const isReady = isOpen && !isClosing;
-
-  const settle = useCallback(() => {
-    for (const a of runningAnimationsRef.current) {
-      try {
-        a.cancel();
-      } catch {
-        // Ignore already finished/cancelled animations
-      }
-    }
-    runningAnimationsRef.current = [];
-  }, []);
-
-  const clearAnimatedStyles = useCallback(() => {
-    const page = rootRef.current?.querySelector(`.${styles.ldPage}`) as HTMLElement | null;
-    for (const el of [
-      rootRef.current,
-      backdropRef.current,
-      transitionImgRef.current,
-      frameRef.current,
-      reelRef.current,
-      portalFxRef.current,
-      scanCrestRef.current,
-      heroOverlayRef.current,
-      navRef.current,
-      wrapRef.current,
-      page,
-    ]) {
-      el?.removeAttribute("style");
-    }
-  }, []);
+  const isReady = isOpen;
 
   // Pre-warm the ASCII video decoder while the user is in the 3D room so frame 1 is ready immediately
   useEffect(() => {
@@ -170,76 +140,19 @@ export default function FlatLanding({
     }
   }, []);
 
-  // Handle Close / Re-enter (Flat Landing -> Live 3D Room)
-  const handleReenter = useCallback(async () => {
+  // Handle Close / Re-enter (Flat Landing -> Live 3D Room via reverse roller-shutter)
+  const handleReenter = useCallback(() => {
     if (transitionState !== "open") return;
-    setIsClosing(true);
-
-    const root = rootRef.current;
-
-    if (!root) {
-      videoRef.current?.pause();
-      setIsClosing(false);
-      onReenter();
-      return;
-    }
-
-    if (root.scrollTop > 2) {
-      root.scrollTo({ top: 0, behavior: "smooth" });
-      const t0 = performance.now();
-      await new Promise<void>((resolve) => {
-        const wait = () => {
-          if (root.scrollTop <= 2 || performance.now() - t0 > 500) {
-            resolve();
-          } else {
-            requestAnimationFrame(wait);
-          }
-        };
-        wait();
-      });
-      root.scrollTop = 0;
-    }
-
-    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || typeof root.animate !== "function") {
-      settle();
-      clearAnimatedStyles();
-      videoRef.current?.pause();
-      setIsClosing(false);
-      onReenter();
-      return;
-    }
-
-    settle();
-    clearAnimatedStyles();
-
-    const rFade = root.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: 360,
-      fill: "both",
-      easing: EASE_CRISP_OUT,
-    });
-    runningAnimationsRef.current = [rFade];
-
-    try {
-      await rFade.finished;
-    } catch {
-      // Interrupted or cancelled
-    }
-
     videoRef.current?.pause();
-    root.style.display = "none";
-    setIsClosing(false);
     onReenter();
-  }, [transitionState, onReenter, settle, clearAnimatedStyles]);
+  }, [transitionState, onReenter]);
 
-  // Reset DOM scroll and any lingering WAAPI inline styles when opening or closing
+  // Reset DOM scroll when opening or after closing completes
   useEffect(() => {
-    settle();
-    clearAnimatedStyles();
-    if (isOpen && rootRef.current) {
+    if (!isOpen && rootRef.current) {
       rootRef.current.scrollTop = 0;
     }
-  }, [isOpen, settle, clearAnimatedStyles]);
+  }, [isOpen]);
 
   // Video playback management
   useEffect(() => {
@@ -324,13 +237,20 @@ export default function FlatLanding({
     }
   };
 
-  const isElementVisible = isOpen || transitionState !== "closed";
+  const isElementVisible = isOpen;
 
   return (
     <div
       ref={rootRef}
       id="landing"
-      className={`${styles.ld} ${isElementVisible ? styles.open : ""} ${isReady ? styles.ready : ""}`}
+      className={[
+        styles.ld,
+        isElementVisible ? styles.open : "",
+        isReady ? styles.ready : "",
+        isClosing ? styles.closing : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       data-transition-state={transitionState}
       aria-label="Amirreza Gholipour Flat Portfolio"
     >

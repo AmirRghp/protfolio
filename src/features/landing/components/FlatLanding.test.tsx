@@ -266,6 +266,23 @@ describe("FlatLanding component", () => {
     expect(html).toContain("pl-sheet");
     expect(html).toContain("SYS.CALIBRATE // 000%");
   });
+
+  it("applies closing roller-shutter state and suppresses PortfolioLoader when isReentering is true", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        isIntroDismissed={true}
+        isReentering={true}
+      />,
+    );
+
+    expect(html).toContain('data-transition-state="closing"');
+    expect(html).toContain("closing");
+    expect(html).not.toContain("pl-root");
+  });
 });
+
 
 

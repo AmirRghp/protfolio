@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { LanyardIntro, getInitialIntroPhaseFromSearch, type IntroPhase } from "@/features/lanyard";
 import { RoomPreview, roomNavigationReducer, initialRoomNavigation, oiiaAudio, type RoomDestination, type RoomNavigationState } from "@/features/room";
 import { FlatLanding } from "@/features/landing";
-import { MagicCursor, useResponsiveDevice } from "@/core";
+import { EXIT_SHUTTER_DURATION_MS, MagicCursor, useResponsiveDevice } from "@/core";
 
 function getInitialNavigation(): RoomNavigationState {
   if (typeof window !== "undefined") {
@@ -16,6 +16,9 @@ function getInitialNavigation(): RoomNavigationState {
 
 function getInitialIntroPhase(): IntroPhase {
   if (typeof window !== "undefined") {
+    if (window.location.hash === "#portfolio") {
+      return "ready";
+    }
     return getInitialIntroPhaseFromSearch(
       window.location.search,
       Boolean(navigator.webdriver),
@@ -39,10 +42,20 @@ export default function App() {
     () => getInitialIntroPhase() !== "active",
   );
   const [viewMode, setViewMode] = useState<"room" | "flat">(getInitialViewMode);
+  const [isReentering, setIsReentering] = useState(false);
+  const reenterTimerRef = useRef<number | null>(null);
   const previewContainerRef = useRef<HTMLDivElement>(null);
 
   // When 3D room is not allowed (mobile/tablet/touch), force viewMode to "flat"
   const activeViewMode = device.allowRoom3D ? viewMode : "flat";
+
+  useEffect(() => {
+    return () => {
+      if (reenterTimerRef.current !== null) {
+        window.clearTimeout(reenterTimerRef.current);
+      }
+    };
+  }, []);
 
   // If URL has #room on a device without 3D room support, redirect immediately to #portfolio
   useEffect(() => {
@@ -54,7 +67,6 @@ export default function App() {
       }
     }
   }, [device.allowRoom3D]);
-
 
   const handleLanyardEnter = useCallback(() => {
     if (!device.allowRoom3D) {
@@ -76,6 +88,11 @@ export default function App() {
   }, []);
 
   const handleExitToFlat = useCallback(() => {
+    if (reenterTimerRef.current !== null) {
+      window.clearTimeout(reenterTimerRef.current);
+      reenterTimerRef.current = null;
+    }
+    setIsReentering(false);
     oiiaAudio.reset();
     setViewMode("flat");
     if (typeof window !== "undefined") {
@@ -87,17 +104,47 @@ export default function App() {
     }
   }, []);
 
-  const handleReenterRoom = useCallback(() => {
-    if (!device.allowRoom3D) return;
-    setViewMode("room");
-    if (typeof window !== "undefined") {
-      try {
-        window.history.pushState(null, "", "#room");
-      } catch {
-        // Safe fallback
+  const triggerReenterRoom = useCallback(
+    (updateHistory: boolean) => {
+      if (!device.allowRoom3D || isReentering) return;
+      setLanyardDismissed(true);
+      setIntroPhase("ready");
+      dispatch({ type: "navigate", destination: "room" });
+
+      if (updateHistory && typeof window !== "undefined") {
+        try {
+          window.history.pushState(null, "", "#room");
+        } catch {
+          // Safe fallback
+        }
       }
-    }
-  }, [device.allowRoom3D]);
+
+      const reducedMotion =
+        typeof window !== "undefined" &&
+        (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+
+      if (reducedMotion || typeof window === "undefined") {
+        setIsReentering(false);
+        setViewMode("room");
+        return;
+      }
+
+      setIsReentering(true);
+      if (reenterTimerRef.current !== null) {
+        window.clearTimeout(reenterTimerRef.current);
+      }
+      reenterTimerRef.current = window.setTimeout(() => {
+        reenterTimerRef.current = null;
+        setViewMode("room");
+        setIsReentering(false);
+      }, EXIT_SHUTTER_DURATION_MS);
+    },
+    [device.allowRoom3D, isReentering],
+  );
+
+  const handleReenterRoom = useCallback(() => {
+    triggerReenterRoom(true);
+  }, [triggerReenterRoom]);
 
   useEffect(() => {
     const handleHashChange = () => {
@@ -113,24 +160,37 @@ export default function App() {
         return;
       }
       if (window.location.hash === "#portfolio") {
+        if (reenterTimerRef.current !== null) {
+          window.clearTimeout(reenterTimerRef.current);
+          reenterTimerRef.current = null;
+        }
+        setIsReentering(false);
         setViewMode("flat");
       } else if (window.location.hash === "#room" || window.location.hash === "") {
-        setViewMode("room");
+        if (viewMode === "flat" && !isReentering) {
+          triggerReenterRoom(false);
+        } else if (!isReentering) {
+          setViewMode("room");
+        }
       }
     };
     window.addEventListener("hashchange", handleHashChange);
     return () => window.removeEventListener("hashchange", handleHashChange);
-  }, [device.allowRoom3D]);
+  }, [device.allowRoom3D, viewMode, isReentering, triggerReenterRoom]);
 
   useEffect(() => {
     if (typeof document === "undefined") return undefined;
-    document.body.classList.toggle("away", activeViewMode === "flat");
+    document.body.classList.toggle("away", activeViewMode === "flat" && !isReentering);
     document.body.style.overflow = "hidden";
     return () => {
       document.body.classList.remove("away");
       document.body.style.overflow = "";
     };
-  }, [activeViewMode]);
+  }, [activeViewMode, isReentering]);
+
+  const handleRoomNavigate = useCallback((destination: RoomDestination) => {
+    dispatch({ type: "navigate", destination });
+  }, []);
 
   const showMagicCursor = !device.isTouch && !device.isMobileOrTablet;
 
@@ -149,16 +209,20 @@ export default function App() {
             ref={previewContainerRef}
             aria-hidden={activeViewMode === "flat"}
             style={{
+              position: "relative",
+              zIndex: activeViewMode === "room" || isReentering ? 50 : 1,
               pointerEvents: activeViewMode === "flat" ? "none" : "auto",
               userSelect: activeViewMode === "flat" ? "none" : "auto",
             }}
           >
             <RoomPreview
               navigation={navigation}
-              onNavigate={(destination) => dispatch({ type: "navigate", destination })}
+              onNavigate={handleRoomNavigate}
               introPhase={introPhase}
               onBuildComplete={handleBuildComplete}
               onExitToFlat={handleExitToFlat}
+              isAway={activeViewMode === "flat" && !isReentering}
+              isReentering={isReentering}
             />
           </div>
         )}
@@ -167,6 +231,7 @@ export default function App() {
           onReenter={handleReenterRoom}
           allowRoomEntry={device.allowRoom3D}
           isIntroDismissed={lanyardDismissed || introPhase !== "active"}
+          isReentering={isReentering}
         />
       </div>
     </>

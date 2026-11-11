@@ -44,6 +44,8 @@ type RoomPreviewProps = {
   introPhase?: IntroPhase;
   onBuildComplete?: () => void;
   onExitToFlat?: () => void;
+  isAway?: boolean;
+  isReentering?: boolean;
 };
 
 const hotspotLabels = ROOM_HOTSPOT_LABELS;
@@ -54,6 +56,8 @@ export default function RoomPreview({
   introPhase = "ready",
   onBuildComplete,
   onExitToFlat,
+  isAway = false,
+  isReentering = false,
 }: RoomPreviewProps) {
   const desktopRef = useRef<HTMLDivElement>(null);
   const arcadeRef = useRef<HTMLDivElement>(null);
@@ -359,6 +363,8 @@ export default function RoomPreview({
       <ExitBar
         onExit={() => onExitToFlat?.()}
         visible={navigation.destination === "room" && introPhase === "ready"}
+        isAway={isAway}
+        isReentering={isReentering}
       />
     </section>
   );
