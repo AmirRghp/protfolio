@@ -67,6 +67,9 @@ flowchart TD
     DesktopState -- Hover GitHub Ring --> ShowContribTooltip[Display calculated 4-hour cached contributions]
     
     OpenProject --> WindowControls{Window Action}
+    WindowControls -- Click 'Load inside this window' --> InWindowRepo[Mount in-window GitHub repo browser via srcDoc]
+    InWindowRepo --> RepoInteraction[Browse Code & README, inspect file tree, copy clone command]
+    RepoInteraction -- Click 'Summary' in address bar --> OpenProject
     WindowControls -- Drag Titlebar --> DragWindow[Move window via pointer capture; clamp to status bar]
     WindowControls -- Click Maximize --> FullDesktop[Expand window across full virtual desktop area]
     WindowControls -- Click Close / Press ESC --> CloseWindow[Destroy active window; return focus to desktop icon]

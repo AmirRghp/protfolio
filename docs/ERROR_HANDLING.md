@@ -41,14 +41,22 @@ Rather than relying on reactive context recovery after a mobile device experienc
 
 ## 3. Sandboxed Iframe & Third-Party Embed Blocking
 
-The Arcade cabinet includes an option to load a PS1 emulator game via an external provider (PS1FUN).
+Embedded web frames are susceptible to network blocks, browser cross-origin policy restrictions, and header rejections.
 
-### Failure Modes & Protections
-1. **`X-Frame-Options` / `frame-ancestors` Header Rejections:** Many third-party sites disallow iframe embedding.
-2. **Network Timeouts & Mixed-Content Blocks:** If an embedded game fails to complete loading within **8 seconds**:
-   - An accessible alert (`role="status"`) replaces the unresponsive frame.
-   - A direct external link opens the destination cleanly in a new browser tab.
-   - The **"Exit Game"** button resides permanently *outside* the iframe DOM, ensuring keyboard and mouse users are never trapped inside an unresponsive embed.
+### 3.1. Retro Arcade Cabinet (PS1FUN)
+The Arcade cabinet includes an option to load a PS1 emulator game via an external provider (PS1FUN).
+- **`X-Frame-Options` / `frame-ancestors` Header Rejections:** Many third-party game sites disallow iframe embedding.
+- **Network Timeouts & Mixed-Content Blocks:** If an embedded game fails to complete loading within **8 seconds**:
+  - An accessible alert (`role="status"`) replaces the unresponsive frame.
+  - A direct external link opens the destination cleanly in a new browser tab.
+  - The **"Exit Game"** button resides permanently *outside* the iframe DOM, ensuring keyboard and mouse users are never trapped inside an unresponsive embed.
+
+### 3.2. Project Desktop Apps (GitHub Repositories)
+GitHub serves strict `X-Frame-Options: deny` and `Content-Security-Policy: frame-ancestors 'none'` HTTP headers across all `github.com/*` web pages. Navigating an `<iframe>` directly to a GitHub URL causes modern browsers to immediately refuse connection with a blank error box.
+- **`srcDoc` HTML Encapsulation:** Instead of pointing `iframe.src` directly to `github.com`, `ProjectApp` generates a self-contained, sandboxed `srcDoc` HTML document (`src/data/githubRepoPreview.ts`). The document is rendered natively by the browser without triggering cross-origin frame rejection.
+- **API CORS Enrichment:** Public GitHub repository metadata (`api.github.com/repos/...`) and raw Markdown (`raw.githubusercontent.com/...`) explicitly support CORS. Live updates are fetched asynchronously and piped into the frame via `postMessage`.
+- **4-Hour Caching & Pre-Bundled Offline Snapshots:** All API responses are cached in `localStorage` under `portfolio_gh_repo_preview_v1_*` (TTL 4 hours). If network requests fail, timeout, or hit GitHub API rate limits (HTTP 403), the client transparently renders verified bundled snapshots containing the project file tree and full README markdown. No broken frame is ever shown to the user.
+- **Non-Obtrusive Fallback Controls:** The address bar provides an instant "Summary" button to toggle back to the project overview, and an "Open in new tab" anchor to visit GitHub directly at any time.
 
 ---
 

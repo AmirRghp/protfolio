@@ -22,7 +22,7 @@ Key testing principles:
   /         \    DOM testing, keyboard navigation, window drag
  /-----------\   
 /             \  Unit Tests (Vitest)
-/               \ 45 test files · 252 tests (3D math, audio, level data, responsive)
+/               \ 45 test files · 254 tests (3D math, audio, level data, responsive)
 -----------------
 ```
 
@@ -32,7 +32,7 @@ Key testing principles:
 
 Unit testing runs via **Vitest** with in-memory DOM simulation and isolated worker threads.
 
-### Test Suites Breakdown (45 Files, 252 Tests)
+### Test Suites Breakdown (45 Files, 254 Tests)
 - **Device & Responsive Engine:**
   - `src/core/utils/responsive.test.ts`: Tests `useResponsiveDevice` hook, media query matching, snapshot overrides, and strict dual-condition calculation ($\text{allowRoom3D}$).
 - **Landing Page & UI Components:**
@@ -52,7 +52,7 @@ Unit testing runs via **Vitest** with in-memory DOM simulation and isolated work
   - `src/features/arcade/utils/arcadeProjection.test.ts`: Verifies CRT screen corner projection and CSS `matrix3d` transformation.
 - **Virtual Desktop & OS:**
   - `src/features/monitor/components/MonitorDesktop.test.tsx`: Tests window focus hierarchy, status bar live updates, and maximize/restore behavior.
-  - `src/features/monitor/apps/ProjectApp.test.tsx`: Tests project window details, live iframe toggle, error fallback, and empty states in `AboutMeApp`.
+  - `src/features/monitor/apps/ProjectApp.test.tsx`: Tests project window details, in-window GitHub repository viewer (`srcDoc`), Markdown rendering, repo metadata, and glyphs.
   - `src/features/monitor/utils/desktopDrag.test.ts`: Tests pointer capture, drag bounds clamping, and threshold activations.
 - **Arcade Mini-Games:**
   - `src/features/arcade/games/*/*.test.tsx`: Tests tick loops, score tracking, keyboard bindings, and reset routines for Flappy, Tetris, Pixel Run, Snake, and Deparkanoid.
@@ -83,7 +83,7 @@ End-to-end tests run headless Chromium across responsive viewport configurations
 Run the following commands locally before any release or commit:
 
 ```bash
-# 1. Run all 252 Vitest unit & integration tests (45 test suites)
+# 1. Run all 254 Vitest unit & integration tests (45 test suites)
 npm run test
 
 # 2. Verify complete TypeScript type soundness (zero emits, zero errors)

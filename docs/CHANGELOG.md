@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.8.4] - 2026-11-11
+
+### Added
+- **In-Window GitHub Repository Viewer (`ProjectApp` & `githubRepoPreview`):**
+  - Resolved `iframe` embed failures across all project apps on the monitor desktop (`github.com refused to connect`) caused by GitHub's strict `X-Frame-Options: deny` and `Content-Security-Policy: frame-ancestors 'none'` response headers.
+  - Architected a native, sandboxed in-window repository viewer via `<iframe srcDoc={...}>` in `src/data/githubRepoPreview.ts` and `src/features/monitor/apps/ProjectApp.tsx`.
+  - Embedded high-fidelity repository metadata, directory structure, language tags, and full Markdown `README.md` rendering directly inside the virtual desktop window without requiring external tab jumps.
+  - Integrated live GitHub REST API querying (`api.github.com/repos/{owner}/{repo}/contents` and `raw.githubusercontent.com`) with a 4-hour `localStorage` cache and non-blocking asynchronous `postMessage` updates.
+  - Bundled comprehensive, verified offline snapshots for all 6 projects (`COVID-19 Image Classification`, `OmniDoc RAG`, `OmniDoc-Vision`, `OmniOps SRE Agent`, `Enterprise Knowledge Copilot`, and `Laya Fine-tuning Pipeline`), ensuring zero broken screens when offline or rate-limited.
+  - Added tab switching between `Code & README` and `Files`, a one-click `Copy clone command` button, and an address-bar `Summary` button to return to the project overview.
+  - Expanded unit test coverage in `src/features/monitor/apps/ProjectApp.test.tsx` to 5 comprehensive tests, bringing total test count to 254 passing tests across 45 suites.
+
 ## [0.8.3] - 2026-11-11
 
 ### Changed

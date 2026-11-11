@@ -54,7 +54,8 @@ src/
 ├── data/                 # Static content and data fetchers
 │   ├── content.ts        # Authoritative resume, projects, and career history
 │   ├── githubContributions.ts # GitHub API client with 4-hour caching
-│   └── githubContributionsFallback.json # Bundled offline fallback
+│   ├── githubContributionsFallback.json # Bundled offline fallback
+│   └── githubRepoPreview.ts # In-window GitHub repository viewer (srcDoc generator, API client & offline fallbacks)
 │
 └── features/             # Domain-specific feature modules
     ├── arcade/           # Retro CRT cabinet and 5 Canvas mini-games
@@ -102,6 +103,7 @@ sequenceDiagram
 4. **Responsive Device & 3D Execution Gate (`src/core/utils/responsive.ts`):** A centralized `useResponsiveDevice` hook evaluates media queries via React 19 `useSyncExternalStore`. On touch devices or viewports $< 1024\text{px}$, `<RoomPreview>` is strictly omitted from the component tree, ensuring zero background WebGL GPU consumption and directing mobile users immediately to `FlatLanding`.
 5. **Refractive Optical Liquid Glass Navbar & GPU Compositing Pipeline (`src/features/landing`):** The scrolled sticky navbar integrates Glisse's `<Glass>` component using Glisse's authentic dual-engine architecture. In Chromium/Android, Glisse applies real-time light refraction and chromatic dispersion via `backdrop-filter: blur(3px) url(#glisse-backdrop)`. In Safari/iOS (WebKit), it employs hardware-accelerated `-webkit-backdrop-filter: blur(var(--lg-blur, 3px)) saturate(180%)` paired with Glisse's canvas-rendered chromatic lit rim (`--lg-rim`) and specular highlights. The scrolling page DOM sections remain clean and decoupled from `data-glisse-backdrop`, completely preventing WebKit software filter buffer exhaustion ($4096\text{px}$ tile limit) and eliminating asynchronous touch-scroll compositor drift. Foreground controls reside at `position: relative; z-index: 1` over `.ldNavGlass` (`z-index: 0`).
 6. **Scroll-Invariant Arc UI Tab Indicator (`src/core/components/arc/tabs.tsx`):** A single persistent indicator element inside `TabsPrimitive.List` derives its geometry dynamically from `target.offsetLeft` and `target.offsetWidth`, rendering transitions scroll-invariant during simultaneous horizontal swipe gestures on mobile viewports. Local stacking isolation (`isolation: isolate` and `translateZ(0)`) prevents WebKit 3D layer promotion from occluding active tab labels on iOS Safari.
+7. **In-Window GitHub Repository Viewer Pipeline (`src/data/githubRepoPreview.ts` & `src/features/monitor/apps/ProjectApp.tsx`):** Standard GitHub repository URLs enforce `X-Frame-Options: deny` and `Content-Security-Policy: frame-ancestors 'none'`, prohibiting raw iframe loading. `ProjectApp` circumvents this restriction cleanly by rendering a high-fidelity, sandboxed `srcDoc` document matching GitHub dark aesthetics. The pipeline renders the repository files tree, one-click `git clone` command copying, and Markdown-parsed `README.md` without requiring users to jump to an external tab. Asynchronous non-blocking GitHub API requests update branch names and file trees in real-time, backed by a 4-hour `localStorage` cache and pre-bundled snapshots for all 6 projects.
 
 ---
 
@@ -139,5 +141,5 @@ Each mini-game operates as an autonomous, self-contained engine:
 | **Motion** | Motion (Framer) | 14.10.1 | Spring physics and kinetic transitions |
 | **Optics** | tactile-glass-ui | 0.1.1 | WebGL2 refractive glass buttons |
 | **Liquid Glass** | glisse | 0.5.0 | Optical refractive liquid glass navbar & hero CTA |
-| **Testing** | Vitest | 5.0.5 | 43 unit test suites (246 tests) |
+| **Testing** | Vitest | 5.0.5 | 45 unit test suites (254 tests) |
 | **E2E Testing**| Playwright | 1.64.1 | Cross-browser Chromium end-to-end verification |

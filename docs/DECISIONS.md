@@ -28,7 +28,7 @@ This document records the foundational architecture decisions, trade-offs, and d
   Reorganize into a domain-driven, feature-based hierarchy (`features/arcade`, `features/monitor`, `features/room`, `features/lanyard`, `features/landing`) supported by a shared `core/` layer and isolated `data/` module. Path aliases (`@/*`) and barrel export files (`index.ts`) enforce clean module boundaries.
 - **Consequences:**
   - *Positive:* High cohesion, clear domain boundaries, test colocation, and effortless future extension (e.g. adding a new mini-game or desktop app).
-  - *Positive:* 100% of the 45 test files (252 unit tests) pass without coupling issues.
+  - *Positive:* 100% of the 45 test files (254 unit tests) pass without coupling issues.
 
 ---
 
@@ -228,3 +228,21 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* Reduces visual noise in the sticky header and provides higher breathing room for primary navigational links (`Work`, `Experience`, `Tech Stack`, `Activity`, `Contact`).
   - *Positive:* Simplifies brand header identity to crisp typography consistent with the rest of the portfolio.
   - *Positive:* Zero regressions in test suites or responsive layouts.
+
+---
+
+### ADR-015: In-Window GitHub Repository Viewer via Sandboxed `srcDoc` & Live API Enrichment
+- **Status:** Accepted (2026-11-11)
+- **Context:**
+  All six portfolio projects link to real GitHub repositories (`github.com/AmirRghp/*`). On the 3D virtual monitor desktop, `ProjectApp` includes a button to "Load inside this window". However, GitHub strictly enforces `X-Frame-Options: deny` and CSP `frame-ancestors: 'none'`, causing browsers to refuse loading GitHub URLs inside raw `<iframe>` tags and forcing visitors to use "Open in new tab", breaking the immersive 3D desktop experience.
+- **Decision:**
+  1. Generate a self-contained, sandboxed `srcDoc` HTML document styled to GitHub's native dark mode (`src/data/githubRepoPreview.ts`).
+  2. Embed structured repository metadata, language indicators, directory trees, one-click `git clone` command copying, and full Markdown `README.md` parsing directly in the browser sandbox.
+  3. Query the CORS-enabled public GitHub REST API (`api.github.com/repos/{owner}/{repo}` and raw `README.md`) asynchronously to enrich branch names and file trees in real-time.
+  4. Cache responses in `localStorage` under `portfolio_gh_repo_preview_v1_*` with a 4-hour TTL, backed by pre-bundled static snapshots for all six projects to ensure 100% resilience during network outages or API rate-limiting (HTTP 403).
+  5. Provide an address-bar "Summary" button to toggle back to the project overview and an "Open in new tab" link for external navigation.
+- **Consequences:**
+  - *Positive:* Completely eliminates "refused to connect" blank iframe errors; users can inspect code structure and read complete project documentation without leaving the 3D room.
+  - *Positive:* 100% offline-resilient with zero third-party script vulnerabilities (sandboxed without `allow-same-origin` external script injection).
+  - *Positive:* Zero regressions in Playwright E2E suites or unit test suites (254 passing tests across 45 suites).
+

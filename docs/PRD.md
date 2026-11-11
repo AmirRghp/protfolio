@@ -93,7 +93,7 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 - **Live Status Bar:** Dynamic clock, local date, battery/wifi indicators, and volume state updating in real-time.
 - **Interactive Apps:**
   - `AboutMeApp`: Monospace retro text editor displaying verified background, education, and contact links.
-  - `ProjectApp`: Draggable project glyphs opening dedicated windows with feature highlights and live demo loaders.
+  - `ProjectApp`: Draggable project glyphs opening dedicated windows with feature highlights and an in-window GitHub repository viewer (`srcDoc`) featuring tabbed code/file browsing, full Markdown `README.md` rendering, one-click clone command copying, live API enrichment, and offline snapshot resilience.
   - `ContributionRing`: Radial widget displaying public GitHub contribution volume with a 4-hour `localStorage` cache and offline fallback.
 
 ### 6.4. Retro Arcade Cabinet & Playable Mini-Games (`features/arcade`)
