@@ -1175,11 +1175,13 @@
 /* Tech Stack Section */
 .ldTech {
   position: relative;
+  overflow: visible;
 }
 
 /* Github Activity Section */
 .ldActivity {
   position: relative;
+  overflow: visible;
 }
 
 /* Footer */

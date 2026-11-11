@@ -128,11 +128,13 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - High-contrast hover inversion for technology badge icons.
 - WebKit stacking context isolation (`isolation: isolate` on trigger, `-webkit-transform: translateZ(0)` on label) preventing indicator overlay occlusion on iOS Safari.
 
-### 6.4. Progressive Tech Stack Expander (`TechStackSection`)
-- Truncates initial display to first 10 items for categories with $> 10$ technologies.
-- Layered `.techBlurOverlay` (`backdrop-filter: blur(4px)`) softens the lower boundary.
-- Hardware-accelerated 60fps CSS Grid transition (`grid-template-rows: 0fr -> 1fr`) powered by cubic-bezier easing.
-- Minimalist uppercase letter-spaced monospace button (`VIEW ALL TECHNOLOGIES (60)` / `COLLAPSE STACK`) with rotating SVG chevron.
+### 6.4. Responsive Two-Row Visual Expander (`TechStackSection`)
+- Dynamic 2-row visual clamping: Items flow continuously in a single flex-wrap grid container (`.techGrid`).
+- Dynamic row measurement via `useIsomorphicLayoutEffect` evaluates unique chip vertical offsets (`offsetTop`). Categories that fit within $\le 2$ rows on the active viewport require zero truncation, rendering with `.notOverflowing` (`max-height: none`, `overflow: visible`), zero blur, and no expand controls.
+- Categories spanning $> 2$ rows clamp to the exact pixel boundary of Row 2 (`secondRowBottom = top + offsetHeight`, defaulting to `88px` desktop, `82px` tablet, `70px` small mobile).
+- Layered `.techBlurOverlay` (`backdrop-filter: blur(10px)` with progressive vertical gradient `mask-image` matching the nocturnal `#0a0a0b` background) seamlessly dissolves the lower edge of Row 2.
+- Hardware-accelerated smooth height transition (`transition: max-height 0.42s cubic-bezier(0.16, 1, 0.3, 1)`) expanding smoothly to the tab's measured `scrollHeight` without jumping or clipping lower page sections.
+- Minimalist frosted glass pill button (`VIEW ALL TECHNOLOGIES (${count})` / `COLLAPSE STACK`) with rotating SVG chevron.
 
 ### 6.5. Mobile Work Accordion Close Control (`WorkAccordion`)
 - Circular optical glass `✕` icon button ($36\text{px}$) with $50\%$ border radius.

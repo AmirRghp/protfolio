@@ -246,3 +246,24 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* 100% offline-resilient with zero third-party script vulnerabilities (sandboxed without `allow-same-origin` external script injection).
   - *Positive:* Zero regressions in Playwright E2E suites or unit test suites (254 passing tests across 45 suites).
 
+---
+
+### ADR-016: Responsive Two-Row Visual Clamping & Lifecycle-Isolated Tab Panels in TechStackSection
+- **Status:** Accepted (2026-11-11)
+- **Context:**
+  1. **Flawed Static Item Truncation:** The initial implementation truncated categories by an arbitrary item count (`slice(0, 10)`). On standard desktop viewports, row 1 accommodates 8–9 technology chips, leaving row 2 with only 1–2 chips when 10 items are rendered. In categories like `Frontend` (11 items) or `DevOps` (15 items), this caused an awkward blur overlay and expand button to appear just to reveal 1 single overflow chip that already fits within 2 visual rows.
+  2. **Ghost Buttons & State Contamination:** In `DevOps & Cloud` on desktop, 15 items fit within 2 rows, yet a ghost `VIEW ALL` button appeared. Clicking this button caused the expand control to disappear completely, leaking an expanded state to other tabs (such as `All`) and leaving them permanently expanded without a collapse button.
+  3. **Unmounted Tab Lifecycle Desynchronization:** In `Data & AI`, expanding the section, navigating to `Agent Harness`, and returning caused the button and nocturnal blur overlay to vanish, permanently displaying the full uncollapsed list. Root cause: `<TabsContent>` unmounts inactive panels (returns `null`). When the measuring component resided outside `<TabsContent>`, layout measurement effects (`useLayoutEffect`) could not observe rendered chips on inactive panels, desynchronizing `hasMore` and `isExpanded` states across tab switches.
+- **Decision:**
+  1. Mount `<TechTabPanel>` directly **inside** `<TabsContent value={tab.id}>`, ensuring clean component lifecycles where each active tab mounts independently and unmounts cleanly when inactive.
+  2. Maintain isolated, local expansion states (`isExpanded`, `hasMore`, `collapsedHeight`) per tab panel.
+  3. Implement responsive visual row detection using `useIsomorphicLayoutEffect` and `ResizeObserver`. Unique chip vertical offsets (`offsetTop`) are evaluated directly from the DOM; if row count $\le 2$, the tab renders with `.notOverflowing` (`max-height: none !important; overflow: visible !important;`) with zero blur overlay and zero expand controls.
+  4. Dynamically compute the second row's bottom boundary (`secondRowBottom = top + offsetHeight`) to set a pixel-accurate collapsed clamp across all responsive viewports (`88px` on desktop, `82px` on tablet, `70px` on small mobile).
+  5. Expand smoothly via hardware-accelerated `max-height` transition to the measured `scrollHeight + 12px`, with natural document reflow pushing lower sections (`#ld-activity`) downward without visual overlap.
+- **Consequences:**
+  - *Positive:* Completely eliminates ghost buttons, state leakage, and disappearing controls across all tab switching sequences.
+  - *Positive:* Categories fitting within 2 rows on desktop (Frontend, DevOps, Databases, Languages, Agent Harness) display cleanly with no redundant expand controls.
+  - *Positive:* Pixel-accurate responsive behavior across all viewports from $320\text{px}$ small mobile to $1440\text{px}$ desktop.
+  - *Positive:* Zero layout collisions with the 3D isometric GitHub activity city section (`#ld-activity`).
+  - *Positive:* All 254 Vitest unit tests, TypeScript compilation, and ESLint checks pass with 0 warnings or errors.
+

@@ -35,10 +35,9 @@ Unit testing runs via **Vitest** with in-memory DOM simulation and isolated work
 ### Test Suites Breakdown (45 Files, 254 Tests)
 - **Device & Responsive Engine:**
   - `src/core/utils/responsive.test.ts`: Tests `useResponsiveDevice` hook, media query matching, snapshot overrides, and strict dual-condition calculation ($\text{allowRoom3D}$).
-- **Landing Page & UI Components:**
   - `src/features/landing/components/FlatLanding.test.tsx`: Tests flat landing DOM structure, contact button routing, room entry suppression, sticky header with Glisse `<Glass>` liquid glass backdrop (`ldNavGlass`, `lg-glass`), `--lg-blur: 3px`, and decoupling from scrolling sections.
   - `src/App.test.tsx`: Validates root application shell, semantic owner role structure, and clean markup integration decoupled from `data-glisse-backdrop`.
-  - `src/features/landing/components/TechStackSection.test.tsx`: Tests 10-item truncation thresholds, category filtering, and expand/collapse button state.
+  - `src/features/landing/components/TechStackSection.test.tsx`: Tests responsive 2-row clamping, exclusion of expand buttons for categories fitting in two rows (Languages, Frontend, DevOps), category filtering, and expand/collapse button state.
   - `src/features/landing/components/WorkAccordion.test.tsx`: Tests mobile accordion layout and circular glass close button interaction.
   - `src/features/landing/components/ProjectCarousel.test.tsx`: Tests desktop project carousel slide navigation, dot indicators, and keyboard arrow controls.
   - `src/features/landing/effects/PixelTetris.test.tsx`: Tests SSR canvas rendering and responsive `mobileCellSize`, `mobileMaxStackHeight`, and `mobilePrefillRows` props.

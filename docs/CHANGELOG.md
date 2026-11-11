@@ -4,7 +4,25 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
----
+## [0.8.5] - 2026-11-11
+
+### Fixed
+- **DevOps & Cloud Ghost Expand Button & Cross-Tab State Leaks:**
+  - Resolved an issue where a ghost `VIEW ALL TECHNOLOGIES (15)` button appeared on the `DevOps & Cloud` tab on desktop even though its 15 items fit within 2 visual rows. Clicking the button caused the control to disappear and leaked an uncollapsed state to other tabs (such as `All`), leaving them permanently expanded without a collapse button.
+  - Root cause: Measuring logic executed outside the `<TabsContent>` lifecycle, creating stale state and cross-tab contamination when switching active tabs.
+  - Resolution: Moved `<TechTabPanel>` inside `<TabsContent value={tab.id}>` to ensure clean, isolated component mounting and local state per tab.
+- **Data & AI Tab Navigation Blur & Button Disappearance:**
+  - Resolved an issue where visiting `Data & AI`, navigating to `Agent Harness`, and returning caused the `VIEW ALL` button and nocturnal blur overlay to vanish, showing the full expanded list prematurely.
+  - Resolution: Each active tab now measures its own DOM layout on mount via `useIsomorphicLayoutEffect` and `ResizeObserver`, ensuring consistent collapsed state and clean expansion controls upon every tab return.
+
+### Changed
+- **Responsive Two-Row Visual Clamping (`TechStackSection`):**
+  - Replaced the arbitrary 10-item static truncation with true responsive visual 2-row clamping based on DOM chip vertical offset (`offsetTop`) calculation.
+  - Categories that fit within 1 or 2 rows on the active viewport (`Languages`, `Frontend`, `Databases`, `Agent Harness`, and `DevOps` on desktop) render cleanly with `.notOverflowing` (`max-height: none`, `overflow: visible`), displaying all items directly with zero blur overlay and zero unnecessary buttons.
+  - Categories exceeding 2 rows clamp dynamically to the bottom edge of the second row (`88px` on desktop, `82px` on tablet, `70px` on small mobile), accompanied by a smooth feathered nocturnal blur overlay and a frosted glass expand button.
+  - Extended responsive clamping and button styling down to $320\text{px}$ small mobile viewports, ensuring adaptive wrapping and zero overlap with the GitHub activity skyline section (`#ld-activity`).
+- **Documentation & Test Suite Synchronization:**
+  - Updated `docs/PRD.md`, `docs/DESIGN_SYSTEM.md`, `docs/TESTING.md`, `docs/DECISIONS.md` (ADR-016), and `src/features/landing/components/TechStackSection.test.tsx` to reflect the 2-row visual clamping architecture.
 
 ## [0.8.4] - 2026-11-11
 

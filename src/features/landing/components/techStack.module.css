@@ -51,100 +51,130 @@
 }
 
 .techGrid {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
-  margin-top: 20px;
+  margin-top: 0;
   width: 100%;
 }
 
 .techListContainer {
   position: relative;
   width: 100%;
-}
-
-.techGridMore {
-  margin-top: 10px;
+  overflow: visible;
 }
 
 .techMoreWrapper {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition:
-    grid-template-rows 0.42s cubic-bezier(0.16, 1, 0.3, 1),
-    opacity 0.32s ease;
-  opacity: 0;
+  position: relative;
   width: 100%;
+  overflow: hidden;
+  margin-top: 20px;
+  max-height: 88px;
+  transition: max-height 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .techMoreWrapper.expanded {
-  grid-template-rows: 1fr;
-  opacity: 1;
+  max-height: 1600px;
 }
 
-.techMoreInner {
-  overflow: hidden;
-  min-height: 0;
+.techMoreWrapper.notOverflowing {
+  max-height: none !important;
+  overflow: visible !important;
 }
 
 .techBlurOverlay {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 34px;
-  height: 68px;
+  left: -4px;
+  right: -4px;
+  bottom: 0;
+  height: 100px;
   background: linear-gradient(
     to bottom,
-    rgba(8, 6, 20, 0) 0%,
-    rgba(8, 6, 20, 0.82) 55%,
-    rgba(8, 6, 20, 0.98) 100%
+    rgba(10, 10, 11, 0) 0%,
+    rgba(10, 10, 11, 0.15) 20%,
+    rgba(10, 10, 11, 0.5) 50%,
+    rgba(10, 10, 11, 0.88) 80%,
+    rgba(10, 10, 11, 1) 100%
   );
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 18%,
+    rgba(0, 0, 0, 0.5) 48%,
+    rgba(0, 0, 0, 0.9) 78%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(0, 0, 0, 0.1) 18%,
+    rgba(0, 0, 0, 0.5) 48%,
+    rgba(0, 0, 0, 0.9) 78%,
+    black 100%
+  );
   pointer-events: none;
   transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
+    opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+    visibility 0.35s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 1;
 }
 
 .techBlurOverlay.blurHidden {
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
 }
 
 .techAction {
   display: flex;
   justify-content: center;
-  margin-top: 14px;
+  margin-top: 18px;
   position: relative;
   z-index: 2;
 }
 
 .techExpandBtn {
-  background: transparent;
-  border: none;
+  background: rgba(20, 21, 24, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   font-family: var(--mono, monospace);
   font-weight: 500;
   font-size: 11px;
   line-height: 1;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--muted, #a1a1a8);
+  color: #d4d4d8;
   cursor: pointer;
-  padding: 10px 16px;
+  padding: 10px 22px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 9px;
   user-select: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
   transition:
-    color 0.2s ease,
-    transform 0.2s ease;
+    color 0.22s ease,
+    background-color 0.22s ease,
+    border-color 0.22s ease,
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s ease;
 }
 
 .techExpandBtn:hover {
   color: #ffffff;
+  background: rgba(30, 31, 36, 0.92);
+  border-color: rgba(255, 255, 255, 0.22);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.techExpandBtn:active {
+  transform: translateY(0);
 }
 
 .techExpandBtn:focus-visible {
@@ -225,9 +255,18 @@
     margin-bottom: 20px;
   }
 
+  .techMoreWrapper {
+    margin-top: 16px;
+    max-height: 82px;
+  }
+
   .techGrid {
     gap: 8px;
-    margin-top: 16px;
+    margin-top: 0;
+  }
+
+  .techBlurOverlay {
+    height: 86px;
   }
 
   .techChip {
@@ -238,6 +277,21 @@
 }
 
 @media (max-width: 380px) {
+  .techMoreWrapper {
+    max-height: 70px;
+  }
+
+  .techBlurOverlay {
+    height: 78px;
+  }
+
+  .techExpandBtn {
+    font-size: 10px;
+    padding: 9px 16px;
+    letter-spacing: 0.06em;
+    max-width: 100%;
+  }
+
   .techChip {
     font-size: 12px;
     padding: 6px 10px;

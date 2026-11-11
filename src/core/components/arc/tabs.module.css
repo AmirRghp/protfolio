@@ -156,12 +156,10 @@
 }
 
 .content {
+  position: relative;
   margin-top: 24px;
   width: 100%;
-}
-
-.content[data-motion-pop-id] {
-  margin-top: 0;
+  height: auto !important;
 }
 
 .content[data-state="inactive"] {
