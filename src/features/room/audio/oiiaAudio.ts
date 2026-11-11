@@ -5,7 +5,7 @@ export interface CatAudioState {
   duration: number;
   bassEnergy: number; // 0.0 to 1.0 (reactive kick pulse)
   overallEnergy: number; // 0.0 to 1.0
-  isDrop: boolean; // True during drop phases (33s-57s, 81s-105s)
+  isDrop: boolean; // True during drop phases (33s-57s, 106s-132s)
   isMuted: boolean;
   volume: number;
 }
@@ -22,7 +22,7 @@ export interface OiiaAudioOptions {
  * Manages playback of the looping track, Web Audio API graph routing
  * (`MediaElementSourceNode -> AnalyserNode -> GainNode -> destination`),
  * real-time FFT spectrum analysis for kick/bass reactivity (bins 1–4, 0–250Hz),
- * and musical drop detection windows (33s–57s and 81s–105s).
+ * and musical drop detection windows (33s–57s and 106s–132s).
  */
 export class OiiaAudioManager {
   private src: string;
@@ -54,14 +54,14 @@ export class OiiaAudioManager {
 
   /**
    * Determines whether the specified playback timestamp falls inside an EDM drop window.
-   * Drop window 1: 33.0s – 57.0s (First high-energy chorus drop)
-   * Drop window 2: 81.0s – 105.0s (Second climactic drop)
+   * Drop window 1: 33.0s – 57.0s (First high-energy chorus drop: 00:33 – 00:57)
+   * Drop window 2: 106.0s – 132.0s (Second climactic drop: 01:46 – 02:12)
    *
    * @param time Playback time in seconds
    * @returns Boolean indicating whether current playback is inside a drop window
    */
   private static isDropWindow(time: number): boolean {
-    return (time >= 33.0 && time <= 57.0) || (time >= 81.0 && time <= 105.0);
+    return (time >= 33.0 && time <= 57.0) || (time >= 106.0 && time <= 132.0);
   }
 
   /**
@@ -274,7 +274,7 @@ export class OiiaAudioManager {
         this.lastSimulatedTime = now;
       }
 
-      // Check drop sections: 33s-57s and 81s-105s
+      // Check drop sections: 33s-57s and 106s-132s
       const inDrop = OiiaAudioManager.isDropWindow(this.currentTime);
       const dropChanged = this.isDrop !== inDrop;
       this.isDrop = inDrop;

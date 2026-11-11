@@ -52,7 +52,7 @@ describe("OiiaAudioManager audio and dance synchronization engine", () => {
     expect(resetState.isDrop).toBe(false);
   });
 
-  it("detects drop phases at 33s-57s and 81s-105s", async () => {
+  it("detects drop phases at 33s-57s and 106s-132s", async () => {
     const manager = new OiiaAudioManager();
     await manager.play();
 
@@ -72,10 +72,20 @@ describe("OiiaAudioManager audio and dance synchronization engine", () => {
     state = manager.getState();
     expect(state.isDrop).toBe(false);
 
-    // At 85s (second drop)
+    // At 85s (no longer in drop 2)
     manager.updateTime(20.0); // 65 + 20 = 85s
     state = manager.getState();
+    expect(state.isDrop).toBe(false);
+
+    // At 110s (second drop: 106s-132s / 01:46-02:12)
+    manager.updateTime(25.0); // 85 + 25 = 110s
+    state = manager.getState();
     expect(state.isDrop).toBe(true);
+
+    // At 133s (after second drop)
+    manager.updateTime(23.0); // 110 + 23 = 133s
+    state = manager.getState();
+    expect(state.isDrop).toBe(false);
   });
 
   it("calculates 160 BPM kick pulses synchronously with rhythmic cadence", async () => {
