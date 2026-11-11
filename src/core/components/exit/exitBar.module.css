@@ -7,16 +7,25 @@
   z-index: 25;
   pointer-events: none;
   opacity: 0;
-  transform: translateY(18px);
+  transform: translate3d(0, 18px, 0);
   transition: opacity 0.8s ease, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform, opacity;
 }
 
 .exitbar.on {
   opacity: 1;
-  transform: none;
+  transform: translate3d(0, 0, 0);
 }
 
-:global(body.away) .exitbar {
+.exitbar.shutting {
+  z-index: 99998;
+  pointer-events: all;
+  opacity: 1;
+  transform: translate3d(0, -100vh, 0);
+  transition: transform 0.68s cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+:global(body.away) .exitbar:not(.shutting) {
   display: none;
 }
 
@@ -36,10 +45,26 @@
   pointer-events: auto;
 }
 
+.ebShutter {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% - 29px);
+  height: calc(100vh + 140px);
+  background: linear-gradient(180deg, #000000 0%, #0a0a0a 16%, #0a0a0a 100%);
+  pointer-events: none;
+}
+
 .ebCta {
   position: absolute;
   left: 50%;
   bottom: 9px;
   pointer-events: auto;
   transform: translate(-50%, 0);
+  transition: opacity 0.24s ease;
+}
+
+.exitbar.shutting .ebCta {
+  opacity: 0;
+  pointer-events: none;
 }

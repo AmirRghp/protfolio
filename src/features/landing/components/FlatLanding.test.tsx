@@ -251,5 +251,21 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Enter The Room");
     expect(html).toContain("ldFootCta");
   });
+
+  it("mounts the blueprint setting-out PortfolioLoader overlay when open", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        isIntroDismissed={true}
+      />,
+    );
+
+    expect(html).toContain("pl-root");
+    expect(html).toContain("pl-sheet");
+    expect(html).toContain("SYS.CALIBRATE // 000%");
+  });
 });
+
 

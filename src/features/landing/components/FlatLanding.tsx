@@ -2,15 +2,8 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties, type Mous
 import { TactileButton } from "tactile-glass-ui";
 import { LiquidGrid, PixelTetris } from "@/features/landing/effects";
 import WorkAccordion from "./WorkAccordion";
-import {
-  computeHeroPortalGeometry,
-  EASE_CRISP_OUT,
-  EASE_PORTAL_DOCK,
-  EASE_PORTAL_EXPAND,
-  EASE_SCAN_SWEEP,
-  HERO_CLOSE_TIMING,
-  HERO_OPEN_TIMING,
-} from "@/features/landing/utils";
+import { PortfolioLoader } from "./PortfolioLoader";
+import { EASE_CRISP_OUT } from "@/features/landing/utils";
 import { getAssetUrl } from "@/core/utils";
 import { portfolioContent } from "@/data";
 import { Button as GlisseButton, Glass } from "glisse";
@@ -26,6 +19,7 @@ export type FlatLandingProps = {
   snapshotCanvas?: HTMLCanvasElement | null;
   onReenter: () => void;
   allowRoomEntry?: boolean;
+  isIntroDismissed?: boolean;
 };
 
 const DYNAMIC_ROLES = [
@@ -102,7 +96,12 @@ function StatCounter({ st, inView }: { st: StatItem; inView: boolean }) {
   return <b data-count={st.num > 0 ? st.num : undefined}>{display}</b>;
 }
 
-export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }: FlatLandingProps) {
+export default function FlatLanding({
+  isOpen,
+  onReenter,
+  allowRoomEntry = true,
+  isIntroDismissed = true,
+}: FlatLandingProps) {
   const device = useResponsiveDevice();
   const rootRef = useRef<HTMLDivElement>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -116,13 +115,17 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
   const navRef = useRef<HTMLElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const [transitionState, setTransitionState] = useState<"closed" | "opening" | "open" | "closing">(
-    () => (isOpen ? "open" : "closed"),
-  );
-  const [isReady, setIsReady] = useState(() => isOpen);
+  const [isClosing, setIsClosing] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [numbersInView, setNumbersInView] = useState(false);
   const runningAnimationsRef = useRef<Animation[]>([]);
+
+  const transitionState: "closed" | "opening" | "open" | "closing" = isClosing
+    ? "closing"
+    : isOpen
+      ? "open"
+      : "closed";
+  const isReady = isOpen && !isClosing;
 
   const settle = useCallback(() => {
     for (const a of runningAnimationsRef.current) {
@@ -154,30 +157,6 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
     }
   }, []);
 
-  const measurePortalGeometry = useCallback(() => {
-    const frame = frameRef.current;
-    const vw = typeof window !== "undefined" ? window.innerWidth : 1440;
-    const vh = typeof window !== "undefined" ? window.innerHeight : 900;
-    if (!frame) {
-      return computeHeroPortalGeometry(
-        { width: vw, height: vh },
-        { left: 16, top: 64, width: Math.max(320, vw - 32), height: Math.max(360, vh - 284) },
-        6,
-      );
-    }
-    const r = frame.getBoundingClientRect();
-    return computeHeroPortalGeometry(
-      { width: vw, height: vh },
-      {
-        left: r.left,
-        top: r.top,
-        width: r.width || Math.max(320, vw - 32),
-        height: r.height || Math.max(360, vh - 284),
-      },
-      6,
-    );
-  }, []);
-
   // Pre-warm the ASCII video decoder while the user is in the 3D room so frame 1 is ready immediately
   useEffect(() => {
     const video = videoRef.current;
@@ -191,32 +170,26 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
     }
   }, []);
 
-  // Handle Close / Re-enter (Flat Hero -> Live 3D Room)
+  // Handle Close / Re-enter (Flat Landing -> Live 3D Room)
   const handleReenter = useCallback(async () => {
     if (transitionState !== "open") return;
-    setTransitionState("closing");
-    setIsReady(false);
+    setIsClosing(true);
 
     const root = rootRef.current;
-    const backdrop = backdropRef.current;
-    const frame = frameRef.current;
-    const nav = navRef.current;
-    const wrap = wrapRef.current;
 
-    if (!root || !frame || !wrap) {
+    if (!root) {
       videoRef.current?.pause();
-      setTransitionState("closed");
+      setIsClosing(false);
       onReenter();
       return;
     }
 
-    // Smoothly scroll back to top before expanding the hero portal
     if (root.scrollTop > 2) {
       root.scrollTo({ top: 0, behavior: "smooth" });
       const t0 = performance.now();
       await new Promise<void>((resolve) => {
         const wait = () => {
-          if (root.scrollTop <= 2 || performance.now() - t0 > 750) {
+          if (root.scrollTop <= 2 || performance.now() - t0 > 500) {
             resolve();
           } else {
             requestAnimationFrame(wait);
@@ -232,7 +205,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
       settle();
       clearAnimatedStyles();
       videoRef.current?.pause();
-      setTransitionState("closed");
+      setIsClosing(false);
       onReenter();
       return;
     }
@@ -240,257 +213,33 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
     settle();
     clearAnimatedStyles();
 
-    const geo = measurePortalGeometry();
-
-    // 1. Fade out page content, sticky header, and dark LiquidGrid backdrop so the live 3D room sits directly behind the expanding portal
-    const heroOverlay = heroOverlayRef.current;
-    const rHeroOverlay = heroOverlay
-      ? heroOverlay.animate(
-        [
-          { opacity: 1, transform: "translate3d(0, 0, 0)" },
-          { opacity: 0, transform: "translate3d(0, 12px, 0)" },
-        ],
-        {
-          duration: HERO_CLOSE_TIMING.contentFadeDuration,
-          fill: "both",
-          easing: "ease-out",
-        },
-      )
-      : null;
-
-    const rWrap = wrap.animate(
-      [
-        { opacity: 1, transform: "translate3d(0, 0, 0)" },
-        { opacity: 0, transform: "translate3d(0, 14px, 0)" },
-      ],
-      {
-        duration: HERO_CLOSE_TIMING.contentFadeDuration,
-        fill: "both",
-        easing: "ease-out",
-      },
-    );
-
-    const rNav = nav
-      ? nav.animate(
-        [
-          { opacity: 1, transform: "translate3d(0, 0, 0)" },
-          { opacity: 0, transform: "translate3d(0, -10px, 0)" },
-        ],
-        {
-          duration: HERO_CLOSE_TIMING.navFadeDuration,
-          fill: "both",
-          easing: "ease-out",
-        },
-      )
-      : null;
-
-    const rBackdrop = backdrop
-      ? backdrop.animate([{ opacity: 1 }, { opacity: 0 }], {
-        duration: HERO_CLOSE_TIMING.backdropFadeDuration,
-        fill: "both",
-        easing: "ease-out",
-      })
-      : null;
-
-    // 2. The live playing Hero video container itself expands distortion-free to fill 100vw×100vh
-    const rExpand = frame.animate(
-      [
-        { transform: geo.dockedTransform, clipPath: geo.dockedClipPath },
-        { transform: geo.fullscreenTransform, clipPath: geo.fullscreenClipPath },
-      ],
-      {
-        duration: HERO_CLOSE_TIMING.expandDuration,
-        fill: "both",
-        easing: EASE_PORTAL_EXPAND,
-      },
-    );
-
-    // 3. Full-screen live ASCII video dissolves directly into the live 3D room
-    const rDissolve = frame.animate([{ opacity: 1 }, { opacity: 0 }], {
-      duration: HERO_CLOSE_TIMING.dissolveDuration,
-      delay: HERO_CLOSE_TIMING.dissolveDelay,
+    const rFade = root.animate([{ opacity: 1 }, { opacity: 0 }], {
+      duration: 360,
       fill: "both",
       easing: EASE_CRISP_OUT,
     });
-
-    const anims: Animation[] = [rWrap, rExpand, rDissolve];
-    if (rHeroOverlay) anims.push(rHeroOverlay);
-    if (rNav) anims.push(rNav);
-    if (rBackdrop) anims.push(rBackdrop);
-    runningAnimationsRef.current = anims;
+    runningAnimationsRef.current = [rFade];
 
     try {
-      await Promise.all(anims.map((a) => a.finished));
+      await rFade.finished;
     } catch {
       // Interrupted or cancelled
     }
 
     videoRef.current?.pause();
     root.style.display = "none";
-    setTransitionState("closed");
+    setIsClosing(false);
     onReenter();
-  }, [transitionState, measurePortalGeometry, onReenter, settle, clearAnimatedStyles]);
+  }, [transitionState, onReenter, settle, clearAnimatedStyles]);
 
-  // Clean up WAAPI fill animations only after the closed state has committed and hidden root
+  // Reset DOM scroll and any lingering WAAPI inline styles when opening or closing
   useEffect(() => {
-    if (!isOpen && transitionState === "closed") {
-      settle();
-      clearAnimatedStyles();
-    }
-  }, [isOpen, transitionState, settle, clearAnimatedStyles]);
-
-  // Open Transition (Live 3D Room -> Full-Screen ASCII Video -> Docked Hero Frame)
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const root = rootRef.current;
-    const backdrop = backdropRef.current;
-    const frame = frameRef.current;
-    const portalFx = portalFxRef.current;
-    const scanCrest = scanCrestRef.current;
-    const nav = navRef.current;
-    const wrap = wrapRef.current;
-
-    if (!root || !frame || !nav || !wrap) {
-      setTransitionState("open");
-      setIsReady(true);
-      return;
-    }
-
-    root.scrollTop = 0;
-    setIsScrolled(false);
-    setTransitionState("opening");
-    setIsReady(false);
     settle();
     clearAnimatedStyles();
-
-    const reduced = typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-    if (reduced || typeof root.animate !== "function") {
-      setTransitionState("open");
-      setIsReady(true);
-      return;
+    if (isOpen && rootRef.current) {
+      rootRef.current.scrollTop = 0;
     }
-
-    // Start live ASCII video immediately at t = 0 so the portal is alive throughout the entire transition
-    const video = videoRef.current;
-    if (video) {
-      video.play().catch(() => { });
-    }
-
-    const geo = measurePortalGeometry();
-
-    // 1. Full-screen live ASCII portal quantizes in directly over the 3D room
-    const aFrameFade = frame.animate([{ opacity: 0 }, { opacity: 1 }], {
-      duration: HERO_OPEN_TIMING.quantizeFadeDuration,
-      fill: "both",
-      easing: EASE_CRISP_OUT,
-    });
-
-    // 2. Full-screen live ASCII portal smoothly docks into the Hero frame without aspect distortion or element swap
-    const aFrameMorph = frame.animate(
-      [
-        { transform: geo.fullscreenTransform, clipPath: geo.fullscreenClipPath },
-        { transform: geo.dockedTransform, clipPath: geo.dockedClipPath },
-      ],
-      {
-        duration: HERO_OPEN_TIMING.dockDuration,
-        delay: HERO_OPEN_TIMING.dockDelay,
-        fill: "both",
-        easing: EASE_PORTAL_DOCK,
-      },
-    );
-
-    // 3. Digital matrix cell grid & bi-chromatic laser scan crest bridge the 3D-to-ASCII conversion across full frame height
-    const aPortalFx = portalFx
-      ? portalFx.animate(
-        [{ opacity: 0 }, { opacity: 0.68, offset: 0.35 }, { opacity: 0.35, offset: 0.75 }, { opacity: 0 }],
-        {
-          duration: HERO_OPEN_TIMING.dockDuration,
-          fill: "both",
-          easing: "ease-out",
-        },
-      )
-      : null;
-
-    const aScanCrest = scanCrest
-      ? scanCrest.animate(
-        [
-          { transform: "translate3d(0, -140px, 0)" },
-          { transform: "translate3d(0, calc(100cqh + 40px), 0)" },
-        ],
-        {
-          duration: HERO_OPEN_TIMING.scanSweepDuration,
-          fill: "both",
-          easing: EASE_SCAN_SWEEP,
-        },
-      )
-      : null;
-
-    // 4. Nocturnal LiquidGrid backdrop, sticky header, and portfolio sections reveal around the docking frame
-    const aBackdrop = backdrop
-      ? backdrop.animate([{ opacity: 0 }, { opacity: 1 }], {
-        duration: HERO_OPEN_TIMING.backdropDuration,
-        delay: HERO_OPEN_TIMING.backdropDelay,
-        fill: "both",
-        easing: "ease-out",
-      })
-      : null;
-
-    const aNav = nav.animate(
-      [
-        { opacity: 0, transform: "translate3d(0, -12px, 0)" },
-        { opacity: 1, transform: "translate3d(0, 0, 0)" },
-      ],
-      {
-        duration: HERO_OPEN_TIMING.navDuration,
-        delay: HERO_OPEN_TIMING.navDelay,
-        fill: "both",
-        easing: EASE_CRISP_OUT,
-      },
-    );
-
-    const aWrap = wrap.animate(
-      [
-        { opacity: 0, transform: "translate3d(0, 18px, 0)" },
-        { opacity: 1, transform: "translate3d(0, 0, 0)" },
-      ],
-      {
-        duration: HERO_OPEN_TIMING.contentDuration,
-        delay: HERO_OPEN_TIMING.contentDelay,
-        fill: "both",
-        easing: EASE_PORTAL_DOCK,
-      },
-    );
-
-    const anims: Animation[] = [aFrameFade, aFrameMorph, aNav, aWrap];
-    if (aPortalFx) anims.push(aPortalFx);
-    if (aScanCrest) anims.push(aScanCrest);
-    if (aBackdrop) anims.push(aBackdrop);
-    runningAnimationsRef.current = anims;
-
-    let active = true;
-    Promise.all(anims.map((a) => a.finished))
-      .then(() => {
-        if (!active) return;
-        settle();
-        clearAnimatedStyles();
-        setTransitionState("open");
-        setIsReady(true);
-      })
-      .catch(() => {
-        if (!active) return;
-        settle();
-        clearAnimatedStyles();
-        setTransitionState("open");
-        setIsReady(true);
-      });
-
-    return () => {
-      active = false;
-    };
-  }, [isOpen, measurePortalGeometry, settle, clearAnimatedStyles]);
+  }, [isOpen, settle, clearAnimatedStyles]);
 
   // Video playback management
   useEffect(() => {
@@ -585,8 +334,12 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
       data-transition-state={transitionState}
       aria-label="Amirreza Gholipour Flat Portfolio"
     >
+      {isOpen && isIntroDismissed && !isClosing && (
+        <PortfolioLoader scopeRef={rootRef} />
+      )}
+
       {isElementVisible && (
-        <div ref={backdropRef} className={styles.ldBackground} aria-hidden="true">
+        <div ref={backdropRef} className={styles.ldBackground} data-pl-ignore="true" aria-hidden="true">
           <LiquidGrid
             mode="dots"
             background="#000000"
@@ -605,6 +358,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
       <header ref={navRef} className={`${styles.ldNav} ${isScrolled ? styles.scrolled : ""}`}>
         <Glass
           className={`${styles.ldNavGlass} ${isScrolled ? styles.visible : ""}`}
+          data-pl-ignore="true"
           style={{
             position: "absolute",
             inset: 0,
@@ -680,7 +434,12 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
           <section className={styles.ldHero} id="ld-top">
             <div className={styles.ldHeroInner}>
               <div ref={frameRef} className={styles.ldFrame}>
-                <div ref={reelRef} className={styles.ldReel} aria-label="Room ASCII Animation">
+                <div
+                  ref={reelRef}
+                  className={styles.ldReel}
+                  data-pl-media="BANNER"
+                  aria-label="Room ASCII Animation"
+                >
                   <img
                     ref={transitionImgRef}
                     className={styles.ldTransitionImg}
@@ -712,7 +471,11 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
                   <div className={styles.ldHeroStack}>
                     <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
                     <h1 id="name">{portfolioContent.owner.name}</h1>
-                    <div className={styles.ldHeroRoleWrap} aria-label="Role focus">
+                    <div
+                      className={styles.ldHeroRoleWrap}
+                      data-pl-text={portfolioContent.owner.role}
+                      aria-label="Role focus"
+                    >
                       <DynamicText
                         mode="morph"
                         words={DYNAMIC_ROLES}
@@ -748,7 +511,7 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
           <div ref={wrapRef} className={styles.ldWrap}>
 
             {/* Capabilities Ticker Strip */}
-            <section className={`${styles.ldTools} ${styles.ldX} ${styles.ldRise}`} aria-label="Capabilities">
+            <section className={`${styles.ldTools} ${styles.ldX}`} aria-label="Capabilities">
               {CAPABILITIES.map((c) => (
                 <span key={c}>{c}</span>
               ))}

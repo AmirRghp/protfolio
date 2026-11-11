@@ -5,6 +5,7 @@ import styles from "./exitBar.module.css";
 const STRIP = 30; // height of the side strips
 const PAD = 9; // white around the button
 const SVG_H = 110; // room for the pill to lift
+export const EXIT_SHUTTER_DURATION_MS = 680;
 
 export type ExitBarProps = {
   onExit: () => void;
@@ -14,6 +15,8 @@ export type ExitBarProps = {
 export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
   const ctaRef = useRef<HTMLDivElement>(null);
   const isExitingRef = useRef(false);
+  const exitTimerRef = useRef<number | null>(null);
+  const [isShutting, setIsShutting] = useState(false);
   const [width, setWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1200));
   const [btnSize, setBtnSize] = useState({ w: 200, h: 56 });
   const [lift, setLift] = useState(0);
@@ -95,6 +98,14 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
     };
   }, [goal]);
 
+  useEffect(() => {
+    return () => {
+      if (exitTimerRef.current !== null) {
+        window.clearTimeout(exitTimerRef.current);
+      }
+    };
+  }, []);
+
   // Compute SVG fillet path
   const btnWidth = btnSize.w;
   const btnHeight = btnSize.h;
@@ -129,16 +140,41 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
   const handleExitClick = () => {
     if (isExitingRef.current) return;
     isExitingRef.current = true;
-    onExit();
-    window.setTimeout(() => {
+    setGoal(-22);
+
+    const reducedMotion =
+      typeof window !== "undefined" &&
+      (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
+
+    if (reducedMotion || typeof window === "undefined") {
+      setGoal(0);
+      onExit();
       isExitingRef.current = false;
-    }, 1200);
+      return;
+    }
+
+    setIsShutting(true);
+    exitTimerRef.current = window.setTimeout(() => {
+      onExit();
+      window.setTimeout(() => {
+        setIsShutting(false);
+        setGoal(0);
+        isExitingRef.current = false;
+      }, 160);
+    }, EXIT_SHUTTER_DURATION_MS);
   };
 
   return (
     <div
       id="exitbar"
-      className={`${styles.exitbar} ${visible ? styles.on : ""}`}
+      className={[
+        styles.exitbar,
+        visible ? styles.on : "",
+        isShutting ? styles.shutting : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      data-shutter-state={isShutting ? "closing" : "idle"}
       aria-label="Exit bar"
     >
       <svg
@@ -148,6 +184,7 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
       >
         <path d={pathD} />
       </svg>
+      <div className={styles.ebShutter} aria-hidden="true" />
       <div
         ref={ctaRef}
         className={styles.ebCta}

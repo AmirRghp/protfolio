@@ -166,6 +166,7 @@ export default function App() {
           isOpen={activeViewMode === "flat"}
           onReenter={handleReenterRoom}
           allowRoomEntry={device.allowRoom3D}
+          isIntroDismissed={lanyardDismissed || introPhase !== "active"}
         />
       </div>
     </>
