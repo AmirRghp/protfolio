@@ -16,6 +16,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Recalibrated the second climactic disco drop phase from `81.0s – 105.0s` to `106.0s – 132.0s` (`01:46 – 02:12`) in `src/features/room/audio/oiiaAudio.ts` to precisely align with the climax drop of the audio track.
   - Synchronized the full room disco strobe lighting, fast spin choreography, particle effects, and beat pulses with the new drop timestamp window.
   - Updated unit test assertions in `src/features/room/audio/oiiaAudio.test.ts`.
+- **Scroll-Triggered GitHub Activity 3D Skyline Animation (`GithubActivitySection`):**
+  - Fixed a timing bug where `ResizeObserver` initialized `startTimeRef` on initial page load while the `#ld-activity` section was still off-screen, causing the 4.2-second rising wave and best-day pin animation to already be completed before the user scrolled down to it.
+  - Extracted `resolveSkylineAnimationElapsed` so that off-screen resize events render the flat baseline grid (`0ms`) while keeping `startTimeRef` unset (`null`) until `IntersectionObserver` (bound to `#landing` at `0.25` threshold) detects the user scrolling the chart into view for the first time.
 
 ## [0.8.5] - 2026-11-11
 

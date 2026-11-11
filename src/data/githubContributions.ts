@@ -200,6 +200,33 @@ export function easeOutCubic(x: number): number {
   return 1 - Math.pow(1 - x, 3);
 }
 
+export function resolveSkylineAnimationElapsed(params: {
+  now: number;
+  startTime: number | null;
+  isIntersecting: boolean;
+  prefersReduced: boolean;
+}): { elapsed: number; nextStartTime: number | null; shouldScheduleNextFrame: boolean } {
+  const { now, startTime, isIntersecting, prefersReduced } = params;
+
+  if (prefersReduced) {
+    return { elapsed: Infinity, nextStartTime: startTime, shouldScheduleNextFrame: false };
+  }
+
+  if (startTime === null) {
+    if (!isIntersecting) {
+      return { elapsed: 0, nextStartTime: null, shouldScheduleNextFrame: false };
+    }
+    return { elapsed: 0, nextStartTime: now, shouldScheduleNextFrame: true };
+  }
+
+  const elapsed = Math.max(0, now - startTime);
+  return {
+    elapsed,
+    nextStartTime: startTime,
+    shouldScheduleNextFrame: elapsed < 4200,
+  };
+}
+
 export function calculateStreaks(days: ContributionDay[]): { activeStreak: number; longestStreak: number } {
   if (!days || days.length === 0) return { activeStreak: 0, longestStreak: 0 };
 

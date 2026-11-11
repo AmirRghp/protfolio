@@ -4,6 +4,7 @@ import {
   clampUnit as clamp,
   easeOutCubic,
   formatBestDayDate,
+  resolveSkylineAnimationElapsed,
   useContributions,
 } from "@/data/githubContributions";
 import styles from "./githubActivity.module.css";
@@ -220,46 +221,58 @@ export function GithubActivitySection() {
     let stageW = 0;
     let stageH = 0;
 
+    const syncStageSize = () => {
+      const rect = stage.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) return false;
+      const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
+      if (rect.width !== stageW || rect.height !== stageH) {
+        stageW = rect.width;
+        stageH = rect.height;
+        canvas.width = Math.max(1, Math.round(stageW * dpr));
+        canvas.height = Math.max(1, Math.round(stageH * dpr));
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      return true;
+    };
+
     const render = (now: number) => {
-      if (stageW === 0 || stageH === 0) return;
-      if (startTimeRef.current === null) {
-        startTimeRef.current = now;
+      if (stageW === 0 || stageH === 0) {
+        if (!syncStageSize()) return;
       }
 
-      const elapsed = prefersReduced ? Infinity : now - startTimeRef.current;
+      const { elapsed, nextStartTime, shouldScheduleNextFrame } = resolveSkylineAnimationElapsed({
+        now,
+        startTime: startTimeRef.current,
+        isIntersecting: isIntersectingRef.current,
+        prefersReduced,
+      });
+
+      startTimeRef.current = nextStartTime;
       drawSkyline(ctx, stageW, stageH, elapsed);
 
-      if (!prefersReduced && isIntersectingRef.current && elapsed < 4200) {
+      if (shouldScheduleNextFrame) {
         animFrameRef.current = requestAnimationFrame(render);
       }
     };
 
     const resizeObserver = new ResizeObserver(() => {
-      const rect = stage.getBoundingClientRect();
-      const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
-      stageW = rect.width;
-      stageH = rect.height;
-
-      canvas.width = Math.max(1, Math.round(stageW * dpr));
-      canvas.height = Math.max(1, Math.round(stageH * dpr));
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      render(performance.now());
+      if (syncStageSize()) {
+        render(performance.now());
+      }
     });
     resizeObserver.observe(stage);
 
+    const scrollRoot = stage.closest("#landing");
     const intersectionObserver = new IntersectionObserver(
       ([entry]) => {
+        if (!entry) return;
         isIntersectingRef.current = entry.isIntersecting;
         if (entry.isIntersecting) {
-          if (startTimeRef.current === null) {
-            startTimeRef.current = performance.now();
-          }
           cancelAnimationFrame(animFrameRef.current);
           animFrameRef.current = requestAnimationFrame(render);
         }
       },
-      { threshold: 0.3 },
+      { root: scrollRoot, threshold: 0.25 },
     );
     intersectionObserver.observe(stage);
 
@@ -271,7 +284,8 @@ export function GithubActivitySection() {
   }, [drawSkyline]);
 
   const handleReplay = useCallback(() => {
-    startTimeRef.current = performance.now();
+    startTimeRef.current = null;
+    isIntersectingRef.current = true;
     const stage = stageRef.current;
     const canvas = canvasRef.current;
     if (!stage || !canvas) return;
@@ -281,9 +295,12 @@ export function GithubActivitySection() {
     const rect = stage.getBoundingClientRect();
     const stageW = rect.width;
     const stageH = rect.height;
+    if (stageW <= 0 || stageH <= 0) return;
 
     const render = (now: number) => {
-      if (!startTimeRef.current) return;
+      if (startTimeRef.current === null) {
+        startTimeRef.current = now;
+      }
       const elapsed = now - startTimeRef.current;
       drawSkyline(ctx, stageW, stageH, elapsed);
       if (elapsed < 4200) {
