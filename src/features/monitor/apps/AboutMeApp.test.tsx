@@ -29,6 +29,12 @@ describe("about me file", () => {
 
     for (const group of portfolioContent.owner.skillGroups) {
       expect(html).toContain(group.category.replaceAll("&", "&amp;"));
+      for (const skill of group.skills) {
+        expect(html).toContain(skill.name.replaceAll("&", "&amp;"));
+        if (skill.level) {
+          expect(html).toContain(skill.level);
+        }
+      }
     }
 
     for (const course of portfolioContent.owner.courses) {

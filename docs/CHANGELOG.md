@@ -4,6 +4,16 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.6] - 2026-11-11
+
+### Changed
+- **Skill Visualization in AboutMeApp (Tag-Like Bubbles & Badges):**
+  - Modernized the skill list in `AboutMeApp` under section `04. Technical Skills & Software Stack` from a single paragraph of inline text separated by middle dots into small, tag-like interactive bubbles (chips).
+  - Integrated level badges (`Intermediate`, `Basic`) as styled micro-chips directly inside skill bubbles when present, featuring cyan accent styling for intermediate competencies and muted steel-blue styling for foundational skills.
+  - Added hover lift states (`transform: translateY(-1px)` and subtle cyan border glow) to enhance interactivity while maintaining the nocturnal cyberpunk desktop theme.
+  - Implemented responsive container query adjustments (`@container (max-width: 420px)`) with tightened padding and typography for seamless readability and visual hierarchy on mobile screens.
+  - Updated unit test assertions in `src/features/monitor/apps/AboutMeApp.test.tsx` to verify individual skill names and level badges.
+
 ## [0.8.5] - 2026-11-11
 
 ### Fixed

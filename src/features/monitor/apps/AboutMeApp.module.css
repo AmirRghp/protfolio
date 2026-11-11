@@ -362,7 +362,7 @@
   line-height: 1.42;
 }
 
-/* Skills Grid */
+/* Skills Grid & Tag Bubbles */
 .skillsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 18em), 1fr));
@@ -371,18 +371,43 @@
 }
 
 .skillCategory {
-  margin: 0;
+  margin: 0 0 0.15em;
   color: #7dd3fc;
   font-size: 0.88em;
   font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
-.skillInlineList {
+.skillTagList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em 0.45em;
   margin: 0;
-  color: #d4e2ea;
-  font-size: 0.85em;
-  line-height: 1.55;
-  overflow-wrap: anywhere;
+  padding: 0;
+  list-style: none;
+}
+
+.skillTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.28em 0.65em;
+  border: 1px solid rgb(159 216 232 / 18%);
+  border-radius: 9999px;
+  background: rgb(18 36 52 / 65%);
+  color: #edf4f7;
+  font-size: 0.82em;
+  line-height: 1.35;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 150ms ease;
+}
+
+.skillTag:hover {
+  border-color: rgb(125 211 252 / 45%);
+  background: rgb(26 52 74 / 85%);
+  transform: translateY(-1px);
 }
 
 .skillName {
@@ -390,9 +415,27 @@
   font-weight: 500;
 }
 
-.skillLevel {
-  color: #8ea9ba;
-  font-size: 0.9em;
+.skillLevelBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.08em 0.42em;
+  border-radius: 9999px;
+  font-size: 0.78em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1.2;
+}
+
+.levelIntermediate {
+  border: 1px solid rgb(125 211 252 / 28%);
+  color: #7dd3fc;
+  background: rgb(56 189 248 / 14%);
+}
+
+.levelBasic {
+  border: 1px solid rgb(155 179 194 / 22%);
+  color: #9bb3c2;
+  background: rgb(155 179 194 / 10%);
 }
 
 /* Projects Grid */
@@ -442,5 +485,20 @@
   .primaryAction,
   .secondaryAction {
     width: 100%;
+  }
+
+  .skillTagList {
+    gap: 0.32em 0.38em;
+  }
+
+  .skillTag {
+    font-size: 0.79em;
+    padding: 0.22em 0.55em;
+    gap: 0.35em;
+  }
+
+  .skillLevelBadge {
+    font-size: 0.75em;
+    padding: 0.05em 0.36em;
   }
 }

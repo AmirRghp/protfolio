@@ -211,19 +211,24 @@ export default function AboutMeApp() {
             {owner.skillGroups.map((group) => (
               <div key={group.category} className={styles.skillCard}>
                 <h4 className={styles.skillCategory}>{group.category}</h4>
-                <p className={styles.skillInlineList}>
-                  {group.skills.map((skill, idx) => (
-                    <span key={skill.name}>
+                <ul className={styles.skillTagList} aria-label={`${group.category} skills`}>
+                  {group.skills.map((skill) => (
+                    <li key={skill.name} className={styles.skillTag}>
                       <span className={styles.skillName}>{skill.name}</span>
                       {skill.level && (
-                        <span className={styles.skillLevel}> ({skill.level})</span>
+                        <span
+                          className={`${styles.skillLevelBadge} ${
+                            skill.level.toLowerCase() === "intermediate"
+                              ? styles.levelIntermediate
+                              : styles.levelBasic
+                          }`}
+                        >
+                          {skill.level}
+                        </span>
                       )}
-                      {idx < group.skills.length - 1 && (
-                        <span className={styles.separator} aria-hidden="true"> · </span>
-                      )}
-                    </span>
+                    </li>
                   ))}
-                </p>
+                </ul>
               </div>
             ))}
           </div>
