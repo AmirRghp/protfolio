@@ -153,8 +153,10 @@ flowchart TD
     
     FlatLandingActive --> CheckReenterDevice{Is device desktop with fine pointer?}
     CheckReenterDevice -- No (Mobile / Tablet) --> MobileNav[Show 'Get in Touch' button; suppress room entry]
-    CheckReenterDevice -- Yes --> ClickReenter[Click 'Re-enter' in header or 'Enter The Room' in footer]
-    ClickReenter --> ShutterDown[Down Shutter / Curtain Transition to 3D room]
-    ShutterDown --> RestoreRoom[Unpause WebGL canvas loop & resume 3D room navigation]
+    CheckReenterDevice -- Yes --> ClickReenter[Click 'Re-enter' in header or 'Enter The Room' in footer or press Escape]
+    ClickReenter --> ShutterDown[Reverse Roller-Shutter: Curtain rolls downward from -100vh to 0 (680ms)]
+    ShutterDown --> ProgressiveUnveil[RoomPreview at z-index 50 progressively unveiled from top to bottom]
+    ProgressiveUnveil --> DockArch[ExitBar docks at bottom: 0; tactile button arch springs up (-22px -> 0px)]
+    DockArch --> RestoreRoom[Unpause WebGL canvas loop & resume 3D room navigation]
 ```
 
