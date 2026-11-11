@@ -15,4 +15,5 @@ __pycache__/
 .playwright-mcp/
 .aistudio/
 docs/archive/screenshots/
+public/assets/aistudio/
 
