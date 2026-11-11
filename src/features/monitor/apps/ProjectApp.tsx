@@ -1,5 +1,12 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { projectTarget, type PortfolioContent } from "@/data/content";
+import {
+  buildGitHubRepoSrcDoc,
+  fetchGitHubRepoSnapshot,
+  getInitialRepoSnapshot,
+  renderMarkdownToHtml,
+  renderRepoFilesHtml,
+} from "@/data/githubRepoPreview";
 import styles from "./ProjectApp.module.css";
 
 type Project = PortfolioContent["projects"][number];
@@ -86,22 +93,31 @@ export function LayersGlyph() {
   );
 }
 
-/** The project app of the monitor desktop: the address of the project and a summary of it. */
+/** The project app of the monitor desktop: the address of the project and an in-window browser view. */
 export default function ProjectApp({ project, icon }: { project: Project; icon: ReactNode }) {
   const target = projectTarget(project);
   const isGitHub = /^https?:\/\/(www\.)?github\.com/i.test(target);
   const [embedState, setEmbedState] = useState<EmbedState>("preview");
   const timeout = useRef<number | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
+
+  const repoSrcDoc = isGitHub ? buildGitHubRepoSrcDoc(project, getInitialRepoSnapshot(project)) : undefined;
+
+  const clearPending = () => {
+    if (timeout.current !== null) {
+      window.clearTimeout(timeout.current);
+      timeout.current = null;
+    }
+    if (abortRef.current !== null) {
+      abortRef.current.abort();
+      abortRef.current = null;
+    }
+  };
 
   useEffect(() => () => {
-    if (timeout.current !== null) window.clearTimeout(timeout.current);
+    clearPending();
   }, []);
-
-  const startEmbed = () => {
-    if (timeout.current !== null) window.clearTimeout(timeout.current);
-    setEmbedState("loading");
-    timeout.current = window.setTimeout(() => setEmbedState("failed"), EMBED_TIMEOUT_MS);
-  };
 
   const embedLoaded = () => {
     if (timeout.current !== null) {
@@ -112,11 +128,57 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
   };
 
   const embedFailed = () => {
-    if (timeout.current !== null) {
-      window.clearTimeout(timeout.current);
-      timeout.current = null;
-    }
+    clearPending();
     setEmbedState("failed");
+  };
+
+  const showPreview = () => {
+    clearPending();
+    setEmbedState("preview");
+  };
+
+  const startEmbed = () => {
+    clearPending();
+    setEmbedState("loading");
+    timeout.current = window.setTimeout(() => embedFailed(), EMBED_TIMEOUT_MS);
+
+    if (isGitHub) {
+      const controller = new AbortController();
+      abortRef.current = controller;
+
+      // Verify repository reachability so blocked network routes report an error while normal browsers load the repo view.
+      fetch(target, { mode: "no-cors", signal: controller.signal })
+        .then(() => {
+          if (!controller.signal.aborted) {
+            embedLoaded();
+          }
+        })
+        .catch(() => {
+          if (!controller.signal.aborted) {
+            embedFailed();
+          }
+        });
+
+      // Enrich the in-frame GitHub view with live repository metadata and README content when online.
+      fetchGitHubRepoSnapshot(project, controller.signal)
+        .then((snapshot) => {
+          if (controller.signal.aborted || snapshot.source !== "live") return;
+          frameRef.current?.contentWindow?.postMessage(
+            {
+              type: "gh-repo-update",
+              readmeHtml: renderMarkdownToHtml(snapshot.readmeMarkdown, project.githubUrl, snapshot.branch),
+              filesHtml: renderRepoFilesHtml(snapshot, project.githubUrl),
+              fileCount: snapshot.files.length,
+              branch: snapshot.branch,
+              language: snapshot.language,
+            },
+            "*",
+          );
+        })
+        .catch(() => {
+          // Bundled snapshot is already rendered in the iframe
+        });
+    }
   };
 
   return (
@@ -124,6 +186,11 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
       <div className={styles.addressBar}>
         <LockIcon />
         <span className={styles.address}>{displayUrl(target)}</span>
+        {embedState !== "preview" && (
+          <button type="button" className={styles.barButton} onClick={showPreview}>
+            Summary
+          </button>
+        )}
         <a className={styles.openLink} href={target} target="_blank" rel="noopener noreferrer">
           Open in new tab
         </a>
@@ -137,16 +204,20 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
             </p>
           )}
           <iframe
+            ref={frameRef}
             className={styles.frame}
-            src={target}
+            src={isGitHub ? undefined : target}
+            srcDoc={isGitHub ? repoSrcDoc : undefined}
             title={`${project.title} preview`}
-            onLoad={embedLoaded}
+            onLoad={isGitHub ? undefined : embedLoaded}
             onError={embedFailed}
-            sandbox="allow-scripts allow-forms allow-popups"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
             referrerPolicy="no-referrer"
           />
           <p className={styles.embedHint}>
-            Some sites refuse to be shown inside a window. Use “Open in new tab” if the page stays empty.
+            {isGitHub
+              ? "Interactive GitHub repository view loaded inside the window. Use “Open in new tab” to visit GitHub directly."
+              : "Some sites refuse to be shown inside a window. Use “Open in new tab” if the page stays empty."}
           </p>
         </div>
       )}
@@ -175,7 +246,7 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
           </div>
           {isGitHub && (
             <p className={styles.embedNotice}>
-              GitHub repositories block inline embedded viewing via security policies. We recommend opening directly in a new tab.
+              Browse the repository structure and README directly inside this window, or open the full repository on GitHub.
             </p>
           )}
           {project.highlights && (
