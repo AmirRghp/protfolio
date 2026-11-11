@@ -116,6 +116,7 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 - **Dynamic Role Typography:** Physics-driven `DynamicText` cycling roles (AI Engineer, ML Specialist, Robotics Researcher).
 - **Tactile Glass Exit Bar:** Sleek black exit bar (`#000000`) featuring WebGL2 optical refractive `TactileButton` ("Exit The Room" / "Re-enter").
 - **Optical Liquid Glass Scrolled Navbar:** Scrolled sticky header integrates Glisse's `<Glass>` with chromatic dispersion (`0.4`), optical bend (`0.31`), and calibrated diffusion (`--lg-blur: 3px`), engineered without GPU compositor layer trapping (`z-index: 0` glass under `z-index: 1` nav items) to smoothly blur passing page text and images.
+- **Header Identity & Navigation:** Clean typographic brand link (`AG / AI Engineer`) without prefix vector icons, paired with direct anchor links (`Work`, `Experience`, `Tech Stack`, `Activity`, `Contact`) streamlined by removing redundant metric link anchors.
 - **Unified Column Geometry:** The Hero section (`.ldHero`) shares identical responsive max-width and auto-margin centering with `.ldWrap` (`width: min(1240px, calc(100% - 48px)); margin: 0 auto;`), guaranteeing flush vertical alignment across all screen sizes.
 
 ### 6.7. Interactive Tech Stack Section (`TechStackSection`)

@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ---
 
+## [0.8.3] - 2026-11-11
+
+### Changed
+- **Flat Landing Header Streamlining:**
+  - Removed decorative crosshair/asterisk SVG vector icon from the brand monogram link (`.ldLogo`), transitioning to a clean typographic identity (`AG / AI Engineer`).
+  - Removed the "Numbers" (`#ld-numbers`) anchor link from the sticky navbar (`.ldLinks`), reducing visual clutter and prioritizing key substantive sections (`Work`, `Experience`, `Tech Stack`, `Activity`, `Contact`) while leaving the underlying key statistics section fully rendered in the page flow.
+
 ## [0.8.2] - 2026-11-11
 
 ### Fixed

@@ -626,9 +626,6 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
           aria-hidden="true"
         />
         <a className={styles.ldLogo} href="#top" onClick={(e) => scrollToSection("top", e)}>
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M10 1.5v17M1.5 10h17M4 4l12 12M16 4 4 16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-          </svg>
           <b>AG</b>
           <span>/ AI Engineer</span>
         </a>
@@ -636,9 +633,6 @@ export default function FlatLanding({ isOpen, onReenter, allowRoomEntry = true }
         <nav className={styles.ldLinks} aria-label="Page navigation">
           <a href="#ld-work" onClick={(e) => scrollToSection("ld-work", e)}>
             Work
-          </a>
-          <a href="#ld-numbers" onClick={(e) => scrollToSection("ld-numbers", e)}>
-            Numbers
           </a>
           <a href="#ld-experience" onClick={(e) => scrollToSection("ld-experience", e)}>
             Experience

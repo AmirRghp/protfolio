@@ -210,3 +210,17 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* Completely eliminates dropped layers; all sections, cards, accordions, and text remain 100% visible and stable at all scroll positions.
   - *Positive:* Achieves fluid 120 FPS scrolling on iOS Safari with zero CPU software filter overhead.
   - *Positive:* Android Chrome and desktop Chromium retain real-time optical refraction via native `backdrop-filter`.
+
+---
+
+### ADR-014: Flat Landing Header Streamlining (Logo Icon Removal & Navigation Link Focus)
+- **Status:** Accepted (2026-11-10)
+- **Context:**
+  The sticky header in `FlatLanding` previously contained a crosshair/asterisk SVG prefix icon inside the brand logo anchor (`.ldLogo`) and a "Numbers" anchor link in the main navigation bar (`.ldLinks`). The prefix SVG icon added visual clutter next to the strong typographic monogram `AG / AI Engineer`, and the "Numbers" navigation link directed users to a small metric statistics strip (`#ld-numbers`) rather than a substantive primary section (such as Work, Experience, or Tech Stack), crowding the navbar links especially on intermediate screen sizes.
+- **Decision:**
+  1. Remove the left SVG crosshair icon from `.ldLogo`, leaving a clean, bold typographic monogram (`<b>AG</b> <span>/ AI Engineer</span>`).
+  2. Remove the "Numbers" (`#ld-numbers`) navigation anchor from the header's `<nav className={styles.ldLinks}>`. Keep the underlying `#ld-numbers` key statistics section fully rendered in the page body for in-flow reading.
+- **Consequences:**
+  - *Positive:* Reduces visual noise in the sticky header and provides higher breathing room for primary navigational links (`Work`, `Experience`, `Tech Stack`, `Activity`, `Contact`).
+  - *Positive:* Simplifies brand header identity to crisp typography consistent with the rest of the portfolio.
+  - *Positive:* Zero regressions in test suites or responsive layouts.

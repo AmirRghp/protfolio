@@ -149,6 +149,7 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - Seamless rectangular geometry (`borderRadius: 0`, `background: "none"`) mounted inside the sticky header.
 - Calibrated frosted diffusion (`--lg-blur: 3px`) providing authentic Apple-grade optical blur for underlying text, ASCII room video, and cards.
 - Non-isolated GPU compositor architecture (`z-index: 0` glass with `z-index: 1` interactive controls, zero `will-change`) allowing hardware-accelerated sampling over the underlying page canvas.
+- Minimalist typographic identity (`.ldLogo` displaying `AG / AI Engineer` directly without decorative prefix iconography) and focused section navigation (`Work`, `Experience`, `Tech Stack`, `Activity`, `Contact`).
 
 ---
 
