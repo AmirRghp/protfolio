@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
-import MobileArcadeFab, { computeAssistiveSnapPosition } from "./MobileArcadeFab";
+import MobileArcadeFab from "./MobileArcadeFab";
+import { computeAssistiveSnapPosition } from "../utils/mobileFabUtils";
 
 describe("MobileArcadeFab AssistiveTouch Glisse button", () => {
   it("renders circular GlisseButton in icon-only mode with accessible label", () => {

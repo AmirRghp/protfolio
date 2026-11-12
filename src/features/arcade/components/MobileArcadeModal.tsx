@@ -9,7 +9,6 @@ import { flappyAudio } from "@/features/arcade/games/cyber-flappy/flappyAudio";
 import { tetrisAudio } from "@/features/arcade/games/cyber-tetris/tetrisAudio";
 import { pixelRunAudio } from "@/features/arcade/games/pixel-run/pixelRunAudio";
 import MobileGamepad from "./MobileGamepad";
-import cartridgeHeaderUrl from "@/assets/images/retro_cartridge_header_1794477537457.jpg";
 import styles from "./MobileArcadeModal.module.css";
 
 export type MobileArcadeModalProps = {
@@ -18,8 +17,6 @@ export type MobileArcadeModalProps = {
   initialGameId?: string;
   initialPlaying?: boolean;
 };
-
-const CARTRIDGE_ART_SRC = cartridgeHeaderUrl;
 
 const GAME_COMPONENTS: Record<string, ComponentType<{ onExit: () => void }>> = {
   pixelrun: PixelRunGame,
@@ -76,7 +73,6 @@ export default function MobileArcadeModal({
   const [selectedGameId, setSelectedGameId] = useState<string>(initialGameId);
   const [isPlaying, setIsPlaying] = useState<boolean>(initialPlaying);
   const [isMuted, setIsMuted] = useState<boolean>(false);
-  const [cartridgeImgFailed, setCartridgeImgFailed] = useState<boolean>(false);
 
   const selectedIndex = Math.max(
     0,
@@ -273,15 +269,6 @@ export default function MobileArcadeModal({
                     <div className={styles.gameCard}>
                       {/* Smoked Polycarbonate Cartridge Artwork Banner */}
                       <div className={styles.cartridgeVisualWrap}>
-                        {!cartridgeImgFailed && (
-                          <img
-                            src={CARTRIDGE_ART_SRC}
-                            alt="Smoked translucent retro game cartridge with gold PCB traces"
-                            referrerPolicy="no-referrer"
-                            className={styles.cartridgeVisualImg}
-                            onError={() => setCartridgeImgFailed(true)}
-                          />
-                        )}
                         <div className={styles.cartridgeScrim} />
                         <div className={styles.gameCardHeader}>
                           <div className={styles.gameIconWrap}>

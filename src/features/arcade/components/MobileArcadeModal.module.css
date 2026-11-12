@@ -6,10 +6,7 @@
   flex-direction: column;
   background-color: #1c1e22;
   background-image:
-    linear-gradient(180deg, rgba(35, 38, 43, 0.96) 0%, rgba(23, 25, 29, 0.98) 100%),
-    url("../../../assets/images/handheld_shell_texture_1794477536843.jpg");
-  background-size: cover, cover;
-  background-position: center;
+    linear-gradient(180deg, rgba(35, 38, 43, 0.96) 0%, rgba(23, 25, 29, 0.98) 100%);
   color: #f1f5f9;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   overflow: hidden;
