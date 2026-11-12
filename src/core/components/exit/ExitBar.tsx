@@ -10,22 +10,29 @@ export const EXIT_SHUTTER_DURATION_MS = 680;
 export type ExitBarProps = {
   onExit: () => void;
   visible?: boolean;
+  isAway?: boolean;
+  isReentering?: boolean;
 };
 
-export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
+export default function ExitBar({
+  onExit,
+  visible = true,
+  isAway = false,
+  isReentering = false,
+}: ExitBarProps) {
   const ctaRef = useRef<HTMLDivElement>(null);
   const isExitingRef = useRef(false);
   const exitTimerRef = useRef<number | null>(null);
   const [isShutting, setIsShutting] = useState(false);
   const [width, setWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1200));
   const [btnSize, setBtnSize] = useState({ w: 200, h: 56 });
-  const [lift, setLift] = useState(0);
-  const [goal, setGoal] = useState(0);
+  const [lift, setLift] = useState(() => (isAway || isReentering ? -22 : 0));
+  const [goal, setGoal] = useState(() => (isAway || isReentering ? -22 : 0));
 
   const physicsRef = useRef({
-    lift: 0,
+    lift: isAway || isReentering ? -22 : 0,
     vel: 0,
-    goal: 0,
+    goal: isAway || isReentering ? -22 : 0,
     last: 0,
     raf: 0,
   });
@@ -62,7 +69,8 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
   }, []);
 
   useEffect(() => {
-    physicsRef.current.goal = goal;
+    const targetGoal = isAway || isReentering || isShutting ? -22 : goal;
+    physicsRef.current.goal = targetGoal;
     const p = physicsRef.current;
 
     if (p.raf) return;
@@ -96,7 +104,7 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
       if (p.raf) cancelAnimationFrame(p.raf);
       p.raf = 0;
     };
-  }, [goal]);
+  }, [goal, isAway, isReentering, isShutting]);
 
   useEffect(() => {
     return () => {
@@ -138,16 +146,15 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
     `H${W}V${B}Z`;
 
   const handleExitClick = () => {
-    if (isExitingRef.current) return;
+    if (isExitingRef.current || isReentering) return;
     isExitingRef.current = true;
-    setGoal(-22);
+    setGoal(0);
 
     const reducedMotion =
       typeof window !== "undefined" &&
       (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false);
 
     if (reducedMotion || typeof window === "undefined") {
-      setGoal(0);
       onExit();
       isExitingRef.current = false;
       return;
@@ -158,23 +165,33 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
       onExit();
       window.setTimeout(() => {
         setIsShutting(false);
-        setGoal(0);
         isExitingRef.current = false;
       }, 160);
     }, EXIT_SHUTTER_DURATION_MS);
   };
+
+  const effectiveShutting = isShutting && !isReentering;
+  const shutterState = effectiveShutting
+    ? "closing"
+    : isReentering
+      ? "opening"
+      : isAway
+        ? "away"
+        : "idle";
 
   return (
     <div
       id="exitbar"
       className={[
         styles.exitbar,
-        visible ? styles.on : "",
-        isShutting ? styles.shutting : "",
+        visible && !isAway && !isReentering ? styles.on : "",
+        effectiveShutting ? styles.shutting : "",
+        isAway && !effectiveShutting && !isReentering ? styles.away : "",
+        isReentering ? styles.reentering : "",
       ]
         .filter(Boolean)
         .join(" ")}
-      data-shutter-state={isShutting ? "closing" : "idle"}
+      data-shutter-state={shutterState}
       aria-label="Exit bar"
     >
       <svg
@@ -192,10 +209,18 @@ export default function ExitBar({ onExit, visible = true }: ExitBarProps) {
       >
         <TactileButton
           onClick={handleExitClick}
-          onPointerEnter={() => setGoal(6)}
-          onPointerLeave={() => setGoal(0)}
-          onPointerDown={() => setGoal(-2)}
-          onPointerUp={() => setGoal(6)}
+          onPointerEnter={() => {
+            if (!isExitingRef.current && !isAway && !isReentering) setGoal(6);
+          }}
+          onPointerLeave={() => {
+            if (!isExitingRef.current && !isAway && !isReentering) setGoal(0);
+          }}
+          onPointerDown={() => {
+            if (!isExitingRef.current && !isAway && !isReentering) setGoal(-2);
+          }}
+          onPointerUp={() => {
+            if (!isExitingRef.current && !isAway && !isReentering) setGoal(6);
+          }}
         >
           Exit The Room
         </TactileButton>

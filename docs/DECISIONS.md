@@ -298,8 +298,31 @@ This document records the foundational architecture decisions, trade-offs, and d
      - Clamp minimum brand/nav chip widths to $48\text{px}$ to prevent clipping on narrow screens ($320\text{px}–390\text{px}$), and anchor column ruler labels above the bottom HUD bar to guarantee zero overlap with sticky navigation controls.
 - **Consequences:**
   - *Positive:* Replaces a generic external clone with a distinctive, high-end AI/Spatial-Calibration visual identity perfectly aligned with the nocturnal cyberpunk room.
-  - *Positive:* Cinematic, smooth upward roller-shutter curtain eliminates visual jumping during room exits.
-  - *Positive:* 100% responsive and verified across desktop ($1440\text{px}$) and mobile ($390\text{px}$ and $320\text{px}$) viewports.
-  - *Positive:* All 262 Vitest unit tests, TypeScript compilation, and ESLint checks pass with 0 errors.
+---
+
+### ADR-018: Bidirectional Roller-Shutter Transitions & 3-Layer Z-Stack Room Re-entry
+- **Status:** Accepted (2026-11-11)
+- **Context:**
+  Following the introduction of the black roller-shutter room exit in ADR-017, returning from the flat landing to the 3D room ("Re-enter" header button, "Enter The Room" footer button, `Escape` key, or browser Back) lacked visual symmetry and smoothness. The user requested an exact reverse roller-shutter animation (`کرکره برعکس`) that rolls downward with the exact same smoothness and cleanliness as the upward exit.
+- **Decision:**
+  1. **Bidirectional Curtain Dynamics in `ExitBar` (`EXIT_SHUTTER_DURATION_MS = 680`):**
+     - When leaving the room, `.exitbar.shutting` sweeps upward from `translate3d(0, 0, 0)` to `translate3d(0, -100vh, 0)` over `0.68s cubic-bezier(0.76, 0, 0.24, 1)`.
+     - While parked in flat mode (`isAway`), `.exitbar.away` resides off-screen at `translate3d(0, -100vh, 0)` with `opacity: 0` and `pointer-events: none`.
+     - On re-entry (`isReentering`), `.exitbar.reentering` transitions smoothly from `translate3d(0, -100vh, 0)` down to `translate3d(0, 0, 0)` with the exact same `0.68s cubic-bezier(0.76, 0, 0.24, 1)` easing.
+  2. **3-Layer Z-Index Architecture for 60fps Zero-Jank Reveal:**
+     - Avoided expensive full-page `clip-path` rasterization bottlenecks and `display: none` layout teardown on Frame 0 by orchestrating a 3-layer compositing stack:
+       - Bottom layer: `#landing` at `z-index: 40`, maintaining uninterrupted DOM layout during the 680ms transition.
+       - Middle layer: `RoomPreview` elevated to `z-index: 50` during `isReentering` (`activeViewMode === "room" || isReentering`).
+       - Top layer: `#exitbar` at `z-index: 99998` with opaque curtain `.ebShutter`.
+     - As the solid black curtain descends from `-100vh` to `0`, it progressively reveals `RoomPreview` from top to bottom at native 60fps compositor speed.
+  3. **ExitBar Arch Spring Physics Coordination:**
+     - Computed `targetGoal = isAway || isReentering || isShutting ? -22 : goal` inside the spring physics simulation. The center arch remains tucked at `-22px` during the descent and springs up into its resting position ($k = 0.08, d = 0.82$) upon docking at `bottom: 0`.
+  4. **Loader & Audio Lifecycle Guards:**
+     - Guarded `PortfolioLoader` with `!isClosing` so that re-entry does not re-trigger spatial calibration HUD scanning.
+     - Paused `CoffeeSteam` continuous `invalidate()` when `#exitbar` `data-shutter-state !== "idle"`, conserving GPU rendering cycles during the curtain sweep.
+- **Consequences:**
+  - *Positive:* Provides a visually symmetric, cinematic transition experience entering and leaving the 3D room.
+  - *Positive:* Zero frame-time drops by relying on GPU hardware-composited `transform: translate3d` instead of geometry clipping or expensive DOM mutations.
+  - *Positive:* Full test coverage added for `isAway` and `isReentering` states across `ExitBar` and `FlatLanding`.
 
 

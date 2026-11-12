@@ -1,4 +1,5 @@
 import { getAssetUrl } from "@/core/utils/assetUrl";
+import { detectSoftwareGl } from "@/core/utils/webglUtils";
 import { useEffect, useRef, useState } from "react";
 import { useFrame, useLoader, useThree } from "@react-three/fiber";
 import {
@@ -11,6 +12,8 @@ import {
   ShaderMaterial,
 } from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
+const isSoftwareGl = detectSoftwareGl();
 
 const STEAM_PARTICLE_COUNT = 36;
 
@@ -110,8 +113,14 @@ export function CoffeeSteam({ active = true }: { active?: boolean }) {
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (!active || reducedMotion) {
+    if (!active || reducedMotion || isSoftwareGl) {
       return;
+    }
+
+    if (typeof document !== "undefined") {
+      if (document.body.classList.contains("away")) return;
+      const shutterState = document.getElementById("exitbar")?.getAttribute("data-shutter-state");
+      if (shutterState && shutterState !== "idle") return;
     }
 
     const points = pointsRef.current;

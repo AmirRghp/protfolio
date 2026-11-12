@@ -37,6 +37,10 @@
   -webkit-overflow-scrolling: touch;
 }
 
+.ld.closing {
+  pointer-events: none;
+}
+
 .ld a {
   color: inherit;
   text-decoration: none;

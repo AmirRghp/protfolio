@@ -25,8 +25,20 @@
   transition: transform 0.68s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
-:global(body.away) .exitbar:not(.shutting) {
-  display: none;
+.exitbar.away {
+  z-index: 99998;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate3d(0, -100vh, 0);
+  transition: opacity 0.18s ease;
+}
+
+.exitbar.reentering {
+  z-index: 99998;
+  pointer-events: all;
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+  transition: transform 0.68s cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 .ebShape {
@@ -45,6 +57,12 @@
   pointer-events: auto;
 }
 
+.exitbar.shutting .ebShape path,
+.exitbar.away .ebShape path,
+.exitbar.reentering .ebShape path {
+  pointer-events: none;
+}
+
 .ebShutter {
   position: absolute;
   left: 0;
@@ -53,6 +71,17 @@
   height: calc(100vh + 140px);
   background: linear-gradient(180deg, #000000 0%, #0a0a0a 16%, #0a0a0a 100%);
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.22s ease;
+}
+
+.exitbar.away .ebShutter {
+  opacity: 0;
+}
+
+.exitbar.reentering .ebShutter {
+  opacity: 1;
+  transition: none;
 }
 
 .ebCta {
@@ -64,7 +93,9 @@
   transition: opacity 0.24s ease;
 }
 
-.exitbar.shutting .ebCta {
+.exitbar.shutting .ebCta,
+.exitbar.away .ebCta,
+.exitbar.reentering .ebCta {
   opacity: 0;
   pointer-events: none;
 }

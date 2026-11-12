@@ -22,4 +22,24 @@ describe("ExitBar component", () => {
 
     expect(html).toContain("on");
   });
+
+  it("parks the shutter in away state when in flat landing mode", () => {
+    const html = renderToStaticMarkup(
+      <ExitBar onExit={() => {}} visible={true} isAway={true} />,
+    );
+
+    expect(html).toContain('data-shutter-state="away"');
+    expect(html).toContain("away");
+    expect(html).not.toContain('data-shutter-state="idle"');
+  });
+
+  it("applies the reverse roller-shutter opening state when re-entering the 3D room", () => {
+    const html = renderToStaticMarkup(
+      <ExitBar onExit={() => {}} visible={true} isReentering={true} />,
+    );
+
+    expect(html).toContain('data-shutter-state="opening"');
+    expect(html).toContain("reentering");
+  });
 });
+

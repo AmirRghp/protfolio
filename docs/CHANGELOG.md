@@ -4,6 +4,20 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.8] - 2026-11-11
+
+### Added
+- **Reverse Black Roller-Shutter Room Re-entry Transition (`ExitBar` & `FlatLanding`):**
+  - Implemented the exact symmetric reverse roller-shutter (`کرکره برعکس`) animation when transitioning from the flat landing page back into the 3D room ("Re-enter" button in header, "Enter The Room" button in footer, `Escape` key, or browser history navigation).
+  - Designed a high-performance 3-layer compositing stack (`#landing` at `z-index: 40`, `RoomPreview` elevated to `z-index: 50`, and `#exitbar` at `z-index: 99998`) ensuring the downward shutter roll reveals the 3D room progressively from top to bottom at native 60fps compositor speed with zero `clip-path` rasterization bottlenecks or Frame 0 layout teardown.
+  - Synchronized `ExitBar` spring physics so the center arch stays tucked at $-22\text{px}$ throughout the descent and springs up into its resting position ($k = 0.08, d = 0.82$) as soon as the bar docks at `bottom: 0`.
+  - Added unit test coverage in `ExitBar.test.tsx` and `FlatLanding.test.tsx` for `isAway` (`data-shutter-state="away"`) and `isReentering` (`data-shutter-state="opening"`, `data-transition-state="closing"`).
+
+### Changed
+- **Performance & Lifecycle Hardening During Re-entry:**
+  - Suppressed `PortfolioLoader` during re-entry closing (`!isClosing`) to eliminate redundant wireframe scanner re-renders.
+  - Paused `CoffeeSteam` continuous scene invalidation when `ExitBar` is in an active shutter state (`data-shutter-state !== "idle"`), reducing GPU overhead during curtain motion.
+
 ## [0.8.7] - 2026-11-11
 
 ### Added
