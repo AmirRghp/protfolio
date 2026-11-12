@@ -309,3 +309,95 @@ export function getSafeSpawnPosition(
   const idx = Math.floor(Math.random() * freeCells.length);
   return freeCells[idx];
 }
+
+export type SnakeInputState = {
+  mode: "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
+  dir: Point;
+  inputQueue: Point[];
+  lastTick: number;
+};
+
+export function handleSnakeKeyEvent(
+  state: SnakeInputState,
+  event: { key: string; defaultPrevented?: boolean; preventDefault?: () => void },
+  callbacks?: { onPrimaryAction?: () => void; onExit?: () => void; now?: number }
+): boolean {
+  if (event.defaultPrevented) return false;
+
+  if (event.key === "p" || event.key === "P") {
+    event.preventDefault?.();
+    const now = callbacks?.now ?? (typeof performance !== "undefined" ? performance.now() : 0);
+    if (state.mode === "RUNNING") {
+      state.mode = "PAUSED";
+    } else if (state.mode === "PAUSED") {
+      state.mode = "RUNNING";
+      state.lastTick = now;
+    } else if (state.mode === "READY") {
+      state.mode = "RUNNING";
+      state.lastTick = now;
+    }
+    return true;
+  }
+
+  let newDir: Point | null = null;
+  if (event.key === "ArrowUp" || event.key === "w" || event.key === "W") {
+    newDir = { x: 0, y: -1 };
+  } else if (event.key === "ArrowDown" || event.key === "s" || event.key === "S") {
+    newDir = { x: 0, y: 1 };
+  } else if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
+    newDir = { x: -1, y: 0 };
+  } else if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") {
+    newDir = { x: 1, y: 0 };
+  }
+
+  if (newDir) {
+    event.preventDefault?.();
+    const now = callbacks?.now ?? (typeof performance !== "undefined" ? performance.now() : 0);
+    if (state.mode === "READY") {
+      state.mode = "RUNNING";
+      state.dir = newDir;
+      state.lastTick = now;
+    } else if (state.mode === "PAUSED") {
+      state.mode = "RUNNING";
+      state.lastTick = now;
+      if (state.inputQueue.length < 2) {
+        state.inputQueue.push(newDir);
+      }
+    } else if (state.mode === "RUNNING") {
+      if (state.inputQueue.length < 2) {
+        state.inputQueue.push(newDir);
+      }
+    }
+    return true;
+  } else if (event.key === " ") {
+    event.preventDefault?.();
+    callbacks?.onPrimaryAction?.();
+    return true;
+  } else if (event.key === "Escape") {
+    event.preventDefault?.();
+    callbacks?.onExit?.();
+    return true;
+  }
+
+  return false;
+}
+
+export function bindSnakeWindowListeners(
+  target: Pick<Window, "addEventListener" | "removeEventListener">,
+  getState: () => SnakeInputState,
+  callbacks?: { onPrimaryAction?: () => void; onExit?: () => void }
+): () => void {
+  const onKeyDown = (e: KeyboardEvent) => {
+    handleSnakeKeyEvent(getState(), e, callbacks);
+  };
+  const onKeyUp = () => {
+    // Reserved for normalized window keyup contract
+  };
+  target.addEventListener("keydown", onKeyDown);
+  target.addEventListener("keyup", onKeyUp);
+  return () => {
+    target.removeEventListener("keydown", onKeyDown);
+    target.removeEventListener("keyup", onKeyUp);
+  };
+}
+

@@ -192,3 +192,86 @@ export const ARCADE_GAMES: GameItem[] = [
     icon: FlappyIcon,
   },
 ];
+
+/**
+ * The 5 native HTML5 Canvas games available on the Mobile Retro Handheld Console.
+ * Excludes Crash Bandicoot (PS1 iframe) to guarantee 60fps native touch performance.
+ */
+export const MOBILE_ARCADE_GAMES: GameItem[] = ARCADE_GAMES.filter((g) => g.id !== "crash");
+
+export type GameControlAction = {
+  id: string;
+  label: string;
+  key: string;
+  code?: string;
+  color?: "cyan" | "magenta" | "amber";
+};
+
+export type GameControlProfile = {
+  showDpad: boolean;
+  actions: GameControlAction[];
+};
+
+export const GAME_CONTROL_PROFILES: Record<string, GameControlProfile> = {
+  flappy: {
+    showDpad: false,
+    actions: [{ id: "flap", label: "FLAP", key: " ", code: "Space", color: "cyan" }],
+  },
+  deparkanoid: {
+    showDpad: true,
+    actions: [{ id: "launch", label: "LAUNCH", key: " ", code: "Space", color: "amber" }],
+  },
+  pixelrun: {
+    showDpad: false,
+    actions: [
+      { id: "jump", label: "JUMP", key: "ArrowUp", code: "ArrowUp", color: "cyan" },
+      { id: "slide", label: "SLIDE", key: "ArrowDown", code: "ArrowDown", color: "magenta" },
+    ],
+  },
+  snake: {
+    showDpad: true,
+    actions: [{ id: "start", label: "START", key: " ", code: "Space", color: "cyan" }],
+  },
+  tetris: {
+    showDpad: true,
+    actions: [
+      { id: "rotate", label: "ROTATE", key: "ArrowUp", code: "ArrowUp", color: "cyan" },
+      { id: "drop", label: "HARD DROP", key: " ", code: "Space", color: "magenta" },
+      { id: "hold", label: "HOLD", key: "c", code: "KeyC", color: "amber" },
+    ],
+  },
+};
+
+export function pressKey(key: string, code?: string): void {
+  if (typeof window === "undefined") return;
+  const resolvedCode = code ?? (key === " " ? "Space" : key);
+  const event =
+    typeof KeyboardEvent !== "undefined"
+      ? new KeyboardEvent("keydown", { key, code: resolvedCode, bubbles: true, cancelable: true })
+      : Object.assign(new Event("keydown", { bubbles: true, cancelable: true }), {
+          key,
+          code: resolvedCode,
+        });
+  window.dispatchEvent(event);
+  if (typeof navigator !== "undefined" && typeof navigator.vibrate === "function") {
+    try {
+      navigator.vibrate(10);
+    } catch {
+      /* ignore vibration errors on unsupported devices */
+    }
+  }
+}
+
+export function releaseKey(key: string, code?: string): void {
+  if (typeof window === "undefined") return;
+  const resolvedCode = code ?? (key === " " ? "Space" : key);
+  const event =
+    typeof KeyboardEvent !== "undefined"
+      ? new KeyboardEvent("keyup", { key, code: resolvedCode, bubbles: true, cancelable: true })
+      : Object.assign(new Event("keyup", { bubbles: true, cancelable: true }), {
+          key,
+          code: resolvedCode,
+        });
+  window.dispatchEvent(event);
+}
+

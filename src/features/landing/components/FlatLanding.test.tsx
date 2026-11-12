@@ -282,7 +282,53 @@ describe("FlatLanding component", () => {
     expect(html).toContain("closing");
     expect(html).not.toContain("pl-root");
   });
+
+  it("renders circular AssistiveTouch MobileArcadeFab on tablet/mobile and omits Hero arcade button", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        allowRoomEntry={false}
+      />,
+    );
+
+    expect(html).toContain('data-testid="mobile-arcade-fab"');
+    expect(html).toContain('aria-label="Play Arcade · 5 Games"');
+    expect(html).toContain('data-icon="only"');
+    expect(html).not.toContain('data-testid="hero-play-arcade-btn"');
+  });
+
+  it("omits MobileArcadeFab on desktop when allowRoomEntry is true", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        allowRoomEntry={true}
+      />,
+    );
+
+    expect(html).not.toContain('data-testid="mobile-arcade-fab"');
+  });
+
+  it("mounts MobileArcadeModal when triggered on mobile flat landing", () => {
+    const html = renderToStaticMarkup(
+      <FlatLanding
+        isOpen={true}
+        snapshotCanvas={null}
+        onReenter={() => {}}
+        allowRoomEntry={false}
+        initialMobileArcadeOpen={true}
+      />,
+    );
+
+    expect(html).toContain('data-testid="mobile-arcade-modal"');
+    expect(html).toContain("NEON POCKET");
+    expect(html).toContain("CARTRIDGE 01 / 05");
+  });
 });
+
 
 
 

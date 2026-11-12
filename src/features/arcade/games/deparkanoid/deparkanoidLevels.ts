@@ -215,3 +215,81 @@ export function buildBricksForLevel(levelIndex: number, palette: Palette = DEFAU
 
   return out;
 }
+
+export type DeparkanoidInputState = {
+  left: boolean;
+  right: boolean;
+  mode?: "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
+};
+
+export function handleDeparkanoidKeyDown(
+  state: DeparkanoidInputState,
+  event: { key: string; defaultPrevented?: boolean; preventDefault?: () => void },
+  callbacks?: { onPrimaryAction?: () => void; onTogglePause?: () => void; onExit?: () => void }
+): boolean {
+  if (event.defaultPrevented) return false;
+
+  if (event.key === "p" || event.key === "P") {
+    event.preventDefault?.();
+    if (callbacks?.onTogglePause) {
+      callbacks.onTogglePause();
+    } else if (state.mode === "RUNNING") {
+      state.mode = "PAUSED";
+    } else if (state.mode === "PAUSED") {
+      state.mode = "RUNNING";
+    }
+    return true;
+  } else if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
+    state.left = true;
+    event.preventDefault?.();
+    return true;
+  } else if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") {
+    state.right = true;
+    event.preventDefault?.();
+    return true;
+  } else if (event.key === " ") {
+    callbacks?.onPrimaryAction?.();
+    event.preventDefault?.();
+    return true;
+  } else if (event.key === "Escape") {
+    callbacks?.onExit?.();
+    event.preventDefault?.();
+    return true;
+  }
+  return false;
+}
+
+export function handleDeparkanoidKeyUp(
+  state: DeparkanoidInputState,
+  event: { key: string }
+): boolean {
+  if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
+    state.left = false;
+    return true;
+  }
+  if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") {
+    state.right = false;
+    return true;
+  }
+  return false;
+}
+
+export function bindDeparkanoidWindowListeners(
+  target: Pick<Window, "addEventListener" | "removeEventListener">,
+  getState: () => DeparkanoidInputState,
+  callbacks?: { onPrimaryAction?: () => void; onTogglePause?: () => void; onExit?: () => void }
+): () => void {
+  const onKeyDown = (e: KeyboardEvent) => {
+    handleDeparkanoidKeyDown(getState(), e, callbacks);
+  };
+  const onKeyUp = (e: KeyboardEvent) => {
+    handleDeparkanoidKeyUp(getState(), e);
+  };
+  target.addEventListener("keydown", onKeyDown);
+  target.addEventListener("keyup", onKeyUp);
+  return () => {
+    target.removeEventListener("keydown", onKeyDown);
+    target.removeEventListener("keyup", onKeyUp);
+  };
+}
+

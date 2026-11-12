@@ -11,6 +11,8 @@ import DynamicText from "@/core/components/kokonutui";
 import { useResponsiveDevice } from "@/core/utils/responsive";
 import { TechStackSection } from "./TechStackSection";
 import { GithubActivitySection } from "./GithubActivitySection";
+import MobileArcadeFab from "./MobileArcadeFab";
+import { MobileArcadeModal } from "@/features/arcade";
 import styles from "./flatLanding.module.css";
 
 export type FlatLandingProps = {
@@ -20,6 +22,7 @@ export type FlatLandingProps = {
   allowRoomEntry?: boolean;
   isIntroDismissed?: boolean;
   isReentering?: boolean;
+  initialMobileArcadeOpen?: boolean;
 };
 
 const DYNAMIC_ROLES = [
@@ -102,6 +105,7 @@ export default function FlatLanding({
   allowRoomEntry = true,
   isIntroDismissed = true,
   isReentering = false,
+  initialMobileArcadeOpen = false,
 }: FlatLandingProps) {
   const device = useResponsiveDevice();
   const rootRef = useRef<HTMLDivElement>(null);
@@ -118,6 +122,25 @@ export default function FlatLanding({
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [numbersInView, setNumbersInView] = useState(false);
+  const [isMobileArcadeOpen, setIsMobileArcadeOpen] = useState(initialMobileArcadeOpen);
+
+  // Lock body and landing container scroll when mobile handheld arcade modal is open
+  useEffect(() => {
+    if (typeof document === "undefined" || !isMobileArcadeOpen) return;
+    const prevBodyOverflow = document.body.style.overflow;
+    const root = rootRef.current;
+    const prevRootOverflow = root ? root.style.overflowY : "";
+    document.body.style.overflow = "hidden";
+    if (root) {
+      root.style.overflowY = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = prevBodyOverflow;
+      if (root) {
+        root.style.overflowY = prevRootOverflow;
+      }
+    };
+  }, [isMobileArcadeOpen]);
 
   const isClosing = Boolean(isReentering);
   const transitionState: "closed" | "opening" | "open" | "closing" = isClosing
@@ -629,6 +652,15 @@ export default function FlatLanding({
           </div>
         </div>
       </main>
+
+      {(!allowRoomEntry || device.isMobileOrTablet) && !isMobileArcadeOpen && (
+        <MobileArcadeFab onClick={() => setIsMobileArcadeOpen(true)} />
+      )}
+
+      <MobileArcadeModal
+        isOpen={isMobileArcadeOpen}
+        onClose={() => setIsMobileArcadeOpen(false)}
+      />
     </div>
   );
 }

@@ -57,7 +57,7 @@ function ensureEmbeddedFont(): Promise<void> {
   return embeddedFontPromise;
 }
 
-export type PixelRunGameMode = "READY" | "RUNNING" | "SECTOR_WARP" | "VICTORY" | "GAME_OVER";
+export type PixelRunGameMode = "READY" | "RUNNING" | "PAUSED" | "SECTOR_WARP" | "VICTORY" | "GAME_OVER";
 
 export type PixelParticle = {
   x: number;
@@ -376,6 +376,10 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
 
   const handleJumpPress = useCallback(() => {
     const state = gameState.current;
+    if (state.mode === "PAUSED") {
+      state.mode = "RUNNING";
+      return;
+    }
     if (state.mode === "READY") {
       resetGame(false);
       return;
@@ -445,13 +449,32 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
   // Keyboard Event Handlers
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
+      if (e.key === "p" || e.key === "P" || e.code === "KeyP") {
+        e.preventDefault();
+        const state = gameState.current;
+        if (state.mode === "RUNNING") {
+          state.mode = "PAUSED";
+        } else if (state.mode === "PAUSED") {
+          state.mode = "RUNNING";
+        } else if (state.mode === "READY") {
+          resetGame(false);
+        }
+        return;
+      }
+
+      if (
+        e.code === "Space" ||
+        e.code === "ArrowUp" ||
+        e.code === "KeyW" ||
+        e.key === " " ||
+        e.key === "ArrowUp"
+      ) {
         e.preventDefault();
         handleJumpPress();
-      } else if (e.code === "ArrowDown" || e.code === "KeyS") {
+      } else if (e.code === "ArrowDown" || e.code === "KeyS" || e.key === "ArrowDown") {
         e.preventDefault();
         handleDuckPress();
-      } else if (e.code === "KeyM") {
+      } else if (e.code === "KeyM" || e.key === "m" || e.key === "M") {
         e.preventDefault();
         const active = pixelRunAudio.toggleMusic();
         addNotice(
@@ -460,17 +483,23 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
           120,
           active ? "#00f0ff" : "#ff4466",
         );
-      } else if (e.code === "Escape") {
+      } else if (e.code === "Escape" || e.key === "Escape") {
         e.preventDefault();
         if (onExit) onExit();
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
+      if (
+        e.code === "Space" ||
+        e.code === "ArrowUp" ||
+        e.code === "KeyW" ||
+        e.key === " " ||
+        e.key === "ArrowUp"
+      ) {
         e.preventDefault();
         handleJumpRelease();
-      } else if (e.code === "ArrowDown" || e.code === "KeyS") {
+      } else if (e.code === "ArrowDown" || e.code === "KeyS" || e.key === "ArrowDown") {
         e.preventDefault();
         handleDuckRelease();
       }
@@ -482,7 +511,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [handleJumpPress, handleJumpRelease, handleDuckPress, handleDuckRelease, addNotice, onExit]);
+  }, [handleJumpPress, handleJumpRelease, handleDuckPress, handleDuckRelease, addNotice, onExit, resetGame]);
 
   const handlePointerDown = useCallback(
     (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -1777,6 +1806,21 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
         ctx.font = `11px "${EMBEDDED_FAMILY}", monospace`;
         ctx.fillStyle = "#94a3b8";
         ctx.fillText("[M] TOGGLE SYNTH AUDIO  ·  [ESC] EXIT TO ARCADE", GAME_W / 2, my + 288);
+        ctx.restore();
+      } else if (state.mode === "PAUSED") {
+        ctx.save();
+        ctx.fillStyle = "rgba(3, 7, 16, 0.68)";
+        ctx.fillRect(0, 64, GAME_W, GAME_H - 64);
+
+        const { my } = drawCyberModalFrame(420, 180, "#ffd700");
+        ctx.textAlign = "center";
+        ctx.font = `bold 32px "${EMBEDDED_FAMILY}", monospace`;
+        ctx.fillStyle = "#ffd700";
+        ctx.fillText("GAME PAUSED", GAME_W / 2, my + 72);
+
+        ctx.font = `bold 14px "${EMBEDDED_FAMILY}", monospace`;
+        ctx.fillStyle = "#e2e8f0";
+        ctx.fillText("[ PRESS PAUSE OR JUMP TO RESUME ]", GAME_W / 2, my + 125);
         ctx.restore();
       } else if (state.mode === "SECTOR_WARP") {
         ctx.save();

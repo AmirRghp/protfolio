@@ -21,11 +21,13 @@ The goal of this project is to bring the arcade games to mobile visitors via a d
 
 ### 2.1. Goals
 1. **Seamless Mobile Entry:** Provide an intuitive, ergonomic call-to-action on mobile (`FlatLanding`) that invites visitors to play the arcade games.
-2. **Retro Handheld Aesthetic:** Deliver a nostalgic, high-polish fullscreen mobile experience inspired by classic handheld consoles (e.g. Game Boy, Neo Geo Pocket) with a mini CRT scanline screen and cyberpunk neon accents.
-3. **Ergonomic Virtual Gamepad:** Provide responsive, low-latency on-screen touch controls (D-Pad + Action buttons A/B + Start/Select) that work seamlessly with one or two thumbs.
-4. **Zero-Refactor Game Compatibility:** Bridge virtual touch inputs directly to standard browser `KeyboardEvent` dispatches so the existing game loops (`FlappyGame`, `TetrisGame`, `PixelRunGame`, `SnakeGame`, `Deparkanoid`) function without rewriting their core engine loops.
-5. **Orientation Support:** Primarily optimize for vertical (Portrait) phone orientation (screen on top, gamepad on bottom), while gracefully adapting to horizontal (Landscape) orientation (screen in center, D-pad on left, buttons on right).
-6. **Battery & Performance Friendly:** Cleanly unmount or pause the canvas rendering loop and audio synthesizers when the arcade modal is closed.
+2. **Tactile Industrial Handheld Aesthetic:** Deliver an authentic, premium physical handheld gaming experience (model DMG-05) inspired by classic handheld hardware (dark bead-blasted gunmetal aluminum & matte charcoal polycarbonate chassis, recessed tempered glass lens with `DOT MATRIX WITH STEREO SOUND` silkscreen, authentic CRT scanlines, and real macro cartridge photography), intentionally avoiding generic neon AI slop.
+3. **Ergonomic Virtual Gamepad:** Provide responsive, low-latency on-screen touch controls (molded 3D ABS D-Pad + sculpted resin action buttons A/B/C + angled silicone rubber Menu/Pause) that work seamlessly with one or two thumbs.
+4. **Universal Pause Engine:** Standardized `PAUSED` state across all 5 Canvas games (*Flappy*, *Tetris*, *Pixel Run*, *Snake*, *Deparkanoid*), enabling pause/resume from the physical `PAUSE` button or `P` key.
+5. **High-DPI Uniform Fit Scaling:** Mathematical fit scaling with $2\times$ supersampled canvas rendering so that dense game layouts (*Cyber Tetris*) fit 100% inside mobile CRT frames without zooming or clipping.
+6. **Zero-Refactor Game Compatibility:** Bridge virtual touch inputs directly to standard browser `KeyboardEvent` dispatches so existing game loops function without rewriting their core engine loops.
+7. **Orientation Support:** Primarily optimize for vertical (Portrait) phone orientation (screen on top, gamepad on bottom), while gracefully adapting to horizontal (Landscape) orientation.
+8. **Battery & Performance Friendly:** Cleanly unmount or pause the canvas rendering loop and audio synthesizers when the arcade modal is closed.
 
 ### 2.2. Non-Goals
 1. **No 3D Room on Mobile:** We will not load Three.js / R3F or the 3D room mesh on mobile devices.

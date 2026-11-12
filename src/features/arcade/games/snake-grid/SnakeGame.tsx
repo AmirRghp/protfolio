@@ -13,6 +13,8 @@ import {
   getSafeSpawnPosition,
   isInSnake,
   isWall,
+  handleSnakeKeyEvent,
+  bindSnakeWindowListeners,
   type Point,
   type SnakeLevelConfig,
 } from "./snakeLevels";
@@ -45,7 +47,7 @@ function ensureEmbeddedFont(fontFamily?: string, fontUrl?: string): Promise<void
   return embeddedFontPromise;
 }
 
-export type GameMode = "READY" | "RUNNING" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
+export type GameMode = "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
 
 export type Particle = {
   x: number;
@@ -233,7 +235,10 @@ export default function SnakeGame(props: SnakeGameProps) {
   // Primary Action handler (Space or Click): progresses through game phases
   const handlePrimaryAction = useCallback(() => {
     const g = ensureGame();
-    if (g.mode === "READY") {
+    if (g.mode === "PAUSED") {
+      g.mode = "RUNNING";
+      g.lastTick = performance.now();
+    } else if (g.mode === "READY") {
       g.mode = "RUNNING";
       g.lastTick = performance.now();
     } else if (g.mode === "LEVEL_CLEAR") {
@@ -600,6 +605,21 @@ export default function SnakeGame(props: SnakeGameProps) {
         ctx.font = `22px ${ff}`;
         ctx.fillText("PRESS ARROWS / WASD OR SPACE TO START", GAME_W / 2, 380);
       }
+    } else if (g.mode === "PAUSED") {
+      ctx.fillStyle = "rgba(10, 11, 20, 0.78)";
+      ctx.fillRect(0, HUD_ROWS * CELL_SIZE, GAME_W, GAME_H - HUD_ROWS * CELL_SIZE);
+
+      ctx.fillStyle = SNAKE_PALETTE.goldenApple;
+      ctx.font = `44px ${ff}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("GAME PAUSED", GAME_W / 2, 260);
+
+      if (blink) {
+        ctx.fillStyle = SNAKE_PALETTE.accentCyan;
+        ctx.font = `20px ${ff}`;
+        ctx.fillText("PRESS PAUSE OR SPACE TO RESUME", GAME_W / 2, 325);
+      }
     } else if (g.mode === "LEVEL_CLEAR") {
       ctx.fillStyle = "rgba(10, 11, 20, 0.82)";
       ctx.fillRect(0, 0, GAME_W, GAME_H);
@@ -758,41 +778,22 @@ export default function SnakeGame(props: SnakeGameProps) {
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       const g = ensureGame();
-
-      // Direction keys
-      let newDir: Point | null = null;
-      if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") {
-        newDir = { x: 0, y: -1 };
-      } else if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") {
-        newDir = { x: 0, y: 1 };
-      } else if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") {
-        newDir = { x: -1, y: 0 };
-      } else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") {
-        newDir = { x: 1, y: 0 };
-      }
-
-      if (newDir) {
-        e.preventDefault();
-        if (g.mode === "READY") {
-          g.mode = "RUNNING";
-          g.dir = newDir;
-          g.lastTick = performance.now();
-        } else if (g.mode === "RUNNING") {
-          // Limit queue length to 2 inputs to prevent stale turn buffering
-          if (g.inputQueue.length < 2) {
-            g.inputQueue.push(newDir);
-          }
-        }
-      } else if (e.key === " ") {
-        e.preventDefault();
-        handlePrimaryAction();
-      } else if (e.key === "Escape") {
-        e.preventDefault();
-        optsRef.current.onExit?.();
-      }
+      handleSnakeKeyEvent(g, e, {
+        onPrimaryAction: handlePrimaryAction,
+        onExit: () => optsRef.current.onExit?.(),
+      });
     },
     [ensureGame, handlePrimaryAction]
   );
+
+  // Normalized global window keydown/keyup listeners for virtual gamepad & unfocused play
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    return bindSnakeWindowListeners(window, ensureGame, {
+      onPrimaryAction: handlePrimaryAction,
+      onExit: () => optsRef.current.onExit?.(),
+    });
+  }, [ensureGame, handlePrimaryAction]);
 
   return (
     <div

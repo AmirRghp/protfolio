@@ -121,12 +121,22 @@ A critical technical innovation of this portfolio is projecting interactive 2D H
 
 ---
 
-## 5. Mini-Game Engines Architecture (`features/arcade/games/`)
+## 5. Mini-Game Engines & Mobile Handheld Architecture (`features/arcade/`)
 
+### 5.1. Autonomous Mini-Game Engines (`features/arcade/games/`)
 Each mini-game operates as an autonomous, self-contained engine:
 - **Game Loop:** Powered by `requestAnimationFrame` with delta-time ($\Delta t$) normalization to ensure identical physics at 60Hz, 120Hz, or 144Hz.
 - **Decoupled Audio Synthesizer:** Mini-games instantiate isolated Web Audio API graphs (`flappyAudio.ts`, `tetrisAudio.ts`, `pixelRunAudio.ts`) creating retro bleeps, jump sweeps, and collision impacts synthetically without external audio asset downloads.
+- **Universal Pause State Machine:** Every game engine enforces a standardized `"PAUSED"` mode reachable via `'p'` / `'P'` keyboard events. When paused, rendering displays a crisp modal frame while game updates, gravity, timers, and chiptune audio are cleanly suspended. Resuming via `PAUSE` or action keys seamlessly restores last tick timestamps without delta spikes.
+- **High-DPI Uniform Fit Scaling:** Games with dense board layouts (*Cyber Tetris* $880 \times 620$) implement uniform fit scaling:
+  $$\text{fitScale} = \min\left(\frac{W_{\text{display}}}{W_{\text{content}}}, \frac{H_{\text{display}}}{H_{\text{content}}}\right)$$
+  combined with centered translation and $2\times$ supersampled device pixel ratio (`dpr`), ensuring crystal-clear rendering without cropping across mobile screens.
 - **State Cleanliness:** Exiting a game cancels the animation frame ID, disconnects audio oscillators, and resets game state cleanly.
+
+### 5.2. Mobile Retro Handheld Console Architecture (`features/arcade/components/`)
+- **Physical Console Emulation (`MobileArcadeModal`):** Structured as a dual-zone handheld console (model DMG-05). The top zone mounts a 4:3 CRT display lens with scanlines and curvature, hosting either the 5-game cartridge carousel or the full-bleed canvas. The bottom zone hosts the tactile controller.
+- **Adaptive Touch Gamepad Bridge (`MobileGamepad`):** Bridges virtual mobile thumb interactions to standard DOM `KeyboardEvent` dispatches (`keydown` / `keyup`). Automatically switches button configurations using per-game control profiles (`GAME_CONTROL_PROFILES`), and features immediate `onPointerDown` execution with haptic feedback (`navigator.vibrate(10)`).
+- **Global Event Normalization:** `SnakeGame` and `Deparkanoid` attach `window` listeners during active play (`bindSnakeWindowListeners`, `bindDeparkanoidWindowListeners`), ensuring gamepad dispatches seamlessly reach game engines without requiring artificial focus management.
 
 ---
 

@@ -49,7 +49,7 @@ function ensureEmbeddedFont(): Promise<void> {
   return embeddedFontPromise;
 }
 
-export type FlappyGameMode = "READY" | "RUNNING" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
+export type FlappyGameMode = "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
 
 export type FlappyParticle = {
   x: number;
@@ -356,6 +356,14 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
 
   const flap = useCallback(() => {
     const s = gameState.current;
+    if (s.mode === "PAUSED") {
+      s.mode = "RUNNING";
+      s.birdSpeed = FLAP_THRUST;
+      s.birdAngle = -0.38;
+      flappyAudio.playFlap();
+      return;
+    }
+
     if (s.mode === "READY") {
       s.mode = "RUNNING";
       s.birdSpeed = FLAP_THRUST;
@@ -411,10 +419,29 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
   // Handle inputs
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
+      if (e.key === "p" || e.key === "P" || e.code === "KeyP") {
+        e.preventDefault();
+        const s = gameState.current;
+        if (s.mode === "RUNNING") {
+          s.mode = "PAUSED";
+        } else if (s.mode === "PAUSED") {
+          s.mode = "RUNNING";
+        } else if (s.mode === "READY") {
+          flap();
+        }
+        return;
+      }
+
+      if (
+        e.code === "Space" ||
+        e.code === "ArrowUp" ||
+        e.code === "KeyW" ||
+        e.key === " " ||
+        e.key === "ArrowUp"
+      ) {
         e.preventDefault();
         flap();
-      } else if (e.code === "Escape") {
+      } else if (e.code === "Escape" || e.key === "Escape") {
         e.preventDefault();
         if (onExit) onExit();
       }
@@ -1535,6 +1562,20 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
         // O. Framed Holographic Modals & Banner Overlays
         if (s.mode === "READY") {
           renderReadyOverlay(ctx, s, level);
+        } else if (s.mode === "PAUSED") {
+          ctx.save();
+          ctx.fillStyle = "rgba(2, 6, 18, 0.68)";
+          ctx.fillRect(0, 48, GAME_W, GROUND_Y - 48);
+          const { my } = drawCyberModalBox(ctx, 420, 180, "#ffd700");
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.font = `bold 32px "${EMBEDDED_FAMILY}", monospace`;
+          ctx.fillStyle = "#ffd700";
+          ctx.fillText("GAME PAUSED", GAME_W / 2, my + 68);
+          ctx.font = `bold 14px "${EMBEDDED_FAMILY}", monospace`;
+          ctx.fillStyle = "#e2e8f0";
+          ctx.fillText("[ PRESS PAUSE OR FLAP TO RESUME ]", GAME_W / 2, my + 122);
+          ctx.restore();
         } else if (s.mode === "LEVEL_CLEAR") {
           renderLevelClearOverlay(ctx, s, level);
         } else if (s.mode === "VICTORY") {

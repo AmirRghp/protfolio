@@ -1,0 +1,165 @@
+.fabContainer {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 85;
+  width: 58px;
+  height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  opacity: 0.88;
+  will-change: transform;
+  transition:
+    transform 0.38s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease;
+}
+
+.fabContainer:hover,
+.fabContainer:focus-within {
+  opacity: 1;
+}
+
+.fabContainer[data-dragging="true"] {
+  opacity: 1;
+  transition: opacity 0.1s ease;
+  cursor: grabbing;
+}
+
+/* Circular Glisse Button ("See my work" component in circular icon-only mode) */
+.assistiveBtn {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: grab;
+  touch-action: none !important;
+  --lg-glass: rgba(32, 34, 40, 0.72);
+  --lg-glass-active: rgba(58, 62, 72, 0.86);
+  --lg-blur: 10px;
+  --lg-rim-shine: 0.28;
+  box-shadow:
+    0 10px 26px rgba(0, 0, 0, 0.55),
+    0 2px 6px rgba(0, 0, 0, 0.4),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.16) !important;
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease !important;
+}
+
+.fabContainer[data-dragging="true"] .assistiveBtn {
+  transform: scale(1.08);
+  cursor: grabbing;
+  box-shadow:
+    0 16px 34px rgba(0, 0, 0, 0.68),
+    0 4px 10px rgba(0, 0, 0, 0.48),
+    inset 0 0 0 1.5px rgba(255, 255, 255, 0.28) !important;
+}
+
+.assistiveBtn:active {
+  transform: scale(0.95);
+}
+
+.assistiveBtn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.75);
+  outline-offset: 3px;
+}
+
+/* iOS AssistiveTouch Concentric Halo & Core */
+.assistiveOrb {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.assistiveOuterRing {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.08) 65%,
+    rgba(255, 255, 255, 0.03) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.18);
+}
+
+.assistiveInnerCore {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 35% 30%,
+    rgba(255, 255, 255, 0.94) 0%,
+    rgba(226, 232, 240, 0.85) 100%
+  );
+  color: #14161b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.42),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.gamepadSvg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+/* Tablet scale-up (768px - 1024px) */
+@media (min-width: 768px) {
+  .fabContainer {
+    width: 64px;
+    height: 64px;
+  }
+
+  .assistiveBtn {
+    width: 64px !important;
+    height: 64px !important;
+    min-width: 64px !important;
+    min-height: 64px !important;
+  }
+
+  .assistiveOrb {
+    width: 48px;
+    height: 48px;
+  }
+
+  .assistiveInnerCore {
+    width: 36px;
+    height: 36px;
+  }
+
+  .gamepadSvg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Hide strictly on Desktop (> 1024px with fine pointer where the 3D Room & Arcade Cabinet are active) */
+@media (min-width: 1025px) and (pointer: fine) {
+  .fabContainer {
+    display: none !important;
+  }
+}

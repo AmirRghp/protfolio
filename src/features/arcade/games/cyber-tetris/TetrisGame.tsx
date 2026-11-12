@@ -451,9 +451,24 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
           tetrisAudio.stopMusic();
         } else if (modeRef.current === "PAUSED") {
           modeRef.current = "RUNNING";
+          lastDropTimeRef.current = performance.now();
           if (isMusicActiveRef.current) tetrisAudio.startMusic();
+        } else if (modeRef.current === "READY") {
+          modeRef.current = "RUNNING";
+          initGame(0, false);
+          lastDropTimeRef.current = performance.now();
         }
         return;
+      }
+
+      if (modeRef.current === "PAUSED") {
+        if (e.key === " " || e.key === "Enter") {
+          e.preventDefault();
+          modeRef.current = "RUNNING";
+          lastDropTimeRef.current = performance.now();
+          if (isMusicActiveRef.current) tetrisAudio.startMusic();
+          return;
+        }
       }
 
       if (modeRef.current === "READY") {
@@ -461,6 +476,7 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
           e.preventDefault();
           modeRef.current = "RUNNING";
           initGame(0, false);
+          lastDropTimeRef.current = performance.now();
           return;
         }
       }
@@ -650,16 +666,28 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.max(Math.min(window.devicePixelRatio || 1, 3), 2);
       const displayW = canvas.clientWidth || GAME_W;
       const displayH = canvas.clientHeight || GAME_H;
-      if (canvas.width !== displayW * dpr || canvas.height !== displayH * dpr) {
-        canvas.width = displayW * dpr;
-        canvas.height = displayH * dpr;
+      const targetW = Math.round(displayW * dpr);
+      const targetH = Math.round(displayH * dpr);
+      if (canvas.width !== targetW || canvas.height !== targetH) {
+        canvas.width = targetW;
+        canvas.height = targetH;
       }
 
+      const contentW = 804;
+      const contentH = 568;
+      const fitScale = Math.min(displayW / contentW, displayH / contentH);
+      const offsetX = (displayW - GAME_W * fitScale) / 2;
+      const offsetY = (displayH - GAME_H * fitScale) / 2;
+
       ctx.save();
-      ctx.scale(dpr, dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.fillStyle = "#0c0d18";
+      ctx.fillRect(0, 0, displayW, displayH);
+      ctx.translate(offsetX, offsetY);
+      ctx.scale(fitScale, fitScale);
 
       // Apply screen shake
       if (shakeIntensityRef.current > 0) {
@@ -1123,10 +1151,13 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const scaleX = GAME_W / rect.width;
-    const scaleY = GAME_H / rect.height;
-    const clickX = (e.clientX - rect.left) * scaleX;
-    const clickY = (e.clientY - rect.top) * scaleY;
+    const contentW = 804;
+    const contentH = 568;
+    const fitScale = Math.min(rect.width / contentW, rect.height / contentH) || 1;
+    const offsetX = (rect.width - GAME_W * fitScale) / 2;
+    const offsetY = (rect.height - GAME_H * fitScale) / 2;
+    const clickX = (e.clientX - rect.left - offsetX) / fitScale;
+    const clickY = (e.clientY - rect.top - offsetY) / fitScale;
 
     // Check Music Toggle Button (x: 50..270, y: 500..532)
     if (clickX >= 50 && clickX <= 270 && clickY >= 500 && clickY <= 532) {
@@ -1134,9 +1165,14 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
       return;
     }
 
-    if (modeRef.current === "READY") {
+    if (modeRef.current === "PAUSED") {
+      modeRef.current = "RUNNING";
+      lastDropTimeRef.current = performance.now();
+      if (isMusicActiveRef.current) tetrisAudio.startMusic();
+    } else if (modeRef.current === "READY") {
       modeRef.current = "RUNNING";
       initGame(0, false);
+      lastDropTimeRef.current = performance.now();
     } else if (modeRef.current === "LEVEL_CLEAR") {
       const nextIndex = currentSectorIndexRef.current + 1;
       initGame(nextIndex, isEndlessRef.current);
@@ -1159,7 +1195,6 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
           width: "100%",
           height: "100%",
           display: "block",
-          imageRendering: "pixelated",
           cursor: "pointer",
         }}
       />

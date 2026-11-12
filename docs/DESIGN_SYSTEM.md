@@ -164,6 +164,16 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
   - *Exit (Room $\to$ Landing):* Upward curtain sweep (`translate3d(0, 0, 0) \to translate3d(0, -100vh, 0)` with `0.68s cubic-bezier(0.76, 0, 0.24, 1)`) originating from the full-width `#000000` baseline, smoothly occluding the 3D room before unveiling the landing loader.
   - *Re-enter (Landing $\to$ Room):* Symmetric downward curtain sweep (`translate3d(0, -100vh, 0) \to translate3d(0, 0, 0)` with `0.68s cubic-bezier(0.76, 0, 0.24, 1)`), revealing the 3D room progressively from top to bottom before the bottom arch and tactile button spring into position.
 
+### 6.9. Mobile Retro Arcade Handheld Hardware Tokens (`MobileArcadeModal` & `MobileGamepad`)
+- **Industrial Chassis Finish:** Bead-blasted dark gunmetal aluminum and matte charcoal polycarbonate surface (`handheld_shell_texture_1794477536843.jpg`) over `#1c1e22` / `#212327` baseplates, eliminating garish neon AI slop in favor of authentic tactile hardware aesthetics.
+- **Machined Hardware Details:** Radial-gradient recessed corner screw sockets (`#2f3339` to `#111316`), drilled 12-hole acoustic speaker grille, and high-contrast silkscreen typography (`MODEL DMG-05 · TACTILE SHELL`).
+- **Recessed Tempered Glass Display Bezel:** Multi-layer optical border with `DOT MATRIX WITH STEREO SOUND` dual-color silkscreen, active red `BATTERY` power LED, and authentic 4:3 CRT scanline wash.
+- **Smoked Translucent Cartridges:** Selection carousel banners feature studio macro photography of smoked dark grey cartridges with gold PCB traces and warm amber highlights (`retro_cartridge_header_1794477537457.jpg`).
+- **Tactile Sculpted Controls:**
+  - *D-Pad:* Molded matte dark charcoal ABS cross with concave center pivot and directional arrow debossing.
+  - *System Controls:* Angled pill-shaped silicone rubber buttons for `MENU` and `PAUSE` (`#2d3139`) with $1.5\text{px}$ travel depression.
+  - *Action Cluster:* High-profile molded resin spherical buttons in vermilion (`#ea580c`), burgundy (`#be123c`), and amber (`#d97706`) mounted inside recessed oval socket bezels with silkscreened letters (`A`, `B`, `C`).
+
 ---
 
 ## 7. Motion & Physics Tokens

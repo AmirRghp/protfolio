@@ -144,6 +144,14 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 - **Zero-Overhead Mobile Flow:** Any touch device or viewport $< 1024\text{px}$ completely bypasses `<RoomPreview>`, freeing GPU and WebGL resources and directing users immediately to the fast, battery-efficient `FlatLanding` portfolio.
 - **Adaptive Touch Controls:** Replaces room re-entry buttons with a glass pill "Get in Touch" navigation CTA, collapses capabilities and social links to 2 columns on $\ge 375\text{px}$ and 1 column on $< 375\text{px}$, and includes a circular glass ✕ close button on the Work accordion.
 
+### 6.11. Mobile Retro Arcade Handheld Experience (`src/features/arcade/components/`)
+- **AssistiveTouch Floating Glisse Trigger (`MobileArcadeFab`):** Strictly visible on tablet and mobile (`<= 1024px` or coarse pointer; hidden on desktop where the 3D room arcade cabinet is active). Uses the circular icon-only `<GlisseButton>` (`from "glisse"`) with an AssistiveTouch concentric orb and gamepad glyph. Supports free pointer dragging across the screen and magnetically snaps to the nearest left or right screen edge on release (`computeAssistiveSnapPosition`), while opening the handheld console on tap.
+- **Physical Handheld Console Form Factor (`MobileArcadeModal`):** Structured as an authentic portable handheld console (model DMG-05) with full responsive scaling across mobile (`320px–414px`) and tablet (`768px–1024px` portrait & landscape). Features a bead-blasted dark gunmetal aluminum and matte polycarbonate chassis, a recessed dark tempered glass display lens with `DOT MATRIX WITH STEREO SOUND` silkscreen and power LED, corner screws, and a top 4:3 CRT stage.
+- **Translucent Smoked Cartridge Carousel:** In carousel mode, visitors swipe or browse 5 game cartridges featuring real macro-photography artwork showing gold PCB circuit traces, retro vector badges, and persistent local high scores.
+- **Adaptive Ergonomic Touch Gamepad (`MobileGamepad`):** Mounted in the lower 45–50% of the chassis. Automatically reconfigures its action buttons based on the active game (*Flappy*: FLAP; *Pixel Run*: JUMP/SLIDE; *Tetris*: ROTATE/HARD DROP/HOLD; *Snake*: START; *Deparkanoid*: LAUNCH). Includes a molded ABS D-Pad, angled silicone `MENU` and `PAUSE` pills, drilled 12-hole acoustic speaker grille, and synthetic `KeyboardEvent` bridge with haptic feedback (`navigator.vibrate(10)`).
+- **Universal Game Pause Engine:** Standardized `PAUSED` state across all 5 game engines, allowing instant pause/resume via the handheld `PAUSE` button or `P` key with visual canvas pause overlays and chiptune audio suspension.
+- **High-DPI Fit Scaling:** Mathematical fit scaling with $2\times$ supersampled canvas rendering ensures complex games like *Cyber Tetris* fit completely within any mobile or tablet screen ratio without clipping or zoom distortion.
+
 ---
 
 ## 7. Non-Functional Requirements

@@ -7,6 +7,9 @@ import {
   GAME_H,
   GAME_W,
   TOTAL_LEVELS,
+  handleDeparkanoidKeyDown,
+  handleDeparkanoidKeyUp,
+  bindDeparkanoidWindowListeners,
   type Brick,
   type Palette,
 } from "./deparkanoidLevels";
@@ -111,7 +114,7 @@ function spriteCanvas(rows: string[], pal: Palette): HTMLCanvasElement | null {
   return c;
 }
 
-export type GameMode = "READY" | "RUNNING" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
+export type GameMode = "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
 
 export type GameState = {
   levelIndex: number;
@@ -251,7 +254,9 @@ export default function Deparkanoid(props: DeparkanoidProps) {
   // Primary Action handler (Space or Click): progresses through game phases
   const handlePrimaryAction = useCallback(() => {
     const g = ensureGame();
-    if (g.mode === "READY") {
+    if (g.mode === "PAUSED") {
+      g.mode = "RUNNING";
+    } else if (g.mode === "READY") {
       launchBall(g);
     } else if (g.mode === "LEVEL_CLEAR") {
       if (g.levelIndex < TOTAL_LEVELS - 1) {
@@ -263,6 +268,17 @@ export default function Deparkanoid(props: DeparkanoidProps) {
       restartFromLevelOne(g);
     }
   }, [ensureGame, launchBall, loadLevel, restartFromLevelOne]);
+
+  const handleTogglePause = useCallback(() => {
+    const g = ensureGame();
+    if (g.mode === "RUNNING") {
+      g.mode = "PAUSED";
+    } else if (g.mode === "PAUSED") {
+      g.mode = "RUNNING";
+    } else if (g.mode === "READY") {
+      launchBall(g);
+    }
+  }, [ensureGame, launchBall]);
 
   // Frame draw loop
   const draw = useCallback(() => {
@@ -294,12 +310,14 @@ export default function Deparkanoid(props: DeparkanoidProps) {
     const maxX = GAME_W - g.paddle.width - margin;
 
     // Paddle movement
-    if (optsRef.current.autoPlay && g.mode === "RUNNING") {
-      g.paddle.x = clamp(margin, maxX, g.ball.x - g.paddle.width / 2);
-    } else {
-      if (g.left && g.paddle.x > margin) g.paddle.x -= PADDLE_STEP;
-      else if (g.right && g.paddle.x < maxX) g.paddle.x += PADDLE_STEP;
-      g.paddle.x = clamp(margin, maxX, g.paddle.x);
+    if (g.mode !== "PAUSED") {
+      if (optsRef.current.autoPlay && g.mode === "RUNNING") {
+        g.paddle.x = clamp(margin, maxX, g.ball.x - g.paddle.width / 2);
+      } else {
+        if (g.left && g.paddle.x > margin) g.paddle.x -= PADDLE_STEP;
+        else if (g.right && g.paddle.x < maxX) g.paddle.x += PADDLE_STEP;
+        g.paddle.x = clamp(margin, maxX, g.paddle.x);
+      }
     }
 
     // Keep ball pinned to paddle in READY state
@@ -459,6 +477,21 @@ export default function Deparkanoid(props: DeparkanoidProps) {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("PRESS SPACE OR CLICK TO LAUNCH", GAME_W / 2, GAME_H / 2 + 60);
+      }
+    } else if (g.mode === "PAUSED") {
+      ctx.fillStyle = "rgba(10, 5, 2, 0.78)";
+      ctx.fillRect(0, 36, GAME_W, GAME_H - 36);
+
+      ctx.fillStyle = p.amber;
+      ctx.font = `48px ${ff}`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("GAME PAUSED", GAME_W / 2, GAME_H / 2 - 20);
+
+      if (blink) {
+        ctx.fillStyle = p.cement;
+        ctx.font = `20px ${ff}`;
+        ctx.fillText("PRESS PAUSE OR SPACE TO RESUME", GAME_W / 2, GAME_H / 2 + 35);
       }
     } else if (g.mode === "LEVEL_CLEAR") {
       ctx.fillStyle = "rgba(10, 5, 2, 0.75)";
@@ -645,31 +678,32 @@ export default function Deparkanoid(props: DeparkanoidProps) {
   const onKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       const g = ensureGame();
-      if (e.key === "ArrowLeft") {
-        g.left = true;
-        e.preventDefault();
-      } else if (e.key === "ArrowRight") {
-        g.right = true;
-        e.preventDefault();
-      } else if (e.key === " ") {
-        handlePrimaryAction();
-        e.preventDefault();
-      } else if (e.key === "Escape") {
-        optsRef.current.onExit?.();
-        e.preventDefault();
-      }
+      handleDeparkanoidKeyDown(g, e, {
+        onPrimaryAction: handlePrimaryAction,
+        onTogglePause: handleTogglePause,
+        onExit: () => optsRef.current.onExit?.(),
+      });
     },
-    [ensureGame, handlePrimaryAction]
+    [ensureGame, handlePrimaryAction, handleTogglePause]
   );
 
   const onKeyUp = useCallback(
     (e: React.KeyboardEvent) => {
       const g = ensureGame();
-      if (e.key === "ArrowLeft") g.left = false;
-      if (e.key === "ArrowRight") g.right = false;
+      handleDeparkanoidKeyUp(g, e);
     },
     [ensureGame]
   );
+
+  // Normalized global window keydown/keyup listeners for virtual gamepad & unfocused play
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    return bindDeparkanoidWindowListeners(window, ensureGame, {
+      onPrimaryAction: handlePrimaryAction,
+      onTogglePause: handleTogglePause,
+      onExit: () => optsRef.current.onExit?.(),
+    });
+  }, [ensureGame, handlePrimaryAction, handleTogglePause]);
 
   return (
     <div

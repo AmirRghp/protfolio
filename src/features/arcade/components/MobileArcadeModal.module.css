@@ -1,0 +1,742 @@
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  display: flex;
+  flex-direction: column;
+  background-color: #1c1e22;
+  background-image:
+    linear-gradient(180deg, rgba(35, 38, 43, 0.96) 0%, rgba(23, 25, 29, 0.98) 100%),
+    url("../../../assets/images/handheld_shell_texture_1794477536843.jpg");
+  background-size: cover, cover;
+  background-position: center;
+  color: #f1f5f9;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  overflow: hidden;
+  overscroll-behavior: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Top Anodized Hardware Edge Bar */
+.headerBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+  background: linear-gradient(180deg, #2b2e34 0%, #1e2024 100%);
+  border-bottom: 2px solid #111215;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 3px 10px rgba(0, 0, 0, 0.55);
+  flex-shrink: 0;
+  z-index: 5;
+}
+
+.closeBtn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid #0d0e11;
+  background: linear-gradient(180deg, #383c43 0%, #25282d 100%);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow:
+    0 2px 0 #0c0d10,
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.closeBtn:hover,
+.closeBtn:active {
+  background: linear-gradient(180deg, #2d3036 0%, #1d1f23 100%);
+  color: #ffffff;
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #0c0d10,
+    inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.brandTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  color: #b8bfc9;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.85);
+}
+
+.powerLed {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 1.5px solid #0e1013;
+  box-shadow:
+    0 0 6px rgba(34, 197, 94, 0.5),
+    inset 0 1px 1px rgba(255, 255, 255, 0.45);
+}
+
+.muteBtn {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 6px;
+  border: 1px solid #0d0e11;
+  background: linear-gradient(180deg, #383c43 0%, #25282d 100%);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow:
+    0 2px 0 #0c0d10,
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.muteBtn[aria-pressed="true"] {
+  background: linear-gradient(180deg, #452815 0%, #2c190d 100%);
+  color: #fbbf24;
+}
+
+.muteBtn:active {
+  transform: translateY(1px);
+  box-shadow:
+    0 1px 0 #0c0d10,
+    inset 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Console Body Split: Top 55% Display Lens Housing, Bottom 45% Gamepad */
+.consoleBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.screenSection {
+  flex: 0 0 55%;
+  min-height: 0;
+  padding: 10px 14px 10px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Outer Recessed Smoked Tempered Glass Lens Frame */
+.lensBezelOuter {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 680px;
+  padding: 8px 12px 10px;
+  box-sizing: border-box;
+  border-radius: 14px 14px 22px 14px;
+  background: linear-gradient(180deg, #15171b 0%, #0d0f12 100%);
+  border: 2px solid #090a0c;
+  box-shadow:
+    inset 0 2px 6px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.lensTopMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: #6b7280;
+  flex-shrink: 0;
+}
+
+.lensSilkscreen {
+  position: relative;
+  padding-left: 18px;
+}
+
+.lensSilkscreen::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 3px;
+  border-top: 1px solid #991b1b;
+  border-bottom: 1px solid #1e3a8a;
+}
+
+.batteryIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #6b7280;
+}
+
+.batteryDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.7);
+}
+
+.crtBezel {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 0;
+  border-radius: 8px;
+  border: 2px solid #060709;
+  background: #0a0b0e;
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.95);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Subtle LCD/CRT Micro-Grid & Anti-Glare Glass Reflection */
+.crtBezel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.035) 0%, transparent 42%),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.16) 0px,
+      rgba(0, 0, 0, 0.16) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, transparent 70%, rgba(0, 0, 0, 0.45) 100%);
+}
+
+/* Full-Bleed Gameplay Viewport */
+.gameplayStage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #08090d;
+  overflow: hidden;
+}
+
+.gameplayStage canvas {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* Cartridge Selection Screen inside Display */
+.carouselScreen {
+  position: relative;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+  padding: 10px 12px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+  background: linear-gradient(180deg, #111318 0%, #0b0c10 100%);
+}
+
+.carouselTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.1em;
+  color: #94a3b8;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 5px;
+  flex-shrink: 0;
+}
+
+.cartridgeBadge {
+  color: #cbd5e1;
+  font-weight: 700;
+}
+
+.highScoreBadge {
+  color: #f59e0b;
+  font-weight: 700;
+}
+
+.carouselTabs {
+  display: flex;
+  gap: 5px;
+  overflow-x: auto;
+  padding-bottom: 2px;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.carouselTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.gameTab {
+  flex: 1 0 auto;
+  padding: 5px 9px;
+  border-radius: 5px;
+  border: 1px solid #262930;
+  background: #17191e;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+}
+
+.gameTab[data-selected="true"] {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.16);
+  color: #fef3c7;
+}
+
+.cardStage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.navArrow {
+  width: 34px;
+  height: 48px;
+  border-radius: 6px;
+  border: 1px solid #2a2e37;
+  background: linear-gradient(180deg, #23272f 0%, #171a20 100%);
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 0 #090a0d;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.navArrow:active {
+  transform: translateY(1px);
+  background: #171a20;
+  color: #f59e0b;
+}
+
+.gameCard {
+  height: 100%;
+  min-height: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #262a33;
+  background: #14171d;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  gap: 6px;
+  overflow: hidden;
+}
+
+.cartridgeVisualWrap {
+  position: relative;
+  width: 100%;
+  min-height: 48px;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(135deg, #1f232b 0%, #121419 100%);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.cartridgeVisualImg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 42%;
+  opacity: 0.42;
+  pointer-events: none;
+}
+
+.cartridgeScrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(14, 16, 21, 0.92) 0%,
+    rgba(14, 16, 21, 0.72) 60%,
+    rgba(14, 16, 21, 0.45) 100%
+  );
+  pointer-events: none;
+}
+
+.gameCardHeader {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.gameIconWrap {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #f59e0b;
+  flex-shrink: 0;
+}
+
+.gameSvg {
+  width: 18px;
+  height: 18px;
+}
+
+.gameTitleBlock {
+  text-align: left;
+  min-width: 0;
+  flex: 1;
+}
+
+.gameTitleBlock .gameTitle {
+  margin: 0;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  font-weight: 800;
+  color: #f8fafc;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.gameMeta {
+  display: block;
+  margin-top: 2px;
+  font-size: 9.5px;
+  line-height: 1.15;
+  color: #f59e0b;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.gameDesc {
+  margin: 0;
+  font-size: 10.5px;
+  line-height: 1.34;
+  color: #cbd5e1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.startBtn {
+  width: 100%;
+  max-width: 240px;
+  height: 34px;
+  border-radius: 6px;
+  border: 1px solid #9a3412;
+  background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%);
+  color: #fff7ed;
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    0 2px 0 #431407,
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+  flex-shrink: 0;
+}
+
+.startBtn:hover,
+.startBtn:active {
+  transform: translateY(1px);
+  filter: brightness(1.06);
+  box-shadow: 0 1px 0 #431407;
+}
+
+.carouselFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+
+/* Bottom 45% Controller Chassis */
+.gamepadSection {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Small Mobile (<= 380px, e.g. 320px iPhone SE) */
+@media (max-width: 380px) {
+  .headerBar {
+    padding: max(8px, env(safe-area-inset-top)) 10px 8px;
+  }
+
+  .closeBtn,
+  .muteBtn {
+    height: 30px;
+    padding: 0 9px;
+    font-size: 10px;
+  }
+
+  .brandTitle {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  .screenSection {
+    padding: 6px 8px;
+  }
+
+  .lensBezelOuter {
+    padding: 6px 8px 8px;
+  }
+
+  .carouselScreen {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .navArrow {
+    width: 28px;
+    height: 40px;
+    font-size: 12px;
+  }
+
+  .cartridgeVisualWrap {
+    min-height: 42px;
+    padding: 5px 8px;
+  }
+
+  .startBtn {
+    height: 30px;
+    font-size: 10.5px;
+  }
+
+  .carouselFooter {
+    font-size: 8px;
+  }
+}
+
+/* Tablet Portrait & Landscape (600px - 1024px) */
+@media (min-width: 600px) and (min-height: 541px) {
+  .headerBar {
+    padding: max(14px, env(safe-area-inset-top)) 28px 14px;
+  }
+
+  .closeBtn,
+  .muteBtn {
+    height: 40px;
+    padding: 0 16px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+
+  .brandTitle {
+    font-size: 14px;
+    letter-spacing: 0.22em;
+    gap: 10px;
+  }
+
+  .powerLed {
+    width: 9px;
+    height: 9px;
+  }
+
+  .screenSection {
+    flex: 0 0 57%;
+    padding: 16px 28px 14px;
+  }
+
+  .lensBezelOuter {
+    max-width: 780px;
+    padding: 12px 18px 14px;
+    border-radius: 18px 18px 28px 18px;
+    gap: 8px;
+  }
+
+  .lensTopMeta {
+    font-size: 11px;
+    padding: 0 6px;
+  }
+
+  .batteryDot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .crtBezel {
+    border-radius: 10px;
+  }
+
+  .carouselScreen {
+    padding: 16px 22px;
+    gap: 10px;
+  }
+
+  .carouselTopRow {
+    font-size: 12px;
+    padding-bottom: 8px;
+  }
+
+  .carouselTabs {
+    gap: 8px;
+  }
+
+  .gameTab {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 6px;
+  }
+
+  .cardStage {
+    max-width: 640px;
+    width: 100%;
+    margin: 0 auto;
+    gap: 16px;
+  }
+
+  .navArrow {
+    width: 44px;
+    height: 64px;
+    font-size: 18px;
+    border-radius: 8px;
+  }
+
+  .gameCard {
+    padding: 14px 18px;
+    gap: 10px;
+    border-radius: 10px;
+  }
+
+  .cartridgeVisualWrap {
+    min-height: 74px;
+    padding: 10px 16px;
+    border-radius: 8px;
+  }
+
+  .gameCardHeader {
+    gap: 12px;
+  }
+
+  .gameIconWrap {
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+  }
+
+  .gameSvg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .gameTitleBlock .gameTitle {
+    font-size: 18px !important;
+  }
+
+  .gameMeta {
+    font-size: 11.5px;
+    margin-top: 3px;
+  }
+
+  .gameDesc {
+    font-size: 13px;
+    line-height: 1.45;
+    max-width: 480px;
+  }
+
+  .startBtn {
+    max-width: 300px;
+    height: 42px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+
+  .carouselFooter {
+    font-size: 11px;
+  }
+}
+
+/* Phone Landscape (short height <= 540px) */
+@media (orientation: landscape) and (max-height: 540px) {
+  .headerBar {
+    padding: 6px 14px;
+  }
+
+  .consoleBody {
+    flex-direction: row;
+  }
+
+  .screenSection {
+    flex: 0 0 54%;
+    padding: 8px;
+  }
+
+  .gamepadSection {
+    flex: 1;
+  }
+}

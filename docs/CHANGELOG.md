@@ -4,6 +4,34 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.9] - 2026-11-12
+
+### Added
+- **Mobile Retro Arcade Handheld Experience (`MobileArcadeModal` & `MobileGamepad`):**
+  - Designed and implemented a dedicated mobile/tablet handheld gaming console modal (`NEON POCKET`), bringing the 5 native 60fps HTML5 Canvas arcade games (*Cyber Flappy*, *Cyber Tetris*, *Pixel Run*, *Snake Grid*, *Deparkanoid*) to mobile and tablet visitors (`<= 1024px`).
+  - Built an iOS AssistiveTouch-inspired circular floating button (`MobileArcadeFab`) powered by `GlisseButton` (`glisse`), featuring free 2D touch dragging across the viewport, magnetic horizontal edge-snapping (`computeAssistiveSnapPosition`), idle translucency, and strict tablet/mobile-only visibility (omitted on desktop where the 3D room arcade cabinet is used).
+  - Engineered full responsive layouts across small mobile (`320px`), standard mobile (`375px–414px`), phone landscape, tablet portrait (`768×1024`), and tablet landscape (`1024×768`).
+  - Built an adaptive virtual touch gamepad (`MobileGamepad`) with multi-touch concurrency, tactile silicone D-Pad, angled `MENU` & `PAUSE` rubber pills, drilled 12-hole acoustic speaker grille, and context-aware action clusters with native key event dispatch and haptic pulse feedback (`navigator.vibrate(10)`).
+  - Added full keyboard hotkey support (`Escape` to return/close, arrow keys to cycle carousel, `Space`/`Enter` to start, `M` for audio toggle, and `P` for pause).
+
+### Changed & Fixed
+- **Unified Game Pause Engine Across All 5 Arcade Games:**
+  - Standardized the pause state machine and `'p'` / `'P'` keyboard listeners across all 5 mini-game engines:
+    - *Cyber Tetris:* Pressing `PAUSE` toggles `"RUNNING"` ↔ `"PAUSED"` and suspends/resumes drop ticks and 8-bit chiptune audio; also handles instant launch from `"READY"`.
+    - *Cyber Flappy:* Added `"PAUSED"` mode with canvas overlay, suspending gravity/pipe animation until unpaused or flapped.
+    - *Pixel Run:* Added `"PAUSED"` mode with canvas overlay, freezing obstacles, parallax ground, and score timers.
+    - *Snake Grid:* Added `"PAUSED"` mode in `snakeLevels.ts` with canvas overlay, freezing tick intervals until unpaused.
+    - *Deparkanoid:* Added `"PAUSED"` mode in `deparkanoidLevels.ts` with canvas overlay, freezing paddle and ball velocities.
+  - Upgraded the physical `PAUSE` button on `MobileGamepad` to trigger on `onPointerDown` with `preventDefault()` for zero-latency touch response, toggling pause in active games or launching games from the menu.
+- **Cyber Tetris High-DPI Fit Scaling & Coordinate Normalization:**
+  - Resolved mobile viewport zooming and board clipping in `TetrisGame.tsx` by implementing uniform fit scaling (`fitScale = Math.min(displayW / contentW, displayH / contentH)`) and centered letterbox translation with $2\times$ supersampled device pixel ratio (`dpr`).
+  - Calibrated canvas click coordinates (`handleCanvasClick`) to matching scaled logical space for music toggle and state transitions.
+- **Natural Industrial Hardware Console Redesign (Eliminating Neon Slop):**
+  - Replaced generic neon glow styling with a bead-blasted dark gunmetal aluminum and matte charcoal polycarbonate chassis texture (`handheld_shell_texture_1794477536843.jpg`).
+  - Added recessed dark tempered glass display lens with authentic `DOT MATRIX WITH STEREO SOUND` silkscreen, `BATTERY` power LED, and machined corner screws.
+  - Generated macro photography banner for smoked translucent retro game cartridges showing gold PCB circuit traces (`retro_cartridge_header_1794477537457.jpg`).
+  - Refined action buttons into sculpted vermilion, burgundy, and amber resin buttons with physical press travel and tactile socket bezels.
+
 ## [0.8.8] - 2026-11-11
 
 ### Added

@@ -9,6 +9,8 @@ import {
   GAME_H,
   GAME_W,
   TOTAL_LEVELS,
+  bindDeparkanoidWindowListeners,
+  type DeparkanoidInputState,
 } from "./deparkanoidLevels";
 
 describe("Deparkanoid 5 Levels Configuration", () => {
@@ -64,5 +66,59 @@ describe("Deparkanoid 5 Levels Configuration", () => {
     const html = renderToStaticMarkup(<Deparkanoid />);
     expect(html).toContain("<canvas");
     expect(html).toContain('aria-label="Deparkanoid arcade game"');
+  });
+
+  it("reacts to global window keydown and keyup events for paddle movement and ball launch", () => {
+    const listeners: Record<string, Array<(e: KeyboardEvent) => void>> = {};
+    const mockWindow = {
+      addEventListener: (type: string, fn: EventListenerOrEventListenerObject) => {
+        listeners[type] = listeners[type] || [];
+        listeners[type].push(fn as (e: KeyboardEvent) => void);
+      },
+      removeEventListener: (type: string, fn: EventListenerOrEventListenerObject) => {
+        listeners[type] = (listeners[type] || []).filter((item) => item !== fn);
+      },
+      dispatchEvent: (event: { type: string; key: string; preventDefault: () => void }) => {
+        for (const fn of listeners[event.type] || []) {
+          fn(event as unknown as KeyboardEvent);
+        }
+        return true;
+      },
+    };
+
+    const state: DeparkanoidInputState = {
+      left: false,
+      right: false,
+    };
+
+    let launched = false;
+    let pausedCount = 0;
+    const cleanup = bindDeparkanoidWindowListeners(
+      mockWindow as unknown as Pick<Window, "addEventListener" | "removeEventListener">,
+      () => state,
+      {
+        onPrimaryAction: () => { launched = true; },
+        onTogglePause: () => { pausedCount += 1; },
+      }
+    );
+
+    mockWindow.dispatchEvent({ type: "keydown", key: "ArrowLeft", preventDefault: () => {} });
+    expect(state.left).toBe(true);
+
+    mockWindow.dispatchEvent({ type: "keyup", key: "ArrowLeft", preventDefault: () => {} });
+    expect(state.left).toBe(false);
+
+    mockWindow.dispatchEvent({ type: "keydown", key: "ArrowRight", preventDefault: () => {} });
+    expect(state.right).toBe(true);
+
+    mockWindow.dispatchEvent({ type: "keydown", key: " ", preventDefault: () => {} });
+    expect(launched).toBe(true);
+
+    mockWindow.dispatchEvent({ type: "keydown", key: "p", preventDefault: () => {} });
+    expect(pausedCount).toBe(1);
+
+    cleanup();
+    expect(listeners["keydown"]).toHaveLength(0);
+    expect(listeners["keyup"]).toHaveLength(0);
   });
 });
