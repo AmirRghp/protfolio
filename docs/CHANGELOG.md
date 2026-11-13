@@ -4,6 +4,21 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.12] - 2026-11-13
+
+### Changed & Optimized
+- **Bundle Code-Splitting & Tree-Shaking (`vite.config.ts`, `Lanyard.tsx`, `ArcadeMenu.tsx`, `MobileArcadeModal.tsx`):**
+  - Replaced wildcard `import * as THREE from "three"` in `Lanyard.tsx` with explicit named imports to enable tree-shaking of unused Three.js classes.
+  - Removed eager barrel re-export `export * from "./games"` in `src/features/arcade/index.ts` and code-split all 5 built-in arcade games (`Deparkanoid`, `SnakeGame`, `FlappyGame`, `TetrisGame`, `PixelRunGame`) via `React.lazy` and `<Suspense>` in `ArcadeMenu.tsx` and `MobileArcadeModal.tsx`.
+  - Configured Rolldown `output.codeSplitting.groups` in `vite.config.ts` to separate `vendor-three-core`, `vendor-three-addons`, `vendor-r3f`, `vendor-motion`, and `vendor-react`, reducing the entry `index.js` chunk by **72.1%** (`2,036.02 kB` $\to$ `568.91 kB`, `581.36 kB` $\to$ `152.70 kB` gzip) and eliminating all bundler chunk-size warnings.
+- **3D GLB Embedded Texture & Media Bandwidth Optimization (`public/assets/`):**
+  - Optimized oversized embedded textures in `cup.glb` (`1,720.5 kB` $\to$ `123.2 kB`, **-92.8%**), `arcade-machine.glb` (`2,213.7 kB` $\to$ `966.8 kB`, **-56.3%**), `oiia-cat.glb` (`951.4 kB` $\to$ `732.3 kB`, **-23.0%**), and `compact-keyboard.glb` (`451.5 kB` $\to$ `313.3 kB`, **-30.6%**) while preserving all meshes, UV maps, material names, and morph targets.
+  - Stripped embedded cover art and re-encoded `oiia-spinning-cat.mp3` (`2.69 MB` $\to$ `1.29 MB`, **-52.0%**), set `this.audio.preload = "none"` in `oiiaAudio.ts`, and changed `ascii-room.webm` in `FlatLanding.tsx` to `preload="metadata"` with deferred loading (`isOpen || isIntroDismissed`), saving **>4.2 MB** of initial network transfer on page startup.
+- **Runtime WebGL & Canvas GPU/CPU Gating (`OiiaCat.tsx`, `RoomScene.tsx`, `GradientWaves.tsx`, `LiquidGrid.tsx`):**
+  - Stopped `OiiaCat.tsx` idle breathing animation and `CameraFocus` pointer raycasting/idle parallax from calling `invalidate()` when the 3D room is occluded behind `FlatLanding` (`document.body.classList.contains("away")`) or during `ExitBar` shutter closure, dropping background 3D WebGL rendering from 60 FPS to **0 FPS** while browsing the 2D portfolio.
+  - Memoized the `settings` object in `GradientWaves.tsx` with `useMemo`, added `[settings]` dependency array to its wakeup `useEffect`, and paused `GradientWaves` `tick` when `away` is active.
+  - Added `document.hidden` visibility guards to `LiquidGrid.tsx` animation loop scheduling.
+
 ## [0.8.11] - 2026-11-13
 
 ### Fixed

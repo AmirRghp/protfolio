@@ -381,7 +381,10 @@ export default function OiiaCat({
         }
 
         // Very subtle idle breathing when fully resting
-        if (!reducedMotion && !isSoftwareGl && currentMorphRef.current < 0.05) {
+        const away = typeof document !== "undefined" && document.body.classList.contains("away");
+        const exitBar = typeof document !== "undefined" ? document.getElementById("exitbar") : null;
+        const shutterClosing = exitBar?.classList.contains("shutter-closing") ?? false;
+        if (!reducedMotion && !isSoftwareGl && currentMorphRef.current < 0.05 && !away && !shutterClosing) {
           const breathe = Math.sin(state.clock.getElapsedTime() * 2.2) * 0.004;
           modelGroupRef.current.scale.set(1 + breathe * 0.5, 1 + breathe, 1 + breathe * 0.5);
           needsInvalidate = true;

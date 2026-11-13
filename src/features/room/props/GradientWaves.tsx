@@ -346,46 +346,79 @@ export default function GradientWaves({
     [backgroundColor],
   );
 
-  const settings: Settings = {
-    horizon,
-    wave,
-    crest,
-    paper,
-    lightMode,
-    speed,
-    amplitude: Math.max(0, amplitude),
-    waveScale: Math.max(0.01, waveScale),
-    waveRatio: Math.max(0.01, waveRatio),
-    swell,
-    turbulence,
-    tilt: (clamp(tilt, 10, 85) * Math.PI) / 180,
-    zoom: Math.max(0.05, zoom),
-    height,
-    fogDepth: Math.max(0.5, fogDepth),
-    relief: clamp(relief, 0, 1),
-    lightAngle: (lightAngle * Math.PI) / 180,
-    sheen: Math.max(0, sheen),
-    brightness: Math.max(0, brightness),
-    opacity: clamp(opacity, 0, 1),
-    grain: typeof grain === "number" ? Math.max(0, grain) : grain ? 0.05 : 0,
-    steps: QUALITY[quality] ?? QUALITY.medium,
-    intro,
-    mouseInteraction,
-    parallaxStrength: Math.max(0, parallaxStrength),
-    mouseStrength: clamp(mouseStrength, 0, 1),
-    swellOnClick,
-    paused,
-    dpr: Math.max(0.5, dpr),
-  };
+  const settings = useMemo<Settings>(
+    () => ({
+      horizon,
+      wave,
+      crest,
+      paper,
+      lightMode,
+      speed,
+      amplitude: Math.max(0, amplitude),
+      waveScale: Math.max(0.01, waveScale),
+      waveRatio: Math.max(0.01, waveRatio),
+      swell,
+      turbulence,
+      tilt: (clamp(tilt, 10, 85) * Math.PI) / 180,
+      zoom: Math.max(0.05, zoom),
+      height,
+      fogDepth: Math.max(0.5, fogDepth),
+      relief: clamp(relief, 0, 1),
+      lightAngle: (lightAngle * Math.PI) / 180,
+      sheen: Math.max(0, sheen),
+      brightness: Math.max(0, brightness),
+      opacity: clamp(opacity, 0, 1),
+      grain: typeof grain === "number" ? Math.max(0, grain) : grain ? 0.05 : 0,
+      steps: QUALITY[quality] ?? QUALITY.medium,
+      intro,
+      mouseInteraction,
+      parallaxStrength: Math.max(0, parallaxStrength),
+      mouseStrength: clamp(mouseStrength, 0, 1),
+      swellOnClick,
+      paused,
+      dpr: Math.max(0.5, dpr),
+    }),
+    [
+      horizon,
+      wave,
+      crest,
+      paper,
+      lightMode,
+      speed,
+      amplitude,
+      waveScale,
+      waveRatio,
+      swell,
+      turbulence,
+      tilt,
+      zoom,
+      height,
+      fogDepth,
+      relief,
+      lightAngle,
+      sheen,
+      brightness,
+      opacity,
+      grain,
+      quality,
+      intro,
+      mouseInteraction,
+      parallaxStrength,
+      mouseStrength,
+      swellOnClick,
+      paused,
+      dpr,
+    ],
+  );
   const settingsRef = useRef(settings);
   useLayoutEffect(() => {
     settingsRef.current = settings;
-  });
+  }, [settings]);
   const wakeRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     wakeRef.current?.();
-  });
+  }, [settings]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -565,7 +598,7 @@ export default function GradientWaves({
 
     const tick = (now: number) => {
       state.raf = 0;
-      if (state.lost || !state.visible || document.hidden) return;
+      if (state.lost || !state.visible || document.hidden || document.body.classList.contains("away")) return;
       const s = settingsRef.current;
       const dt = state.last ? Math.min((now - state.last) / 1000, 0.1) : 0;
       state.last = now;

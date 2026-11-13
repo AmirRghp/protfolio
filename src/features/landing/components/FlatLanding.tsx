@@ -167,8 +167,9 @@ export default function FlatLanding({
       : "closed";
   const isReady = isOpen;
 
-  // Pre-warm the ASCII video decoder while the user is in the 3D room so frame 1 is ready immediately
+  // Defer loading the ASCII video until the 3D intro has finished or the user opens FlatLanding
   useEffect(() => {
+    if (!isOpen && !isIntroDismissed) return;
     const video = videoRef.current;
     if (!video) return;
     try {
@@ -178,7 +179,7 @@ export default function FlatLanding({
     } catch {
       // Safe fallback in non-browser test runners
     }
-  }, []);
+  }, [isOpen, isIntroDismissed]);
 
   // Handle Close / Re-enter (Flat Landing -> Live 3D Room via reverse roller-shutter)
   const handleReenter = useCallback(() => {
@@ -417,7 +418,7 @@ export default function FlatLanding({
                     loop
                     muted
                     playsInline
-                    preload="auto"
+                    preload="metadata"
                     aria-label="Nocturnal Room ASCII Loop"
                   />
                   <div ref={portalFxRef} className={styles.ldPortalFx} aria-hidden="true">

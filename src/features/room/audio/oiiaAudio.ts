@@ -78,7 +78,7 @@ export class OiiaAudioManager {
       this.audio.loop = true;
       this.audio.volume = this.volume;
       this.audio.muted = this.isMuted;
-      this.audio.preload = "auto";
+      this.audio.preload = "none";
 
       this.audio.addEventListener("timeupdate", () => {
         if (this.audio && !Number.isNaN(this.audio.currentTime)) {

@@ -411,7 +411,7 @@ export default function LiquidGrid(props: LiquidGridProps) {
 
     const loop = () => {
       raf = 0;
-      if (!canvas) return;
+      if (!canvas || document.hidden) return;
       const S = settingsFor(propsRef.current);
       const { W, H } = rip;
       if (W > 0 && H > 0) {
@@ -430,7 +430,7 @@ export default function LiquidGrid(props: LiquidGridProps) {
     };
 
     function scheduleLoop() {
-      if (!raf && !reducedMotion) {
+      if (!raf && !reducedMotion && !document.hidden) {
         raf = requestAnimationFrame(loop);
       }
     }

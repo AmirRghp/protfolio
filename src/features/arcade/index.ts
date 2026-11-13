@@ -6,5 +6,3 @@ export { default as MobileGamepad, GAME_CONTROL_PROFILES } from "./components/Mo
 export type { MobileGamepadProps, GameControlProfile } from "./components/MobileGamepad";
 export * from "./utils/arcadeData";
 export * from "./utils/arcadeProjection";
-export * from "./games";
-

@@ -364,3 +364,31 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* Guarantees identical gameplay speed, jump arcs, and obstacle clearance across 60Hz, 120Hz, 144Hz, 165Hz, 240Hz, and uncapped Linux/Chrome frame rates while maintaining native high-FPS visual smoothness.
   - *Positive:* Backed by deterministic mathematical unit tests in `arcadeTimeStep.test.ts`, `FlappyGame.test.tsx`, and `PixelRunGame.test.tsx` (50 test suites, 292 passing tests).
 
+---
+
+### ADR-021: Bundle Code-Splitting, GLB Embedded Texture Compression & Background WebGL Suspension
+- **Status:** Accepted (2026-11-13)
+- **Context:**
+  A full-stack performance and weight audit identified five primary bottlenecks affecting initial download weight, JavaScript parse time, and runtime GPU/CPU efficiency:
+  1. **Monolithic Entry Bundle (`index.js` at `2,036 kB` / `581 kB` gzip):** `Lanyard.tsx` imported `import * as THREE from "three"` eagerly in the root entry graph, and `src/features/arcade/index.ts` re-exported all 5 HTML5 Canvas arcade games (`export * from "./games"`), forcing all vendor libraries and mini-game engines into the initial bundle.
+  2. **Oversized Embedded GLB Textures (`6.76 MB` across 9 models):** `arcade-machine.glb` (`2.21 MB`) contained `2.05 MB` of uncompressed PNG textures; `cup.glb` (`1.72 MB`) contained `1.51 MB` of textures for a small tabletop coffee mug; `oiia-cat.glb` (`951 kB`) and `compact-keyboard.glb` (`451 kB`) carried oversized uncompressed textures on opaque materials.
+  3. **Eager Audio & Video Preloading (`4.2 MB` on startup):** `oiiaAudio.ts` initialized `new Audio(".../oiia-spinning-cat.mp3")` (`2.6 MB`) with `preload = "auto"`, and `FlatLanding.tsx` called `video.load()` with `preload="auto"` on `ascii-room.webm` (`1.6 MB`) on mount while the 3D room was still loading.
+  4. **Continuous 60fps Background 3D Rendering While in `FlatLanding`:** Although `RoomPreview` used `frameloop="demand"` and `CoffeeMug.tsx` checked `document.body.classList.contains("away")`, `OiiaCat.tsx` ran an idle breathing scale oscillation that called `invalidate()` on every single frame without checking `away`, forcing the hidden 3D scene (`EffectComposer`, `RenderPass`, `OutlinePass`, `OutputPass`, shadow maps, and 9 lights) to render continuously at 60fps behind `FlatLanding`.
+  5. **Unmemoized Raymarching Shader Wakeups (`GradientWaves.tsx`):** `GradientWaves.tsx` recreated its `settings` object literal on every render and executed `useEffect(() => { wakeRef.current?.(); })` without a dependency array.
+- **Decision:**
+  1. **Code-Splitting & Tree-Shaking (`vite.config.ts`, `Lanyard.tsx`, `ArcadeMenu.tsx`, `MobileArcadeModal.tsx`, `arcade/index.ts`):**
+     - Replaced `import * as THREE from "three"` in `Lanyard.tsx` with explicit named imports.
+     - Removed `export * from "./games"` from `src/features/arcade/index.ts` and converted all 5 games (`Deparkanoid`, `SnakeGame`, `FlappyGame`, `TetrisGame`, `PixelRunGame`) to `React.lazy` dynamic imports wrapped in `<Suspense fallback={<canvas aria-hidden="true" ... />}>`.
+     - Configured `build.rolldownOptions.output.codeSplitting.groups` in `vite.config.ts` to split `vendor-three-core`, `vendor-three-addons`, `vendor-r3f`, `vendor-motion`, and `vendor-react`.
+  2. **GLB Embedded Texture & Audio Compression (`public/assets/`):**
+     - Repacked the embedded textures in `arcade-machine.glb` (`2.21 MB` $\to$ `967 kB`), `cup.glb` (`1.72 MB` $\to$ `123 kB`), `oiia-cat.glb` (`951 kB` $\to$ `732 kB`), and `compact-keyboard.glb` (`451 kB` $\to$ `313 kB`) while preserving all meshes, UV attributes, material names, and morph targets.
+     - Stripped embedded cover art and re-encoded `oiia-spinning-cat.mp3` (`2.69 MB` $\to$ `1.29 MB`), changed `oiiaAudio.ts` to `preload = "none"`, and deferred `ascii-room.webm` in `FlatLanding.tsx` to `preload="metadata"` until `isOpen || isIntroDismissed`.
+  3. **Runtime GPU/CPU Suspension (`OiiaCat.tsx`, `RoomScene.tsx`, `GradientWaves.tsx`, `LiquidGrid.tsx`):**
+     - Guarded `OiiaCat.tsx` idle breathing `invalidate()` and `CameraFocus` pointer raycasting/idle parallax against `document.body.classList.contains("away")` and `shutter-closing`.
+     - Memoized `settings` via `useMemo` in `GradientWaves.tsx`, added `[settings]` dependency array to `useEffect`, and halted `GradientWaves` `tick` when `away` is active.
+     - Guarded `LiquidGrid.tsx` animation loop scheduling against `document.hidden`.
+- **Consequences:**
+  - *Positive:* Reduced the main entry bundle `index.js` by **72.1%** (`2,036.02 kB` $\to$ `568.91 kB`; `581.36 kB` $\to$ `152.70 kB` gzip) with zero chunk size warnings.
+  - *Positive:* Reduced total static asset payload (`public/assets/models/*.glb` + `oiia-spinning-cat.mp3`) by **4.67 MB** and eliminated **4.2 MB** of competing background media downloads during initial 3D room startup.
+  - *Positive:* Reduced background WebGL GPU rendering to **0 FPS** when viewing `FlatLanding`, eliminating simultaneous dual-canvas GPU contention.
+

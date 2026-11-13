@@ -1,5 +1,7 @@
 import {
+  Suspense,
   forwardRef,
+  lazy,
   useCallback,
   useEffect,
   useImperativeHandle,
@@ -12,12 +14,13 @@ import {
   ARCADE_GAME_URL,
   ARCADE_LOAD_TIMEOUT_MS,
 } from "@/features/arcade/utils/arcadeData";
-import Deparkanoid from "@/features/arcade/games/deparkanoid";
-import SnakeGame from "@/features/arcade/games/snake-grid";
-import FlappyGame from "@/features/arcade/games/cyber-flappy";
-import TetrisGame from "@/features/arcade/games/cyber-tetris";
-import PixelRunGame from "@/features/arcade/games/pixel-run";
 import styles from "./ArcadeMenu.module.css";
+
+const Deparkanoid = lazy(() => import("@/features/arcade/games/deparkanoid"));
+const SnakeGame = lazy(() => import("@/features/arcade/games/snake-grid"));
+const FlappyGame = lazy(() => import("@/features/arcade/games/cyber-flappy"));
+const TetrisGame = lazy(() => import("@/features/arcade/games/cyber-tetris"));
+const PixelRunGame = lazy(() => import("@/features/arcade/games/pixel-run"));
 
 const INTERNAL_GAME_CONFIG: Record<
   string,
@@ -252,7 +255,16 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
                     </p>
                   </div>
                   <div className={`${styles.gameViewport} ${styles.arcadeViewport}`}>
-                    <Component onExit={exitGame} />
+                    <Suspense
+                      fallback={
+                        <canvas
+                          aria-hidden="true"
+                          style={{ width: "100%", height: "100%", display: "block" }}
+                        />
+                      }
+                    >
+                      <Component onExit={exitGame} />
+                    </Suspense>
                   </div>
                 </>
               );

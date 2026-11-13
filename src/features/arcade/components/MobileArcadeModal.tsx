@@ -1,15 +1,25 @@
-import { useCallback, useEffect, useRef, useState, type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type PointerEvent as ReactPointerEvent,
+} from "react";
 import { MOBILE_ARCADE_GAMES, readArcadeHighScore } from "@/features/arcade/utils/arcadeData";
-import Deparkanoid from "@/features/arcade/games/deparkanoid";
-import SnakeGame from "@/features/arcade/games/snake-grid";
-import FlappyGame from "@/features/arcade/games/cyber-flappy";
-import TetrisGame from "@/features/arcade/games/cyber-tetris";
-import PixelRunGame from "@/features/arcade/games/pixel-run";
 import { flappyAudio } from "@/features/arcade/games/cyber-flappy/flappyAudio";
 import { tetrisAudio } from "@/features/arcade/games/cyber-tetris/tetrisAudio";
 import { pixelRunAudio } from "@/features/arcade/games/pixel-run/pixelRunAudio";
 import MobileGamepad from "./MobileGamepad";
 import styles from "./MobileArcadeModal.module.css";
+
+const Deparkanoid = lazy(() => import("@/features/arcade/games/deparkanoid"));
+const SnakeGame = lazy(() => import("@/features/arcade/games/snake-grid"));
+const FlappyGame = lazy(() => import("@/features/arcade/games/cyber-flappy"));
+const TetrisGame = lazy(() => import("@/features/arcade/games/cyber-tetris"));
+const PixelRunGame = lazy(() => import("@/features/arcade/games/pixel-run"));
 
 export type MobileArcadeModalProps = {
   isOpen: boolean;
@@ -298,7 +308,16 @@ export default function MobileArcadeModal({
                   className={styles.gameplayStage}
                   data-testid="mobile-arcade-gameplay"
                 >
-                  <ActiveGameComponent onExit={handleReturnToMenu} />
+                  <Suspense
+                    fallback={
+                      <canvas
+                        aria-hidden="true"
+                        style={{ width: "100%", height: "100%", display: "block" }}
+                      />
+                    }
+                  >
+                    <ActiveGameComponent onExit={handleReturnToMenu} />
+                  </Suspense>
                 </div>
               ) : (
                 <div className={styles.carouselScreen} data-testid="mobile-arcade-carousel">

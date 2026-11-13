@@ -6,7 +6,43 @@
  * https://github.com/DavidHDev/react-bits/blob/main/LICENSE.md
  */
 import { useEffect, useLayoutEffect, useRef, type CSSProperties } from "react";
-import * as THREE from "three";
+import {
+  BufferAttribute,
+  BufferGeometry,
+  CanvasTexture,
+  CatmullRomCurve3,
+  ClampToEdgeWrapping,
+  Color,
+  DataTexture,
+  DirectionalLight,
+  DoubleSide,
+  ExtrudeGeometry,
+  Group,
+  LinearFilter,
+  LinearMipmapLinearFilter,
+  Matrix4,
+  Mesh,
+  MeshBasicMaterial,
+  MeshPhysicalMaterial,
+  MeshStandardMaterial,
+  NeutralToneMapping,
+  PMREMGenerator,
+  Path,
+  PerspectiveCamera,
+  PlaneGeometry,
+  Quaternion,
+  Raycaster,
+  RepeatWrapping,
+  SRGBColorSpace,
+  Scene,
+  Shape,
+  ShapeGeometry,
+  TorusGeometry,
+  Vector2,
+  Vector3,
+  WebGLRenderer,
+  type WebGLProgramParametersWithUniforms,
+} from "three";
 import { LANYARD_PULL_MIN_PX, evaluatePullGesture } from "./lanyardPull";
 import { detectSoftwareGl, parseColor } from "@/core/utils/webglUtils";
 import styles from "./Lanyard.module.css";
@@ -56,33 +92,33 @@ type CardLayout = {
 };
 
 type GrabState = {
-  local: THREE.Vector3;
-  rotation: THREE.Quaternion;
+  local: Vector3;
+  rotation: Quaternion;
   reach: number;
-  from: THREE.Vector3;
-  target: THREE.Vector3;
+  from: Vector3;
+  target: Vector3;
 };
 
 type SimBody = {
-  position: THREE.Vector3;
-  previous: THREE.Vector3;
-  velocity: THREE.Vector3;
-  quaternion: THREE.Quaternion;
-  previousQuaternion: THREE.Quaternion;
-  angular: THREE.Vector3;
+  position: Vector3;
+  previous: Vector3;
+  velocity: Vector3;
+  quaternion: Quaternion;
+  previousQuaternion: Quaternion;
+  angular: Vector3;
   mass: number;
-  inverseInertia: THREE.Vector3;
-  hang: THREE.Vector3;
+  inverseInertia: Vector3;
+  hang: Vector3;
 };
 
 type Simulation = {
-  nodes: THREE.Vector3[];
-  previous: THREE.Vector3[];
-  velocities: THREE.Vector3[];
+  nodes: Vector3[];
+  previous: Vector3[];
+  velocities: Vector3[];
   lengths: Float64Array;
   impulses: Float64Array;
   rest: number;
-  anchor: THREE.Vector3;
+  anchor: Vector3;
   body: SimBody;
   grab: GrabState | null;
   turn: number;
@@ -284,7 +320,7 @@ const seeded = (start: number) => {
 };
 
 const traceRoundedRect = (
-  path: THREE.Shape | THREE.Path,
+  path: Shape | Path,
   x: number,
   y: number,
   width: number,
@@ -330,7 +366,7 @@ const cardLayout = (orientation: LanyardOrientation, cornerRadius: number): Card
 
 const buildCardGeometry = (layout: CardLayout) => {
   const { width, height, radius, slot } = layout;
-  const outline = new THREE.Shape();
+  const outline = new Shape();
   traceRoundedRect(
     outline,
     -width / 2 + BEVEL,
@@ -339,7 +375,7 @@ const buildCardGeometry = (layout: CardLayout) => {
     height - BEVEL * 2,
     Math.max(radius - BEVEL, 0.005),
   );
-  const hole = new THREE.Path();
+  const hole = new Path();
   traceRoundedRect(
     hole,
     -slot.width / 2 - BEVEL,
@@ -349,7 +385,7 @@ const buildCardGeometry = (layout: CardLayout) => {
     slot.height / 2 + BEVEL,
   );
   outline.holes.push(hole);
-  const body = new THREE.ExtrudeGeometry(outline, {
+  const body = new ExtrudeGeometry(outline, {
     depth: THICKNESS,
     bevelEnabled: true,
     bevelThickness: BEVEL,
@@ -358,7 +394,7 @@ const buildCardGeometry = (layout: CardLayout) => {
     curveSegments: 24,
   });
   body.translate(0, 0, -THICKNESS / 2);
-  const face = new THREE.ShapeGeometry(outline, 24);
+  const face = new ShapeGeometry(outline, 24);
   const position = face.getAttribute("position");
   const uv = face.getAttribute("uv");
   for (let i = 0; i < position.count; i++) {
@@ -369,10 +405,10 @@ const buildCardGeometry = (layout: CardLayout) => {
 };
 
 const buildClampGeometry = (width: number) => {
-  const shape = new THREE.Shape();
+  const shape = new Shape();
   const w = width * 1.16;
   traceRoundedRect(shape, -w / 2 + 0.014, -CLAMP_BODY / 2 + 0.014, w - 0.028, CLAMP_BODY - 0.028, 0.024);
-  const geometry = new THREE.ExtrudeGeometry(shape, {
+  const geometry = new ExtrudeGeometry(shape, {
     depth: 0.02,
     bevelEnabled: true,
     bevelThickness: 0.014,
@@ -386,10 +422,10 @@ const buildClampGeometry = (width: number) => {
 
 const buildBandGeometry = (count: number) => {
   const columns = BAND_COLUMNS.length;
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.BufferAttribute(new Float32Array(count * columns * 3), 3));
-  geometry.setAttribute("normal", new THREE.BufferAttribute(new Float32Array(count * columns * 3), 3));
-  geometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(count * columns * 2), 2));
+  const geometry = new BufferGeometry();
+  geometry.setAttribute("position", new BufferAttribute(new Float32Array(count * columns * 3), 3));
+  geometry.setAttribute("normal", new BufferAttribute(new Float32Array(count * columns * 3), 3));
+  geometry.setAttribute("uv", new BufferAttribute(new Float32Array(count * columns * 2), 2));
   const index: number[] = [];
   for (let i = 0; i < count - 1; i++) {
     for (let c = 0; c < columns - 1; c++) {
@@ -401,23 +437,23 @@ const buildBandGeometry = (count: number) => {
   return geometry;
 };
 
-const buildEnvironment = (renderer: THREE.WebGLRenderer) => {
-  const scene = new THREE.Scene();
-  scene.background = new THREE.Color(0.035, 0.035, 0.04);
-  const geometry = new THREE.PlaneGeometry(1, 1);
-  const materials: THREE.MeshBasicMaterial[] = [];
+const buildEnvironment = (renderer: WebGLRenderer) => {
+  const scene = new Scene();
+  scene.background = new Color(0.035, 0.035, 0.04);
+  const geometry = new PlaneGeometry(1, 1);
+  const materials: MeshBasicMaterial[] = [];
   const panel = (
     intensity: number,
     position: [number, number, number],
     scale: [number, number],
     rotation = 0,
   ) => {
-    const material = new THREE.MeshBasicMaterial({
-      color: new THREE.Color(intensity, intensity, intensity),
-      side: THREE.DoubleSide,
+    const material = new MeshBasicMaterial({
+      color: new Color(intensity, intensity, intensity),
+      side: DoubleSide,
     });
     materials.push(material);
-    const mesh = new THREE.Mesh(geometry, material);
+    const mesh = new Mesh(geometry, material);
     mesh.position.set(...position);
     mesh.scale.set(scale[0], scale[1], 1);
     mesh.lookAt(0, 0, 0);
@@ -432,7 +468,7 @@ const buildEnvironment = (renderer: THREE.WebGLRenderer) => {
   panel(1.4, [0, 6, -6], [12, 4]);
   panel(0.5, [0, -7, 1], [16, 6]);
   panel(0.9, [8, 0, -2], [4, 10]);
-  const pmrem = new THREE.PMREMGenerator(renderer);
+  const pmrem = new PMREMGenerator(renderer);
   const target = pmrem.fromScene(scene, 0.035);
   pmrem.dispose();
   geometry.dispose();
@@ -441,8 +477,8 @@ const buildEnvironment = (renderer: THREE.WebGLRenderer) => {
 };
 
 const makeCanvasTexture = (canvas: HTMLCanvasElement, anisotropy: number) => {
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.SRGBColorSpace;
+  const texture = new CanvasTexture(canvas);
+  texture.colorSpace = SRGBColorSpace;
   texture.anisotropy = anisotropy;
   return texture;
 };
@@ -453,7 +489,7 @@ const buildGrainTexture = () => {
   canvas.width = size;
   canvas.height = size;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return new THREE.CanvasTexture(canvas);
+  if (!ctx) return new CanvasTexture(canvas);
   const random = seeded(7);
   const field = Float32Array.from({ length: size * size }, () => random());
   const height = (x: number, y: number) => {
@@ -477,9 +513,9 @@ const buildGrainTexture = () => {
     }
   }
   ctx.putImageData(image, 0, 0);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
+  const texture = new CanvasTexture(canvas);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
   texture.repeat.set(5, 7);
   return texture;
 };
@@ -517,11 +553,11 @@ const buildWeaveTexture = () => {
       data[i + 3] = 255;
     }
   }
-  const texture = new THREE.DataTexture(data, size, size);
-  texture.wrapS = THREE.RepeatWrapping;
-  texture.wrapT = THREE.RepeatWrapping;
-  texture.magFilter = THREE.LinearFilter;
-  texture.minFilter = THREE.LinearMipmapLinearFilter;
+  const texture = new DataTexture(data, size, size);
+  texture.wrapS = RepeatWrapping;
+  texture.wrapT = RepeatWrapping;
+  texture.magFilter = LinearFilter;
+  texture.minFilter = LinearMipmapLinearFilter;
   texture.generateMipmaps = true;
   texture.needsUpdate = true;
   return texture;
@@ -655,7 +691,7 @@ const paintStrap = (
 };
 
 const createSimulation = (): Simulation => {
-  const vectors = () => Array.from({ length: JOINTS + 1 }, () => new THREE.Vector3());
+  const vectors = () => Array.from({ length: JOINTS + 1 }, () => new Vector3());
   return {
     nodes: vectors(),
     previous: vectors(),
@@ -663,17 +699,17 @@ const createSimulation = (): Simulation => {
     lengths: new Float64Array(JOINTS),
     impulses: new Float64Array(JOINTS),
     rest: 1,
-    anchor: new THREE.Vector3(),
+    anchor: new Vector3(),
     body: {
-      position: new THREE.Vector3(),
-      previous: new THREE.Vector3(),
-      velocity: new THREE.Vector3(),
-      quaternion: new THREE.Quaternion(),
-      previousQuaternion: new THREE.Quaternion(),
-      angular: new THREE.Vector3(),
+      position: new Vector3(),
+      previous: new Vector3(),
+      velocity: new Vector3(),
+      quaternion: new Quaternion(),
+      previousQuaternion: new Quaternion(),
+      angular: new Vector3(),
       mass: 1,
-      inverseInertia: new THREE.Vector3(1, 1, 1),
-      hang: new THREE.Vector3(),
+      inverseInertia: new Vector3(1, 1, 1),
+      hang: new Vector3(),
     },
     grab: null,
     turn: 0,
@@ -684,23 +720,23 @@ const createSimulation = (): Simulation => {
 };
 
 const scratch = {
-  a: new THREE.Vector3(),
-  b: new THREE.Vector3(),
-  c: new THREE.Vector3(),
-  d: new THREE.Vector3(),
-  e: new THREE.Vector3(),
-  f: new THREE.Vector3(),
-  g: new THREE.Vector3(),
-  pin: new THREE.Vector3(),
-  q: new THREE.Quaternion(),
-  r: new THREE.Quaternion(),
+  a: new Vector3(),
+  b: new Vector3(),
+  c: new Vector3(),
+  d: new Vector3(),
+  e: new Vector3(),
+  f: new Vector3(),
+  g: new Vector3(),
+  pin: new Vector3(),
+  q: new Quaternion(),
+  r: new Quaternion(),
 };
 
 /**
  * Transforms an angular torque vector by the rigid body's inverse inertia tensor $I^{-1}$,
  * rotated into the world orientation frame: $I_{\text{world}}^{-1} = R I_{\text{body}}^{-1} R^T$.
  */
-const applyInverseInertia = (body: SimBody, vector: THREE.Vector3, out: THREE.Vector3) => {
+const applyInverseInertia = (body: SimBody, vector: Vector3, out: Vector3) => {
   scratch.r.copy(body.quaternion).invert();
   out.copy(vector).applyQuaternion(scratch.r);
   out.set(out.x * body.inverseInertia.x, out.y * body.inverseInertia.y, out.z * body.inverseInertia.z);
@@ -711,7 +747,7 @@ const applyInverseInertia = (body: SimBody, vector: THREE.Vector3, out: THREE.Ve
  * Integrates rigid-body quaternion orientation under angular velocity $\mathbf{\omega}$ over time step $h$:
  * $$\dot{q} = \frac{1}{2} \mathbf{\omega} q$$
  */
-const rotateBody = (q: THREE.Quaternion, w: THREE.Vector3) => {
+const rotateBody = (q: Quaternion, w: Vector3) => {
   const { x: qx, y: qy, z: qz, w: qw } = q;
   q.x += 0.5 * (w.x * qw + w.y * qz - w.z * qy);
   q.y += 0.5 * (w.y * qw + w.z * qx - w.x * qz);
@@ -725,7 +761,7 @@ const rotateBody = (q: THREE.Quaternion, w: THREE.Vector3) => {
  * along constraint normal $\mathbf{n}$:
  * $$w = \frac{1}{m} + (\mathbf{r} \times \mathbf{n})^T I^{-1} (\mathbf{r} \times \mathbf{n})$$
  */
-const bodyWeight = (body: SimBody, r: THREE.Vector3, normal: THREE.Vector3) => {
+const bodyWeight = (body: SimBody, r: Vector3, normal: Vector3) => {
   const rn = scratch.c.crossVectors(r, normal);
   return 1 / body.mass + rn.dot(applyInverseInertia(body, rn, scratch.d));
 };
@@ -733,7 +769,7 @@ const bodyWeight = (body: SimBody, r: THREE.Vector3, normal: THREE.Vector3) => {
 /**
  * Applies a linear and angular constraint impulse to the rigid body at contact radius $\mathbf{r}$.
  */
-const pushBody = (body: SimBody, r: THREE.Vector3, impulse: THREE.Vector3) => {
+const pushBody = (body: SimBody, r: Vector3, impulse: Vector3) => {
   body.position.addScaledVector(impulse, 1 / body.mass);
   rotateBody(body.quaternion, applyInverseInertia(body, scratch.e.crossVectors(r, impulse), scratch.f));
 };
@@ -776,7 +812,7 @@ const solveSegment = (sim: Simulation, i: number, h: number, physics: PhysicsCon
 /**
  * Resolves the pointer grab pin constraint holding the badge at user-controlled coordinates.
  */
-const solvePin = (body: SimBody, grab: GrabState, target: THREE.Vector3) => {
+const solvePin = (body: SimBody, grab: GrabState, target: Vector3) => {
   const r = scratch.g.copy(grab.local).applyQuaternion(body.quaternion);
   const delta = scratch.a.copy(target).sub(body.position).sub(r);
   const distance = delta.length();
@@ -800,7 +836,7 @@ const placeHanging = (sim: Simulation, layout: CardLayout, intro: boolean) => {
   }
   body.quaternion.identity();
   if (intro) {
-    body.quaternion.setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.05);
+    body.quaternion.setFromAxisAngle(new Vector3(0, 0, 1), 0.05);
   }
   body.hang.set(0, layout.hangY, 0);
   const offset = scratch.a.copy(body.hang).applyQuaternion(body.quaternion);
@@ -1031,9 +1067,9 @@ export default function Lanyard({
     const container = containerRef.current;
     if (!container) return undefined;
 
-    let renderer: THREE.WebGLRenderer;
+    let renderer: WebGLRenderer;
     try {
-      renderer = new THREE.WebGLRenderer({
+      renderer = new WebGLRenderer({
         antialias: !isSoftwareGl,
         alpha: true,
         powerPreference: "high-performance",
@@ -1043,8 +1079,8 @@ export default function Lanyard({
       return undefined;
     }
     renderer.setClearColor(0x000000, 0);
-    renderer.outputColorSpace = THREE.SRGBColorSpace;
-    renderer.toneMapping = THREE.NeutralToneMapping;
+    renderer.outputColorSpace = SRGBColorSpace;
+    renderer.toneMapping = NeutralToneMapping;
     renderer.toneMappingExposure = 1;
     const canvas = renderer.domElement;
     canvas.className = `lanyard-canvas ${styles.lanyardCanvas}`;
@@ -1052,13 +1088,13 @@ export default function Lanyard({
     container.appendChild(canvas);
 
     const anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-    const scene = new THREE.Scene();
+    const scene = new Scene();
     const environment = buildEnvironment(renderer);
     scene.environment = environment.texture;
-    const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 200);
-    const keyLight = new THREE.DirectionalLight(0xffffff, 1.6);
+    const camera = new PerspectiveCamera(FOV, 1, 0.1, 200);
+    const keyLight = new DirectionalLight(0xffffff, 1.6);
     keyLight.position.set(-2.5, 4, 6);
-    const fillLight = new THREE.DirectionalLight(0xffffff, 0.35);
+    const fillLight = new DirectionalLight(0xffffff, 0.35);
     fillLight.position.set(3, -1, 4);
     scene.add(keyLight, fillLight);
 
@@ -1074,18 +1110,18 @@ export default function Lanyard({
     const frontTexture = makeCanvasTexture(frontCanvas, anisotropy);
     const backTexture = makeCanvasTexture(backCanvas, anisotropy);
     const strapTexture = makeCanvasTexture(strapCanvas, anisotropy);
-    strapTexture.wrapS = THREE.ClampToEdgeWrapping;
-    strapTexture.wrapT = THREE.RepeatWrapping;
+    strapTexture.wrapS = ClampToEdgeWrapping;
+    strapTexture.wrapT = RepeatWrapping;
     const grain = buildGrainTexture();
     const weave = buildWeaveTexture();
     const foilUniforms = {
       foilStrength: { value: 0 },
       foilAspect: { value: 1.4 },
-      foilKey: { value: new THREE.Vector3() },
-      foilFill: { value: new THREE.Vector3() },
-      foilTop: { value: new THREE.Vector3() },
+      foilKey: { value: new Vector3() },
+      foilFill: { value: new Vector3() },
+      foilTop: { value: new Vector3() },
     };
-    const injectFoil = (shader: THREE.WebGLProgramParametersWithUniforms) => {
+    const injectFoil = (shader: WebGLProgramParametersWithUniforms) => {
       Object.assign(shader.uniforms, foilUniforms);
       shader.vertexShader = shader.vertexShader
         .replace("#include <common>", `#include <common>\n${FOIL_VERTEX_HEAD}`)
@@ -1095,57 +1131,57 @@ export default function Lanyard({
         .replace("#include <opaque_fragment>", `${FOIL_FRAGMENT_BODY}\n#include <opaque_fragment>`);
     };
 
-    const frontMaterial = new THREE.MeshPhysicalMaterial({
+    const frontMaterial = new MeshPhysicalMaterial({
       map: frontTexture,
       normalMap: grain,
-      normalScale: new THREE.Vector2(0.06, 0.06),
+      normalScale: new Vector2(0.06, 0.06),
     });
-    const backMaterial = new THREE.MeshPhysicalMaterial({
+    const backMaterial = new MeshPhysicalMaterial({
       map: backTexture,
       normalMap: grain,
-      normalScale: new THREE.Vector2(0.06, 0.06),
+      normalScale: new Vector2(0.06, 0.06),
     });
     frontMaterial.onBeforeCompile = injectFoil;
     backMaterial.onBeforeCompile = injectFoil;
-    const edgeMaterial = new THREE.MeshPhysicalMaterial();
-    const metalMaterial = new THREE.MeshStandardMaterial({ metalness: 1 });
-    const bandMaterial = new THREE.MeshPhysicalMaterial({
+    const edgeMaterial = new MeshPhysicalMaterial();
+    const metalMaterial = new MeshStandardMaterial({ metalness: 1 });
+    const bandMaterial = new MeshPhysicalMaterial({
       map: strapTexture,
       normalMap: weave,
-      normalScale: new THREE.Vector2(0.7, 0.7),
+      normalScale: new Vector2(0.7, 0.7),
       roughness: 0.68,
       sheen: 1,
       sheenRoughness: 0.42,
-      sheenColor: new THREE.Color(0.32, 0.32, 0.34),
-      side: THREE.DoubleSide,
+      sheenColor: new Color(0.32, 0.32, 0.34),
+      side: DoubleSide,
     });
 
-    const cardGroup = new THREE.Group();
-    const bodyMesh = new THREE.Mesh(undefined, edgeMaterial);
-    const frontMesh = new THREE.Mesh(undefined, frontMaterial);
-    const backMesh = new THREE.Mesh(undefined, backMaterial);
-    const ring = new THREE.Mesh(new THREE.TorusGeometry(RING_RADIUS, RING_TUBE, 18, 72), metalMaterial);
+    const cardGroup = new Group();
+    const bodyMesh = new Mesh(undefined, edgeMaterial);
+    const frontMesh = new Mesh(undefined, frontMaterial);
+    const backMesh = new Mesh(undefined, backMaterial);
+    const ring = new Mesh(new TorusGeometry(RING_RADIUS, RING_TUBE, 18, 72), metalMaterial);
     ring.rotation.y = Math.PI / 2 - 0.7;
     cardGroup.add(bodyMesh, frontMesh, backMesh, ring);
     scene.add(cardGroup);
 
     const bandGeometry = buildBandGeometry(SAMPLES);
-    const band = new THREE.Mesh(bandGeometry, bandMaterial);
+    const band = new Mesh(bandGeometry, bandMaterial);
     band.frustumCulled = false;
     scene.add(band);
 
-    const clampGroup = new THREE.Group();
-    const clampMesh = new THREE.Mesh(buildClampGeometry(STRAP_WIDTH), metalMaterial);
+    const clampGroup = new Group();
+    const clampMesh = new Mesh(buildClampGeometry(STRAP_WIDTH), metalMaterial);
     clampMesh.position.y = EYELET_RADIUS + CLAMP_BODY / 2 - 0.004;
-    const eyelet = new THREE.Mesh(new THREE.TorusGeometry(EYELET_RADIUS, 0.0105, 14, 40), metalMaterial);
+    const eyelet = new Mesh(new TorusGeometry(EYELET_RADIUS, 0.0105, 14, 40), metalMaterial);
     clampGroup.add(clampMesh, eyelet);
     scene.add(clampGroup);
 
     const sim = createSimulation();
-    const controls: THREE.Vector3[] = [];
-    const mouth = new THREE.Vector3();
-    const tuck = new THREE.Vector3();
-    const curve = new THREE.CatmullRomCurve3(controls, false, "centripetal");
+    const controls: Vector3[] = [];
+    const mouth = new Vector3();
+    const tuck = new Vector3();
+    const curve = new CatmullRomCurve3(controls, false, "centripetal");
     const view = { width: 1, height: 1 };
     let layout = cardLayout("portrait", 0.3);
     let applied: {
@@ -1166,7 +1202,7 @@ export default function Lanyard({
     let alive = true;
     let placed = false;
     let hovering = false;
-    let press: { x: number; y: number; time: number; point: THREE.Vector3 } | null = null;
+    let press: { x: number; y: number; time: number; point: Vector3 } | null = null;
     let dragStart: { x: number; y: number; qualified: boolean; deltaY: number; triggered: boolean } | null = null;
     let imageToken = 0;
     const reducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
@@ -1306,7 +1342,7 @@ export default function Lanyard({
       });
       foilUniforms.foilStrength.value = finishLook.foil;
       foilUniforms.foilAspect.value = layout.height / layout.width;
-      edgeMaterial.color.setRGB(card[0] * 0.92, card[1] * 0.92, card[2] * 0.92, THREE.SRGBColorSpace);
+      edgeMaterial.color.setRGB(card[0] * 0.92, card[1] * 0.92, card[2] * 0.92, SRGBColorSpace);
       edgeMaterial.roughness = Math.min(finishLook.roughness, 0.35);
       edgeMaterial.metalness = finishLook.metalness;
       edgeMaterial.clearcoat = 1;
@@ -1325,17 +1361,17 @@ export default function Lanyard({
       start();
     };
 
-    const points = Array.from({ length: SAMPLES }, () => new THREE.Vector3());
-    const sides = Array.from({ length: SAMPLES }, () => new THREE.Vector3());
+    const points = Array.from({ length: SAMPLES }, () => new Vector3());
+    const sides = Array.from({ length: SAMPLES }, () => new Vector3());
     const bends = BAND_BEND.map((angle) => [Math.cos(angle), Math.sin(angle)] as const);
     const work = {
-      tangent: new THREE.Vector3(),
-      toCamera: new THREE.Vector3(),
-      basis: new THREE.Matrix4(),
-      up: new THREE.Vector3(),
-      across: new THREE.Vector3(),
-      facing: new THREE.Vector3(),
-      end: new THREE.Vector3(),
+      tangent: new Vector3(),
+      toCamera: new Vector3(),
+      basis: new Matrix4(),
+      up: new Vector3(),
+      across: new Vector3(),
+      facing: new Vector3(),
+      end: new Vector3(),
     };
 
     const updateBand = () => {
@@ -1468,8 +1504,8 @@ export default function Lanyard({
       else raf = requestAnimationFrame(tick);
     };
 
-    const raycaster = new THREE.Raycaster();
-    const pointer = new THREE.Vector2();
+    const raycaster = new Raycaster();
+    const pointer = new Vector2();
 
     const toPointer = (clientX: number, clientY: number) => {
       const rect = canvas.getBoundingClientRect();
@@ -1480,7 +1516,7 @@ export default function Lanyard({
       raycaster.setFromCamera(pointer, camera);
     };
 
-    const pickCard = (): { point: THREE.Vector3; distance: number } | null => {
+    const pickCard = (): { point: Vector3; distance: number } | null => {
       cardGroup.updateMatrixWorld();
       clampGroup.updateMatrixWorld();
       const hits = raycaster.intersectObjects([bodyMesh, frontMesh, backMesh, ring, clampMesh], false);
@@ -1489,7 +1525,7 @@ export default function Lanyard({
       }
       // Forgiving proximity check on the card plane so touch/mouse grabs while the card sways never miss
       const distance = camera.position.distanceTo(sim.body.position);
-      const planePoint = new THREE.Vector3();
+      const planePoint = new Vector3();
       raycaster.ray.at(distance, planePoint);
       const local = planePoint
         .clone()
@@ -1505,7 +1541,7 @@ export default function Lanyard({
       if (canvas.style.cursor !== value) canvas.style.cursor = value;
     };
 
-    const flip = (point: THREE.Vector3) => {
+    const flip = (point: Vector3) => {
       const body = sim.body;
       const up = scratch.a.set(0, 1, 0).applyQuaternion(body.quaternion);
       let direction = sim.turn > 0 ? -1 : 1;

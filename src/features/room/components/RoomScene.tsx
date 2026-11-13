@@ -543,8 +543,13 @@ function CameraFocus({ destination, onHotspotHover }: {
     }
 
     const onPointerMove = (event: PointerEvent) => {
-      if (destination !== "room" || active.current ||
-        event.pointerType !== "mouse" || !finePointer.matches) {
+      if (
+        destination !== "room" ||
+        active.current ||
+        event.pointerType !== "mouse" ||
+        !finePointer.matches ||
+        document.body.classList.contains("away")
+      ) {
         clearPointerState();
         return;
       }
@@ -638,7 +643,7 @@ function CameraFocus({ destination, onHotspotHover }: {
       return;
     }
 
-    if (destination !== "room") return;
+    if (destination !== "room" || (typeof document !== "undefined" && document.body.classList.contains("away"))) return;
     const nextState = stepIdleParallax(idleState.current, idleTarget.current, delta);
     idleState.current = nextState;
     idleOffset.current.set(nextState.x, nextState.y, 0);

@@ -23,17 +23,31 @@ npm run build
 ### Build Output Structure (`dist/`)
 ```text
 dist/
-├── index.html                           # Root HTML shell
+├── index.html                                # Root HTML shell
 ├── assets/
-│   ├── index-[hash].css                 # Merged, minified styles (Tailwind / CSS Modules)
-│   ├── index-[hash].js                  # Main bundle (React, Vite runtime, flat landing)
-│   ├── RoomScene-[hash].js              # Asynchronously code-split 3D Three.js bundle
-│   └── rolldown-runtime-[hash].js       # Chunk loader runtime
-└── assets/                              # Copied static assets (GLB models, video, audio)
+│   ├── index-[hash].css                      # Merged, minified styles (Tailwind / CSS Modules)
+│   ├── index-[hash].js                       # Main application bundle (~569 kB / ~153 kB gzip)
+│   ├── vendor-react-[hash].js                # React 19 & React DOM vendor chunk (~401 kB / ~122 kB gzip)
+│   ├── vendor-three-core-[hash].js           # Tree-shaken Three.js core engine (~737 kB / ~187 kB gzip)
+│   ├── vendor-r3f-[hash].js                  # React Three Fiber reconciler (~324 kB / ~98 kB gzip)
+│   ├── vendor-motion-[hash].js               # Motion spring animation engine (~142 kB / ~48 kB gzip)
+│   ├── vendor-three-addons-[hash].js         # Three.js loaders & post-processing (~72 kB / ~19 kB gzip)
+│   ├── RoomScene-[hash].js                   # Asynchronously code-split 3D room scene (~59 kB / ~16 kB gzip)
+│   ├── pixel-run-[hash].js                   # Lazy-loaded Pixel Run arcade cartridge (~33 kB / ~10 kB gzip)
+│   ├── cyber-flappy-[hash].js                # Lazy-loaded Cyber Flappy arcade cartridge (~27 kB / ~8 kB gzip)
+│   ├── cyber-tetris-[hash].js                # Lazy-loaded Cyber Tetris arcade cartridge (~23 kB / ~7 kB gzip)
+│   ├── snake-grid-[hash].js                  # Lazy-loaded Snake Grid arcade cartridge (~16 kB / ~6 kB gzip)
+│   ├── deparkanoid-[hash].js                 # Lazy-loaded Deparkanoid arcade cartridge (~14 kB / ~5 kB gzip)
+│   ├── arcadeTimeStep-[hash].js              # Shared refresh-rate-invariant physics helper (~2.4 kB)
+│   └── rolldown-runtime-[hash].js            # Chunk loader runtime
+└── assets/                                   # Optimized static assets (GLB models, WebM video, MP3 audio)
 ```
 
-### Code Splitting Strategy
-To maintain lightning-fast initial load times, the heavy Three.js room bundle (`RoomScene`) is dynamically imported (`React.lazy`). This ensures that visitors loading the site on low-bandwidth connections or deep-linking directly to `#portfolio` do not download the 3D scene until needed.
+### Code Splitting & Asset Optimization Strategy
+1. **Granular Vendor & Feature Chunking (`vite.config.ts`):** Rolldown `output.codeSplitting.groups` isolates long-lived vendor dependencies (`vendor-react`, `vendor-three-core`, `vendor-r3f`, `vendor-motion`, `vendor-three-addons`) from application logic, reducing the entry `index-[hash].js` bundle by **72%** (`2,036 kB` $\to$ `569 kB`, or `153 kB` gzip) and maximizing browser HTTP cache hit rates across deployments.
+2. **Lazy 3D Scene & Arcade Cartridges (`React.lazy`):** Both the 3D room scene (`RoomScene`) and all 5 built-in HTML5 Canvas arcade games (`Deparkanoid`, `SnakeGame`, `FlappyGame`, `TetrisGame`, `PixelRunGame`) are dynamically imported on demand. Visitors browsing the portfolio never download arcade game engines until they launch a cartridge.
+3. **Tree-Shaken Three.js Imports:** `Lanyard.tsx` and `RoomScene.tsx` use explicit named imports from `"three"` rather than wildcard namespace imports (`import * as THREE`), enabling dead-code elimination of unused Three.js geometries, loaders, and helpers.
+4. **Compressed GLB Embedded Textures & Deferred Media Preloading:** Oversized embedded textures inside `.glb` assets (`arcade-machine.glb`, `cup.glb`, `oiia-cat.glb`, `compact-keyboard.glb`) are compressed and Downsampled to match their in-scene screen footprint, cutting total 3D model payload by **3.27 MB** (`6.76 MB` $\to$ `3.49 MB`). Furthermore, `oiia-spinning-cat.mp3` (`2.6 MB` $\to$ `1.3 MB`) uses `preload="none"` and `ascii-room.webm` uses deferred `preload="metadata"`, saving over **4.2 MB** of initial network bandwidth on first page load.
 
 ### Search Engine Optimization (SEO) & Crawler Directives
 Static hosting assets include production crawler directives and rich schema metadata:
