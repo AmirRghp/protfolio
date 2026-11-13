@@ -197,3 +197,4 @@ When `prefers-reduced-motion: reduce` is detected:
 - Camera destination transitions jump instantaneously or resolve via brief crossfade.
 - `PixelTetris` canvas renders a static frame instead of a continuous animation loop.
 - `DynamicText` cycles text without kinetic spring oscillations.
+- `MobileArcadeModal`, `MobileArcadeFab`, and arcade canvas prompt labels (`SnakeGame`, `Deparkanoid`) disable pulsing/blinking animations and CSS transitions.

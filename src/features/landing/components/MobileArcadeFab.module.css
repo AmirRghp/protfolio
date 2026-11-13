@@ -163,3 +163,11 @@
     display: none !important;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .fabContainer,
+  .assistiveBtn {
+    transition: none !important;
+  }
+}
+

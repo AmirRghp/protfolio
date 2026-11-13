@@ -325,4 +325,22 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* Zero frame-time drops by relying on GPU hardware-composited `transform: translate3d` instead of geometry clipping or expensive DOM mutations.
   - *Positive:* Full test coverage added for `isAway` and `isReentering` states across `ExitBar` and `FlatLanding`.
 
+---
 
+### ADR-019: Security Hardening, Utility Deduplication & Accessibility Compliance Audit Remediation
+- **Status:** Accepted (2026-11-13)
+- **Context:**
+  A Senior Software Engineer code review identified security, behavioral, architectural, and accessibility gaps across the virtual desktop GitHub viewer, arcade engines, mobile handheld modal, and unused packages/assets:
+  1. **Iframe & Markdown Hardening (`ProjectApp` & `githubRepoPreview`):** The `srcDoc` GitHub repository preview used `allow-same-origin` alongside `allow-scripts` (triggering same-origin escape risk), allowed entity-encoded or non-HTTP schemes in Markdown links, lacked `event.source === window.parent` validation on in-frame `postMessage`, lacked runtime schema validation on `localStorage` cache reads, and lacked an internal fetch timeout.
+  2. **Duplicated Font & High-Score Logic:** All 5 HTML5 Canvas arcade games duplicated `FontFace` loading boilerplate, while *Deparkanoid* lacked `localStorage` high-score persistence unlike the other 4 games.
+  3. **Audio & Keyboard Regressions:** *Pixel Run* restarted music on unpause even when music was off, *Cyber Tetris* left music playing on unmount and omitted `"OR P"` in its pause hint, `MobileGamepad` dispatched `KeyP` in carousel mode, and `MobileArcadeModal` left `flappyAudio`/`tetrisAudio`/`pixelRunAudio` globally muted on close. Additionally, `Escape` inside `MobileArcadeModal` propagated to `FlatLanding` and triggered desktop room re-entry, and `#arcade` deep links were unhandled.
+  4. **Accessibility & Cleanup:** `MobileArcadeModal` lacked focus capture/trapping/restoration, incomplete ARIA `tab`/`tabpanel` attributes, and horizontal touch swipe support on the cartridge stage; `lucide-react` was used only for 2 chevrons in `tabs.tsx`; dead CSS `.cartridgeVisualImg` and 11 unused `public/assets/aistudio/` artifacts remained in the repository.
+- **Decision:**
+  1. Harden `ProjectApp` (`sandbox="allow-scripts allow-popups"` for GitHub `srcDoc`) and `githubRepoPreview` (scheme allowlist, `event.source === window.parent`, 8s abort timeout, and `isValidRepoSnapshot` runtime validation).
+  2. Centralize embedded font loading in `src/features/arcade/utils/arcadeFont.ts` and high-score storage (`ARCADE_HIGH_SCORE_KEYS`, `readArcadeHighScore`, `saveArcadeHighScore`, including `deparkanoid_high_score`) in `src/features/arcade/utils/arcadeData.ts`.
+  3. Fix audio mute/pause lifecycles across `PixelRunGame`, `TetrisGame`, `MobileGamepad`, and `MobileArcadeModal`, coordinate `Escape` via `defaultPrevented` + `!isMobileArcadeOpen`, and add `#arcade` URL hash routing in `App.tsx` and `FlatLanding.tsx`.
+  4. Add focus capture/trap/restoration, full ARIA `tab`/`tabpanel` attributes, horizontal swipe switching, and `prefers-reduced-motion` rules to `MobileArcadeModal`, `MobileArcadeFab`, `SnakeGame`, and `Deparkanoid`.
+  5. Replace `lucide-react` icons in `src/core/components/arc/tabs.tsx` with inline SVGs, remove `lucide-react` from `package.json`, remove dead `.cartridgeVisualImg`, and delete `public/assets/aistudio/`.
+- **Consequences:**
+  - *Positive:* Eliminates iframe same-origin escape, Markdown XSS vectors, audio leaks, and unintended `Escape` navigation.
+  - *Positive:* Removes an unnecessary external dependency (`lucide-react`) and 11 unused binary artifacts while standardizing all 5 arcade games under a single font/high-score layer and expanding unit verification to 49 test suites (286 tests).

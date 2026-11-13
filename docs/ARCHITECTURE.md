@@ -98,7 +98,7 @@ sequenceDiagram
 ```
 
 1. **Room Navigation Reducer:** A finite state machine managing current focus (`overview`, `monitor`, `arcade`) with history tracking for `Escape` key return.
-2. **Hash-Based View Switcher:** Syncs view modes between 3D Room (`#room` or root) and Flat Portfolio (`#portfolio`), enabling deep linking and browser history navigation (Back/Forward).
+2. **Hash-Based View Switcher:** Syncs view modes across 3D Room (`#room` or root), Flat Portfolio (`#portfolio`), and direct Mobile Arcade deep linking (`#arcade`), enabling deep linking and browser history navigation (Back/Forward).
 3. **Data Caching Pipeline:** GitHub commit stats query the public REST API, store the result in `localStorage` with a 4-hour TTL, and gracefully fall back to `githubContributionsFallback.json` upon failure.
 4. **Responsive Device & 3D Execution Gate (`src/core/utils/responsive.ts`):** A centralized `useResponsiveDevice` hook evaluates media queries via React 19 `useSyncExternalStore`. On touch devices or viewports $< 1024\text{px}$, `<RoomPreview>` is strictly omitted from the component tree, ensuring zero background WebGL GPU consumption and directing mobile users immediately to `FlatLanding`.
 5. **Refractive Optical Liquid Glass Navbar & GPU Compositing Pipeline (`src/features/landing`):** The scrolled sticky navbar integrates Glisse's `<Glass>` component using Glisse's authentic dual-engine architecture. In Chromium/Android, Glisse applies real-time light refraction and chromatic dispersion via `backdrop-filter: blur(3px) url(#glisse-backdrop)`. In Safari/iOS (WebKit), it employs hardware-accelerated `-webkit-backdrop-filter: blur(var(--lg-blur, 3px)) saturate(180%)` paired with Glisse's canvas-rendered chromatic lit rim (`--lg-rim`) and specular highlights. The scrolling page DOM sections remain clean and decoupled from `data-glisse-backdrop`, completely preventing WebKit software filter buffer exhaustion ($4096\text{px}$ tile limit) and eliminating asynchronous touch-scroll compositor drift. Foreground controls reside at `position: relative; z-index: 1` over `.ldNavGlass` (`z-index: 0`).
@@ -134,9 +134,10 @@ Each mini-game operates as an autonomous, self-contained engine:
 - **State Cleanliness:** Exiting a game cancels the animation frame ID, disconnects audio oscillators, and resets game state cleanly.
 
 ### 5.2. Mobile Retro Handheld Console Architecture (`features/arcade/components/`)
-- **Physical Console Emulation (`MobileArcadeModal`):** Structured as a dual-zone handheld console (model DMG-05). The top zone mounts a 4:3 CRT display lens with scanlines and curvature, hosting either the 5-game cartridge carousel or the full-bleed canvas. The bottom zone hosts the tactile controller.
-- **Adaptive Touch Gamepad Bridge (`MobileGamepad`):** Bridges virtual mobile thumb interactions to standard DOM `KeyboardEvent` dispatches (`keydown` / `keyup`). Automatically switches button configurations using per-game control profiles (`GAME_CONTROL_PROFILES`), and features immediate `onPointerDown` execution with haptic feedback (`navigator.vibrate(10)`).
-- **Global Event Normalization:** `SnakeGame` and `Deparkanoid` attach `window` listeners during active play (`bindSnakeWindowListeners`, `bindDeparkanoidWindowListeners`), ensuring gamepad dispatches seamlessly reach game engines without requiring artificial focus management.
+- **Physical Console Emulation (`MobileArcadeModal`):** Structured as a dual-zone handheld console (model DMG-05) with full modal focus trapping, initial focus capture & restoration on close, complete ARIA `tablist`/`tab`/`tabpanel` wiring, and horizontal swipe cartridge switching. The top zone mounts a 4:3 CRT display lens with scanlines and curvature, hosting either the 5-game cartridge carousel or the full-bleed canvas. The bottom zone hosts the tactile controller.
+- **Shared Font & High-Score Utilities (`features/arcade/utils/`):** `arcadeFont.ts` centralizes embedded `"Departure Mono Subset"` `FontFace` loading across all 5 Canvas games, and `arcadeData.ts` centralizes persistent `localStorage` high-score keys (`ARCADE_HIGH_SCORE_KEYS`, including `deparkanoid_high_score`).
+- **Adaptive Touch Gamepad Bridge (`MobileGamepad`):** Bridges virtual mobile thumb interactions to standard DOM `KeyboardEvent` dispatches (`keydown` / `keyup`). Automatically switches button configurations using per-game control profiles (`GAME_CONTROL_PROFILES`), gates `P` pause dispatches strictly to active gameplay (`isPlaying`), and features immediate `onPointerDown` execution with haptic feedback (`navigator.vibrate(10)`).
+- **Global Event Normalization:** `SnakeGame` and `Deparkanoid` attach `window` listeners during active play (`bindSnakeWindowListeners`, `bindDeparkanoidWindowListeners`), ensuring gamepad dispatches seamlessly reach game engines without requiring artificial focus management. `MobileArcadeModal` resets master mute state on close/unmount and intercepts `Escape` before `FlatLanding` so closing the console never triggers unintended 3D room re-entry.
 
 ---
 
@@ -152,5 +153,5 @@ Each mini-game operates as an autonomous, self-contained engine:
 | **Motion** | Motion (Framer) | 14.10.1 | Spring physics and kinetic transitions |
 | **Optics** | tactile-glass-ui | 0.1.1 | WebGL2 refractive glass buttons |
 | **Liquid Glass** | glisse | 0.5.0 | Optical refractive liquid glass navbar & hero CTA |
-| **Testing** | Vitest | 5.0.5 | 45 unit test suites (254 tests) |
+| **Testing** | Vitest | 5.0.5 | 49 unit test suites (286 tests) |
 | **E2E Testing**| Playwright | 1.64.1 | Cross-browser Chromium end-to-end verification |

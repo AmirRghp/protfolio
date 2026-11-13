@@ -275,3 +275,38 @@ export function releaseKey(key: string, code?: string): void {
   window.dispatchEvent(event);
 }
 
+export const ARCADE_HIGH_SCORE_KEYS: Record<string, string> = {
+  pixelrun: "pixel_run_highscore",
+  tetris: "cyber_tetris_high_score",
+  snake: "snake_high_score",
+  deparkanoid: "deparkanoid_high_score",
+  flappy: "cyber_flappy_high_score",
+};
+
+export function readArcadeHighScore(gameId: string): number {
+  if (typeof window === "undefined") return 0;
+  const key = ARCADE_HIGH_SCORE_KEYS[gameId];
+  if (!key) return 0;
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw ? parseInt(raw, 10) || 0 : 0;
+  } catch {
+    return 0;
+  }
+}
+
+export function saveArcadeHighScore(gameId: string, score: number): number {
+  const best = Math.max(score, readArcadeHighScore(gameId));
+  if (typeof window === "undefined") return best;
+  const key = ARCADE_HIGH_SCORE_KEYS[gameId];
+  if (!key) return best;
+  try {
+    if (best > 0) {
+      window.localStorage.setItem(key, String(best));
+    }
+  } catch {
+    /* ignore storage errors */
+  }
+  return best;
+}
+

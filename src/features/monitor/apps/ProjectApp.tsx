@@ -211,7 +211,7 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
             title={`${project.title} preview`}
             onLoad={isGitHub ? undefined : embedLoaded}
             onError={embedFailed}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+            sandbox={isGitHub ? "allow-scripts allow-popups" : "allow-scripts allow-same-origin allow-forms allow-popups"}
             referrerPolicy="no-referrer"
           />
           <p className={styles.embedHint}>

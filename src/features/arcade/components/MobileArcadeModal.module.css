@@ -261,12 +261,12 @@
   z-index: 5;
   width: 100%;
   height: 100%;
-  padding: 10px 12px;
+  padding: 8px 10px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 6px;
+  gap: 5px;
   background: linear-gradient(180deg, #111318 0%, #0b0c10 100%);
 }
 
@@ -365,24 +365,24 @@
 .gameCard {
   height: 100%;
   min-height: 0;
-  padding: 8px 10px;
+  padding: 7px 10px;
   border-radius: 8px;
   border: 1px solid #262a33;
   background: #14171d;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-evenly;
   text-align: center;
-  gap: 6px;
+  gap: 5px;
   overflow: hidden;
 }
 
 .cartridgeVisualWrap {
   position: relative;
   width: 100%;
-  min-height: 48px;
-  padding: 6px 10px;
+  min-height: 42px;
+  padding: 5px 8px;
   box-sizing: border-box;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -390,17 +390,7 @@
   overflow: hidden;
   display: flex;
   align-items: center;
-}
-
-.cartridgeVisualImg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 42%;
-  opacity: 0.42;
-  pointer-events: none;
+  flex-shrink: 0;
 }
 
 .cartridgeScrim {
@@ -471,13 +461,10 @@
 
 .gameDesc {
   margin: 0;
-  font-size: 10.5px;
-  line-height: 1.34;
+  font-size: 9.8px;
+  line-height: 1.3;
   color: #cbd5e1;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .startBtn {
@@ -631,13 +618,13 @@
   }
 
   .carouselScreen {
-    padding: 16px 22px;
-    gap: 10px;
+    padding: 12px 18px;
+    gap: 6px;
   }
 
   .carouselTopRow {
     font-size: 12px;
-    padding-bottom: 8px;
+    padding-bottom: 6px;
   }
 
   .carouselTabs {
@@ -645,7 +632,7 @@
   }
 
   .gameTab {
-    padding: 8px 14px;
+    padding: 7px 14px;
     font-size: 12px;
     border-radius: 6px;
   }
@@ -665,14 +652,15 @@
   }
 
   .gameCard {
-    padding: 14px 18px;
-    gap: 10px;
+    padding: 10px 16px;
+    gap: 6px;
     border-radius: 10px;
+    justify-content: space-evenly;
   }
 
   .cartridgeVisualWrap {
-    min-height: 74px;
-    padding: 10px 16px;
+    min-height: 54px;
+    padding: 7px 12px;
     border-radius: 8px;
   }
 
@@ -681,35 +669,35 @@
   }
 
   .gameIconWrap {
-    width: 44px;
-    height: 44px;
+    width: 36px;
+    height: 36px;
     border-radius: 8px;
   }
 
   .gameSvg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
 
   .gameTitleBlock .gameTitle {
-    font-size: 18px !important;
+    font-size: 16px !important;
   }
 
   .gameMeta {
-    font-size: 11.5px;
-    margin-top: 3px;
+    font-size: 11px;
+    margin-top: 2px;
   }
 
   .gameDesc {
-    font-size: 13px;
-    line-height: 1.45;
-    max-width: 480px;
+    font-size: 11.5px;
+    line-height: 1.35;
+    max-width: 500px;
   }
 
   .startBtn {
-    max-width: 300px;
-    height: 42px;
-    font-size: 13px;
+    max-width: 280px;
+    height: 36px;
+    font-size: 12.5px;
     border-radius: 8px;
   }
 
@@ -737,3 +725,13 @@
     flex: 1;
   }
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .closeBtn,
+  .muteBtn,
+  .gameTab,
+  .startBtn {
+    transition: none;
+  }
+}
+

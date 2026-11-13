@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 import { portfolioContent } from "@/data/content";
 import { setDeviceSnapshotForTesting } from "@/core";
@@ -7,6 +7,8 @@ import { setDeviceSnapshotForTesting } from "@/core";
 describe("portfolio entry page", () => {
   afterEach(() => {
     setDeviceSnapshotForTesting(null);
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
   });
 
   it("renders the owner's name and current role as semantic content", () => {
@@ -142,6 +144,24 @@ describe("portfolio entry page", () => {
     expect(html).not.toContain("Re-enter");
     expect(html).toContain("Get in Touch");
     expect(html).not.toContain("Enter The Room");
+  });
+
+  it("deep-links directly to flat mode with MobileArcadeModal open on #arcade hash", () => {
+    vi.stubGlobal("window", {
+      location: { hash: "#arcade", search: "" },
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      innerWidth: 390,
+      innerHeight: 844,
+    });
+    vi.stubGlobal("navigator", { webdriver: false });
+
+    const html = renderToStaticMarkup(<App />);
+
+    expect(html).toContain('data-intro-phase="ready"');
+    expect(html).toContain('data-view-mode="flat"');
+    expect(html).not.toContain('data-testid="lanyard-intro"');
+    expect(html).toContain('data-testid="mobile-arcade-modal"');
   });
 });
 

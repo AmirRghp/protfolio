@@ -6,7 +6,7 @@ The application is structured around a **Dual-Mode Architecture**:
 1. **The 3D Cyberpunk Room:** An exploratory 3D spatial environment centered on a developer workstation.
 2. **The Flat Landing Portfolio:** A structured, high-contrast, linear presentation of experience, technical proficiencies, and open-source contributions.
 
-Visitors transition fluidly between both worlds using tactile optical glass buttons or browser URL hashes (`#room` vs `#portfolio`).
+Visitors transition fluidly between both worlds using tactile optical glass buttons or browser URL hashes (`#room`, `#portfolio`, or `#arcade` to open the Mobile Retro Handheld directly).
 
 ---
 
@@ -97,6 +97,8 @@ flowchart TD
     GameOver -- Press ESC / Click Exit Game --> ReturnArcadeMenu[Disconnect audio synth; return to Arcade Menu]
 ```
 
+On mobile and tablet devices (`<= 1024px` or coarse pointer), tapping the floating `MobileArcadeFab` or deep-linking to `#arcade` opens `MobileArcadeModal` (`NEON POCKET`) with horizontal swipe cartridge cycling, adaptive `MobileGamepad` controls, focus trapping, and clean `Escape` isolation (returning to cartridge menu or closing the modal without leaking `Escape` to `FlatLanding`).
+
 ---
 
 ### Flow 5: Musical Oiia Cat & Disco Drop Sync
@@ -113,7 +115,7 @@ sequenceDiagram
     Cat->>Audio: play(160 BPM soundtrack)
     Cat->>Cat: Retract paws to 'loaf' mode & begin spin
     
-    Note over Audio,Room: Drop Window 1 (33s–57s) & Drop Window 2 (81s–105s)
+    Note over Audio,Room: Drop Window 1 (33s–57s) & Drop Window 2 (106s–132s)
     Audio->>Room: Signal dropActive = true
     Room->>Room: Strobe ambient & point lights in neon cycles
     Audio->>Monitor: Signal dropActive = true

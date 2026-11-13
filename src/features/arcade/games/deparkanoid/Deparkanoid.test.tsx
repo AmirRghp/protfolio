@@ -1,6 +1,11 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import Deparkanoid from "./Deparkanoid";
+import {
+  ARCADE_HIGH_SCORE_KEYS,
+  readArcadeHighScore,
+  saveArcadeHighScore,
+} from "@/features/arcade/utils/arcadeData";
 import {
   BRICK_H,
   BRICK_W,
@@ -14,6 +19,11 @@ import {
 } from "./deparkanoidLevels";
 
 describe("Deparkanoid 5 Levels Configuration", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("defines exactly 5 distinct levels", () => {
     expect(TOTAL_LEVELS).toBe(5);
     expect(DEPARKANOID_LEVELS).toHaveLength(5);
@@ -66,6 +76,24 @@ describe("Deparkanoid 5 Levels Configuration", () => {
     const html = renderToStaticMarkup(<Deparkanoid />);
     expect(html).toContain("<canvas");
     expect(html).toContain('aria-label="Deparkanoid arcade game"');
+  });
+
+  it("persists Deparkanoid high score via shared arcadeData storage key", () => {
+    const store = new Map<string, string>();
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: (k: string) => store.get(k) ?? null,
+        setItem: (k: string, v: string) => {
+          store.set(k, v);
+        },
+      },
+    });
+
+    expect(ARCADE_HIGH_SCORE_KEYS.deparkanoid).toBe("deparkanoid_high_score");
+    expect(readArcadeHighScore("deparkanoid")).toBe(0);
+    expect(saveArcadeHighScore("deparkanoid", 1250)).toBe(1250);
+    expect(store.get("deparkanoid_high_score")).toBe("1250");
+    expect(readArcadeHighScore("deparkanoid")).toBe(1250);
   });
 
   it("reacts to global window keydown and keyup events for paddle movement and ball launch", () => {

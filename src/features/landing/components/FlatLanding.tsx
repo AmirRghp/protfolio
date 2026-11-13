@@ -122,7 +122,24 @@ export default function FlatLanding({
 
   const [isScrolled, setIsScrolled] = useState(false);
   const [numbersInView, setNumbersInView] = useState(false);
-  const [isMobileArcadeOpen, setIsMobileArcadeOpen] = useState(initialMobileArcadeOpen);
+  const [isMobileArcadeOpen, setIsMobileArcadeOpen] = useState(() =>
+    Boolean(initialMobileArcadeOpen || (typeof window !== "undefined" && window.location.hash === "#arcade")),
+  );
+  const [suppressInitialLoader] = useState(() =>
+    Boolean(initialMobileArcadeOpen || (typeof window !== "undefined" && window.location.hash === "#arcade")),
+  );
+
+  // Open mobile arcade modal automatically when navigating directly to #arcade
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const handleHash = () => {
+      if (window.location.hash === "#arcade") {
+        setIsMobileArcadeOpen(true);
+      }
+    };
+    window.addEventListener("hashchange", handleHash);
+    return () => window.removeEventListener("hashchange", handleHash);
+  }, []);
 
   // Lock body and landing container scroll when mobile handheld arcade modal is open
   useEffect(() => {
@@ -193,8 +210,9 @@ export default function FlatLanding({
 
   // Global Escape key returns to room when at root flat landing
   useEffect(() => {
-    if (!allowRoomEntry || transitionState !== "open") return;
+    if (!allowRoomEntry || transitionState !== "open" || isMobileArcadeOpen) return;
     const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if (e.defaultPrevented) return;
       const tag = document.activeElement?.tagName?.toLowerCase();
       if (tag === "input" || tag === "textarea") return;
       if (e.key === "Escape") {
@@ -203,7 +221,7 @@ export default function FlatLanding({
     };
     window.addEventListener("keydown", handleGlobalKeyDown);
     return () => window.removeEventListener("keydown", handleGlobalKeyDown);
-  }, [allowRoomEntry, transitionState, handleReenter]);
+  }, [allowRoomEntry, transitionState, isMobileArcadeOpen, handleReenter]);
 
 
   // Scroll listener for nav glass styling & intersection observer for rise elements
@@ -277,7 +295,7 @@ export default function FlatLanding({
       data-transition-state={transitionState}
       aria-label="Amirreza Gholipour Flat Portfolio"
     >
-      {isOpen && isIntroDismissed && !isClosing && (
+      {isOpen && isIntroDismissed && !isClosing && !suppressInitialLoader && (
         <PortfolioLoader scopeRef={rootRef} />
       )}
 

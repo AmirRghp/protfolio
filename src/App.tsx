@@ -16,7 +16,7 @@ function getInitialNavigation(): RoomNavigationState {
 
 function getInitialIntroPhase(): IntroPhase {
   if (typeof window !== "undefined") {
-    if (window.location.hash === "#portfolio") {
+    if (window.location.hash === "#portfolio" || window.location.hash === "#arcade") {
       return "ready";
     }
     return getInitialIntroPhaseFromSearch(
@@ -28,7 +28,10 @@ function getInitialIntroPhase(): IntroPhase {
 }
 
 function getInitialViewMode(): "room" | "flat" {
-  if (typeof window !== "undefined" && window.location.hash === "#portfolio") {
+  if (
+    typeof window !== "undefined" &&
+    (window.location.hash === "#portfolio" || window.location.hash === "#arcade")
+  ) {
     return "flat";
   }
   return "room";
@@ -159,7 +162,7 @@ export default function App() {
         }
         return;
       }
-      if (window.location.hash === "#portfolio") {
+      if (window.location.hash === "#portfolio" || window.location.hash === "#arcade") {
         if (reenterTimerRef.current !== null) {
           window.clearTimeout(reenterTimerRef.current);
           reenterTimerRef.current = null;

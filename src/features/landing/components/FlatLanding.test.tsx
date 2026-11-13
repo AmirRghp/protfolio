@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import FlatLanding from "./FlatLanding";
 import { portfolioContent } from "@/data/content";
 
@@ -326,6 +326,31 @@ describe("FlatLanding component", () => {
     expect(html).toContain('data-testid="mobile-arcade-modal"');
     expect(html).toContain("NEON POCKET");
     expect(html).toContain("CARTRIDGE 01 / 05");
+  });
+
+  it("opens MobileArcadeModal automatically when URL hash is #arcade", () => {
+    vi.stubGlobal("window", {
+      location: { hash: "#arcade", search: "" },
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      innerWidth: 390,
+      innerHeight: 844,
+    });
+    try {
+      const html = renderToStaticMarkup(
+        <FlatLanding
+          isOpen={true}
+          snapshotCanvas={null}
+          onReenter={() => {}}
+          allowRoomEntry={false}
+        />,
+      );
+
+      expect(html).toContain('data-testid="mobile-arcade-modal"');
+      expect(html).toContain("NEON POCKET");
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });
 

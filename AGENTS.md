@@ -32,7 +32,7 @@
   - Scene anchors: Curved monitor center on a deep tabletop (`z = -0.9` to `3.8`), mechanical keyboard, optical mouse, neon-bordered mousepad, steaming coffee mug, musical Oiia Cat, Batman collectible on the lower shelf, and retro arcade machine recessed into the right desk cutout (`x = 2.96`).
   - No computer tower, floor, side walls, baseboards, chairs, desk legs, plants, or wall art.
 - **Dual-Experience Flat Landing (`FlatLanding`):**
-  - Reached via the sleek black `ExitBar` (`#000000`) with a WebGL2 refractive `TactileButton` ("Exit The Room") or direct `#portfolio` URL hash.
+  - Reached via the sleek black `ExitBar` (`#000000`) with a WebGL2 refractive `TactileButton` ("Exit The Room") or direct `#portfolio` / `#arcade` URL hashes.
   - Features a digital laser portal transition, full-bleed ASCII room loop video (`public/assets/ascii-room.webm`), interactive nocturnal `LiquidGrid` canvas, `MagicCursor`, `DynamicText` role cycling, Arc UI spring tabs (`@uiarc/tabs`) with an **Agent Harness** category, and a 3D isometric GitHub contribution skyline ("As a city").
   - Seamless re-entry to the 3D room via "Re-enter" and "Enter The Room" glass buttons.
 - **Arcade Cabinet & Playable Mini-Games:**

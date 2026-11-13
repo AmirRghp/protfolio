@@ -4,6 +4,33 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.10] - 2026-11-13
+
+### Security & Hardening
+- **In-Window GitHub Repository Preview (`ProjectApp` & `githubRepoPreview`):**
+  - Removed `allow-same-origin` from the `srcDoc` GitHub `<iframe>` `sandbox` (`sandbox="allow-scripts allow-popups"`), preventing embedded repository preview scripts from accessing parent origin storage or DOM while keeping external project website sandboxing intact.
+  - Tightened `renderMarkdownToHtml` link sanitization to explicitly allowlist `https://`, `http://`, `mailto:`, and relative repository paths (blocking `javascript:`, `data:`, `vbscript:`, and entity-encoded schemes).
+  - Enforced `event.source === window.parent` verification inside the `srcDoc` `message` listener.
+  - Added an **8-second** `AbortController` timeout in `fetchGitHubRepoSnapshot` and runtime schema validation (`isValidRepoSnapshot`) when reading `localStorage` cache entries.
+
+### Fixed & Changed
+- **Arcade Font & High-Score Deduplication (`arcadeFont.ts` & `arcadeData.ts`):**
+  - Extracted the duplicated `"Departure Mono Subset"` `FontFace` loader from all 5 Canvas games into `src/features/arcade/utils/arcadeFont.ts`.
+  - Centralized persistent `localStorage` high-score read/write helpers in `src/features/arcade/utils/arcadeData.ts` (`ARCADE_HIGH_SCORE_KEYS`) and added persistent high-score tracking (`deparkanoid_high_score`) to `Deparkanoid.tsx`.
+- **Audio, Pause & Navigation Lifecycle Fixes:**
+  - Fixed `PixelRunGame.tsx` pause/unpause synth music leak via `resumeMusicOnUnpauseRef` and `stopMusic()` cleanup on `Escape` and `P` pause.
+  - Added `tetrisAudio.stopMusic()` unmount cleanup and updated pause prompt text (`PRESS PAUSE OR P TO RESUME`) in `TetrisGame.tsx`.
+  - Gated `MobileGamepad` `KeyP` dispatches strictly on `isPlaying` so `PAUSE` does not fire redundant keyboard events in cartridge carousel mode.
+  - Reset global arcade mute state (`applyMasterMute(false)`) when `MobileArcadeModal` closes or unmounts so 3D desktop arcade audio is never left silenced.
+  - Coordinated `Escape` precedence between `MobileArcadeModal` and `FlatLanding` (`defaultPrevented` / `!isMobileArcadeOpen`) so pressing `Escape` closes the mobile arcade modal without triggering 3D room re-entry, and added `#arcade` hash deep-linking in `App.tsx` and `FlatLanding.tsx`.
+- **Accessibility, Reduced Motion & Touch UX:**
+  - Added focus capture on open, `Tab`/`Shift+Tab` focus trapping, focus restoration on close, complete ARIA `tablist`/`tab`/`tabpanel` attributes, and horizontal touch/pointer swipe cartridge cycling to `MobileArcadeModal`.
+  - Added `@media (prefers-reduced-motion: reduce)` support to `MobileArcadeModal.module.css`, `MobileArcadeFab.module.css`, `SnakeGame.tsx`, and `Deparkanoid.tsx`.
+- **Cleanup & Tests:**
+  - Replaced `lucide-react` chevron icons in `src/core/components/arc/tabs.tsx` with inline SVGs and removed `lucide-react` from `package.json`.
+  - Removed dead `.cartridgeVisualImg` CSS rule and deleted 11 unused media artifacts under `public/assets/aistudio/`.
+  - Expanded unit test coverage across `ProjectApp.test.tsx`, `MobileArcadeModal.test.tsx`, `MobileGamepad.test.tsx`, `Deparkanoid.test.tsx`, `FlatLanding.test.tsx`, and `App.test.tsx` (49 test suites, 286 passing tests).
+
 ## [0.8.9] - 2026-11-12
 
 ### Added

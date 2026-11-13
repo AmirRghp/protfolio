@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, type ComponentType } from "react";
-import { MOBILE_ARCADE_GAMES } from "@/features/arcade/utils/arcadeData";
+import { useCallback, useEffect, useRef, useState, type ComponentType, type PointerEvent as ReactPointerEvent } from "react";
+import { MOBILE_ARCADE_GAMES, readArcadeHighScore } from "@/features/arcade/utils/arcadeData";
 import Deparkanoid from "@/features/arcade/games/deparkanoid";
 import SnakeGame from "@/features/arcade/games/snake-grid";
 import FlappyGame from "@/features/arcade/games/cyber-flappy";
@@ -26,25 +26,6 @@ const GAME_COMPONENTS: Record<string, ComponentType<{ onExit: () => void }>> = {
   flappy: FlappyGame,
 };
 
-const HIGH_SCORE_KEYS: Record<string, string> = {
-  pixelrun: "pixel_run_highscore",
-  tetris: "cyber_tetris_high_score",
-  snake: "snake_high_score",
-  flappy: "cyber_flappy_high_score",
-};
-
-function readHighScore(gameId: string): number {
-  if (typeof window === "undefined") return 0;
-  const key = HIGH_SCORE_KEYS[gameId];
-  if (!key) return 0;
-  try {
-    const raw = window.localStorage.getItem(key);
-    return raw ? parseInt(raw, 10) || 0 : 0;
-  } catch {
-    return 0;
-  }
-}
-
 function stopAllGameAudio(): void {
   try {
     tetrisAudio.stopMusic();
@@ -64,6 +45,15 @@ function applyMasterMute(muted: boolean): void {
   }
 }
 
+function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
+  if (!container) return [];
+  return Array.from(
+    container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ).filter((el) => el.getAttribute("aria-hidden") !== "true");
+}
+
 export default function MobileArcadeModal({
   isOpen,
   onClose,
@@ -74,6 +64,11 @@ export default function MobileArcadeModal({
   const [isPlaying, setIsPlaying] = useState<boolean>(initialPlaying);
   const [isMuted, setIsMuted] = useState<boolean>(false);
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+  const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
+
   const selectedIndex = Math.max(
     0,
     MOBILE_ARCADE_GAMES.findIndex((g) => g.id === selectedGameId),
@@ -81,18 +76,37 @@ export default function MobileArcadeModal({
   const selectedGame = MOBILE_ARCADE_GAMES[selectedIndex] ?? MOBILE_ARCADE_GAMES[0];
   const ActiveGameComponent = GAME_COMPONENTS[selectedGame.id];
 
-  // Clean up audio synthesizers whenever modal closes or unmounts
+  // Clean up audio synthesizers & master mute state whenever modal closes or unmounts
   useEffect(() => {
     if (!isOpen) {
       stopAllGameAudio();
+      applyMasterMute(false);
     }
     return () => {
       stopAllGameAudio();
+      applyMasterMute(false);
+    };
+  }, [isOpen]);
+
+  // Capture triggering focus on open and restore it cleanly on close
+  useEffect(() => {
+    if (!isOpen || typeof document === "undefined") return;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeBtnRef.current?.focus();
+
+    return () => {
+      const prev = previousFocusRef.current;
+      previousFocusRef.current = null;
+      if (prev && prev.isConnected) {
+        prev.focus();
+      }
     };
   }, [isOpen]);
 
   const handleCloseModal = useCallback(() => {
     stopAllGameAudio();
+    applyMasterMute(false);
+    setIsMuted(false);
     setIsPlaying(false);
     onClose();
   }, [onClose]);
@@ -129,12 +143,52 @@ export default function MobileArcadeModal({
     });
   }, []);
 
-  // Keyboard navigation in Carousel mode & Escape to close
+  const handleCardStagePointerDown = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest("button")) return;
+    swipeStartRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+
+  const handleCardStagePointerUp = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      const start = swipeStartRef.current;
+      swipeStartRef.current = null;
+      if (!start) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (Math.abs(dx) >= 40 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        cycleCarousel(dx < 0 ? 1 : -1);
+      }
+    },
+    [cycleCarousel],
+  );
+
+  // Focus trap, carousel keyboard navigation, and Escape handling
   useEffect(() => {
     if (!isOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Tab") {
+        const focusables = getFocusableElements(modalRef.current);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+
+        if (e.shiftKey) {
+          if (active === first || !modalRef.current?.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else if (active === last || !modalRef.current?.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+        return;
+      }
+
       if (e.key === "Escape") {
+        if (e.defaultPrevented) return;
         e.preventDefault();
         if (isPlaying) {
           handleReturnToMenu();
@@ -168,10 +222,11 @@ export default function MobileArcadeModal({
     return null;
   }
 
-  const highScore = readHighScore(selectedGame.id);
+  const highScore = readArcadeHighScore(selectedGame.id);
 
   return (
     <div
+      ref={modalRef}
       className={styles.modalOverlay}
       role="dialog"
       aria-modal="true"
@@ -182,6 +237,7 @@ export default function MobileArcadeModal({
       {/* Top Anodized Hardware Edge Bar */}
       <header className={styles.headerBar}>
         <button
+          ref={closeBtnRef}
           type="button"
           className={styles.closeBtn}
           onClick={handleCloseModal}
@@ -208,7 +264,7 @@ export default function MobileArcadeModal({
 
       {/* Main Split Console Body */}
       <div className={styles.consoleBody}>
-        {/* Top 54%: Recessed Tempered Glass Display Bezel */}
+        {/* Top 55%: Recessed Tempered Glass Display Bezel */}
         <div className={styles.screenSection}>
           <div className={styles.lensBezelOuter}>
             <div className={styles.lensTopMeta} aria-hidden="true">
@@ -242,9 +298,12 @@ export default function MobileArcadeModal({
                       return (
                         <button
                           key={game.id}
+                          id={`mobile-arcade-tab-${game.id}`}
                           type="button"
                           role="tab"
                           aria-selected={isSelected}
+                          aria-controls="mobile-arcade-tabpanel"
+                          tabIndex={isSelected ? 0 : -1}
                           data-selected={isSelected}
                           className={styles.gameTab}
                           onClick={() => setSelectedGameId(game.id)}
@@ -256,7 +315,14 @@ export default function MobileArcadeModal({
                   </div>
 
                   {/* Featured Game Cartridge Card */}
-                  <div className={styles.cardStage}>
+                  <div
+                    className={styles.cardStage}
+                    onPointerDown={handleCardStagePointerDown}
+                    onPointerUp={handleCardStagePointerUp}
+                    onPointerCancel={() => {
+                      swipeStartRef.current = null;
+                    }}
+                  >
                     <button
                       type="button"
                       className={styles.navArrow}
@@ -266,7 +332,12 @@ export default function MobileArcadeModal({
                       ◀
                     </button>
 
-                    <div className={styles.gameCard}>
+                    <div
+                      className={styles.gameCard}
+                      role="tabpanel"
+                      id="mobile-arcade-tabpanel"
+                      aria-labelledby={`mobile-arcade-tab-${selectedGame.id}`}
+                    >
                       {/* Smoked Polycarbonate Cartridge Artwork Banner */}
                       <div className={styles.cartridgeVisualWrap}>
                         <div className={styles.cartridgeScrim} />
@@ -315,10 +386,11 @@ export default function MobileArcadeModal({
           </div>
         </div>
 
-        {/* Bottom 46%: Adaptive Touch Controller Chassis */}
+        {/* Bottom 45%: Adaptive Touch Controller Chassis */}
         <div className={styles.gamepadSection}>
           <MobileGamepad
             activeGameId={selectedGame.id}
+            isPlaying={isPlaying}
             onSelectMenu={handleReturnToMenu}
             onTogglePause={handleGamepadPause}
           />

@@ -13,6 +13,7 @@ export type MobileGamepadProps = {
   activeGameId: string;
   onSelectMenu: () => void;
   onTogglePause?: () => void;
+  isPlaying?: boolean;
 };
 
 type DpadButtonDef = {
@@ -63,6 +64,7 @@ export default function MobileGamepad({
   activeGameId,
   onSelectMenu,
   onTogglePause,
+  isPlaying = true,
 }: MobileGamepadProps) {
   const profile: GameControlProfile =
     GAME_CONTROL_PROFILES[activeGameId] ?? GAME_CONTROL_PROFILES.tetris;
@@ -101,12 +103,14 @@ export default function MobileGamepad({
   }, []);
 
   const handlePauseClick = useCallback(() => {
-    pressKey("p", "KeyP");
-    releaseKey("p", "KeyP");
+    if (isPlaying) {
+      pressKey("p", "KeyP");
+      releaseKey("p", "KeyP");
+    }
     if (onTogglePause) {
       onTogglePause();
     }
-  }, [onTogglePause]);
+  }, [isPlaying, onTogglePause]);
 
   const primaryAction = profile.actions[0] ?? {
     id: "reflex-primary",

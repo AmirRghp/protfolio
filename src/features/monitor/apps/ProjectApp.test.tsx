@@ -1,9 +1,10 @@
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { portfolioContent } from "@/data/content";
 import {
   buildGitHubRepoSrcDoc,
   getBundledRepoSnapshot,
+  getInitialRepoSnapshot,
   parseGitHubRepoUrl,
   renderMarkdownToHtml,
 } from "@/data/githubRepoPreview";
@@ -17,6 +18,11 @@ import ProjectApp, {
 } from "./ProjectApp";
 
 describe("ProjectApp component & GitHub repository in-frame viewer", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
   it("renders repository preview with in-window notice and GitHub action link when websiteUrl is absent", () => {
     const project = portfolioContent.projects[0];
     const html = renderToStaticMarkup(
@@ -49,7 +55,7 @@ describe("ProjectApp component & GitHub repository in-frame viewer", () => {
     expect(html).toContain('href="https://omnidoc.example.com"');
   });
 
-  it("builds a complete GitHub repository srcDoc for every project in portfolioContent", () => {
+  it("builds a complete GitHub repository srcDoc with parent source verification for every project", () => {
     for (const project of portfolioContent.projects) {
       const parsed = parseGitHubRepoUrl(project.githubUrl);
       expect(parsed).not.toBeNull();
@@ -65,6 +71,7 @@ describe("ProjectApp component & GitHub repository in-frame viewer", () => {
       expect(srcDoc).toContain("README.md");
       expect(srcDoc).toContain("Copy clone command");
       expect(srcDoc).toContain(project.githubUrl);
+      expect(srcDoc).toContain("if (event.source !== window.parent) return;");
     }
   });
 
@@ -86,6 +93,45 @@ describe("ProjectApp component & GitHub repository in-frame viewer", () => {
     expect(html).toContain('href="https://github.com/AmirRghp/omnidoc-rag/blob/main/configs/base.yaml"');
     expect(html).toContain("<li>Dense BGE-M3 retrieval</li>");
     expect(html).toContain("<pre><code>pip install -e .</code></pre>");
+  });
+
+  it("blocks unsafe link schemes while preserving https and mailto links in markdown", () => {
+    const md = [
+      "[XSS](javascript:alert(1))",
+      "[Data](data:text/html,<script>alert(1)</script>)",
+      "[VB](vbscript:msgbox(1))",
+      "[Encoded](javascript&#58;alert(1))",
+      "[Mail](mailto:test@example.com)",
+      "[Web](https://example.com/docs)",
+    ].join(" ");
+
+    const html = renderMarkdownToHtml(md, "https://github.com/AmirRghp/omnidoc-rag", "main");
+    expect(html).not.toContain("javascript:");
+    expect(html).not.toContain("data:text/html");
+    expect(html).not.toContain("vbscript:");
+    expect(html).not.toContain("&#58;");
+    expect(html).toContain("XSS");
+    expect(html).toContain('href="mailto:test@example.com"');
+    expect(html).toContain('href="https://example.com/docs"');
+  });
+
+  it("falls back to bundled snapshot when cached localStorage payload fails schema validation", () => {
+    const project = portfolioContent.projects[0];
+    vi.stubGlobal("window", {
+      localStorage: {
+        getItem: vi.fn(() =>
+          JSON.stringify({
+            savedAt: Date.now(),
+            data: { owner: "AmirRghp", files: "corrupt-not-array" },
+          }),
+        ),
+      },
+    });
+
+    const snapshot = getInitialRepoSnapshot(project);
+    expect(snapshot.source).toBe("bundled");
+    expect(Array.isArray(snapshot.files)).toBe(true);
+    expect(snapshot.files.length).toBeGreaterThan(0);
   });
 
   it("renders all exported project glyphs as accessible hidden SVGs", () => {

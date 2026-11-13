@@ -2,12 +2,27 @@
 
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { createContext, useCallback, useContext, useId, useLayoutEffect, useRef, useState } from "react";
-import type { ComponentPropsWithoutRef } from "react";
-import { ChevronLeft as NavArrowLeft, ChevronRight as NavArrowRight } from "lucide-react";
+import type { ComponentPropsWithoutRef, SVGProps } from "react";
 import { LayoutGroup, motion, useReducedMotion } from "motion/react";
 import type { Variants } from "motion/react";
 import { motionTokens } from "./motion-tokens";
 import styles from "./tabs.module.css";
+
+function NavArrowLeft(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m15 18-6-6 6-6" />
+    </svg>
+  );
+}
+
+function NavArrowRight(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  );
+}
 
 type RootProps = ComponentPropsWithoutRef<typeof TabsPrimitive.Root>;
 

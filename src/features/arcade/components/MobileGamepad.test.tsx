@@ -93,4 +93,17 @@ describe("MobileGamepad component & input bridge", () => {
       code: "Space",
     });
   });
+
+  it("renders MENU and PAUSE controls cleanly across both carousel and active gameplay states", () => {
+    const idleHtml = renderToStaticMarkup(
+      <MobileGamepad activeGameId="tetris" isPlaying={false} onSelectMenu={() => {}} onTogglePause={() => {}} />,
+    );
+    expect(idleHtml).toContain('aria-label="Return to arcade game menu"');
+    expect(idleHtml).toContain('aria-label="Pause or resume game"');
+
+    const activeHtml = renderToStaticMarkup(
+      <MobileGamepad activeGameId="tetris" isPlaying={true} onSelectMenu={() => {}} onTogglePause={() => {}} />,
+    );
+    expect(activeHtml).toContain('aria-label="Pause or resume game"');
+  });
 });

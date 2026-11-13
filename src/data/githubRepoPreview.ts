@@ -25,6 +25,7 @@ export interface GitHubRepoSnapshot {
 
 const CACHE_PREFIX = "portfolio_gh_repo_preview_v1_";
 const CACHE_TTL_MS = 4 * 60 * 60 * 1000;
+const FETCH_TIMEOUT_MS = 8000;
 
 interface CachedRepoEntry {
   savedAt: number;
@@ -283,12 +284,37 @@ export function getBundledRepoSnapshot(project: Project): GitHubRepoSnapshot {
   };
 }
 
+function isValidRepoSnapshot(data: unknown): data is GitHubRepoSnapshot {
+  if (!data || typeof data !== "object") return false;
+  const d = data as Partial<GitHubRepoSnapshot>;
+  return (
+    typeof d.owner === "string" &&
+    typeof d.repo === "string" &&
+    typeof d.branch === "string" &&
+    typeof d.language === "string" &&
+    typeof d.description === "string" &&
+    Array.isArray(d.topics) &&
+    d.topics.every((t) => typeof t === "string") &&
+    Array.isArray(d.files) &&
+    d.files.every(
+      (f) =>
+        Boolean(f) &&
+        typeof f === "object" &&
+        typeof f.name === "string" &&
+        typeof f.path === "string" &&
+        (f.type === "dir" || f.type === "file") &&
+        typeof f.summary === "string",
+    ) &&
+    typeof d.readmeMarkdown === "string"
+  );
+}
+
 function readCachedSnapshot(owner: string, repo: string): GitHubRepoSnapshot | null {
   try {
     const raw = window.localStorage.getItem(`${CACHE_PREFIX}${owner}_${repo}`);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as CachedRepoEntry;
-    if (!parsed || typeof parsed.savedAt !== "number" || !parsed.data) return null;
+    if (!parsed || typeof parsed.savedAt !== "number" || !isValidRepoSnapshot(parsed.data)) return null;
     if (Date.now() - parsed.savedAt > CACHE_TTL_MS) return null;
     return { ...parsed.data, source: "cache" };
   } catch {
@@ -328,14 +354,26 @@ export async function fetchGitHubRepoSnapshot(
   if (!parsed) return base;
 
   const { owner, repo } = parsed;
+  const timeoutController = new AbortController();
+  const timeoutId = globalThis.setTimeout(() => timeoutController.abort(), FETCH_TIMEOUT_MS);
+  const onExternalAbort = () => timeoutController.abort();
+  if (signal) {
+    if (signal.aborted) {
+      timeoutController.abort();
+    } else {
+      signal.addEventListener("abort", onExternalAbort, { once: true });
+    }
+  }
+  const activeSignal = timeoutController.signal;
+
   try {
     const [repoRes, contentsRes] = await Promise.all([
       fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-        signal,
+        signal: activeSignal,
         headers: { Accept: "application/vnd.github+json" },
       }),
       fetch(`https://api.github.com/repos/${owner}/${repo}/contents`, {
-        signal,
+        signal: activeSignal,
         headers: { Accept: "application/vnd.github+json" },
       }),
     ]);
@@ -396,7 +434,7 @@ export async function fetchGitHubRepoSnapshot(
     try {
       const readmeRes = await fetch(
         `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`,
-        { signal },
+        { signal: activeSignal },
       );
       if (readmeRes.ok) {
         const text = await readmeRes.text();
@@ -429,6 +467,9 @@ export async function fetchGitHubRepoSnapshot(
     return liveSnapshot;
   } catch {
     return base;
+  } finally {
+    globalThis.clearTimeout(timeoutId);
+    signal?.removeEventListener("abort", onExternalAbort);
   }
 }
 
@@ -452,7 +493,10 @@ function formatInlineMarkdown(line: string, repoUrl: string, branch: string): st
   // Links [label](href)
   out = out.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, label: string, rawHref: string) => {
     const trimmed = rawHref.trim();
-    if (/^javascript:/i.test(trimmed)) return label;
+    const hasExplicitOrEncodedScheme = /^[a-z][a-z0-9+.-]*:|&#\d+;|&#x[0-9a-f]+;/i.test(trimmed);
+    if (hasExplicitOrEncodedScheme && !/^https?:\/\/|^mailto:/i.test(trimmed)) {
+      return label;
+    }
     const resolved = /^https?:\/\/|^mailto:/i.test(trimmed)
       ? trimmed
       : `${repoUrl}/blob/${branch}/${trimmed.replace(/^\.?\//, "")}`;
@@ -952,6 +996,7 @@ export function buildGitHubRepoSrcDoc(project: Project, snapshot: GitHubRepoSnap
       });
 
       window.addEventListener("message", function (event) {
+        if (event.source !== window.parent) return;
         var msg = event.data;
         if (!msg || msg.type !== "gh-repo-update") return;
         if (msg.readmeHtml) {
