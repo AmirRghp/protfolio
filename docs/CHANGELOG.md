@@ -4,6 +4,17 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.11] - 2026-11-13
+
+### Fixed
+- **Refresh-Rate Independent Physics Across All 5 Arcade Games (`arcadeTimeStep.ts`):**
+  - Resolved high-refresh-rate gameplay speed bugs on 120Hz, 144Hz, 165Hz, 240Hz, and uncapped Linux/Chrome displays where `requestAnimationFrame` fired faster than 60Hz:
+    - *Cyber Flappy (`FlappyGame.tsx`):* Replaced raw per-frame gravity (`s.birdSpeed += GRAVITY; s.birdY += s.birdSpeed`) and per-frame pylon/parallax movement (`pylon.x -= level.speed`) with 60Hz-normalized `frameScale` (`dt * 60`) and exact trapezoidal gravity integration (`integrateGravityStep`), eliminating the quadratic refresh-rate gravity acceleration ($\sim 5.76\times$ fall speed on 144Hz) and $2.4\times$ pylon speed increase.
+    - *Pixel Run (`PixelRunGame.tsx`):* Fixed hybrid delta-time mismatch where horizontal obstacle scrolling used `60 * dt` while vertical raptor jump and gravity (`raptor.vy += GRAVITY; raptor.y += raptor.vy`) updated per-frame without `dt`, which previously caused jumps to snap back to the ground in $41\%$ of normal airtime on 144Hz displays. Also guarded `handleDuckPress` against OS key-repeat fast-fall impulse stacking and normalized particle/notice velocities.
+    - *Deparkanoid (`Deparkanoid.tsx`):* Added `computeArcadeTimeStep` (`frameScale`) to the `requestAnimationFrame` loop and scaled paddle step (`PADDLE_STEP * frameScale`) and ball velocity (`xSpeed * frameScale`, `ySpeed * frameScale`), while keeping non-loop `draw(0)` calls (resize/font load) side-effect free.
+    - *Snake Grid (`SnakeGame.tsx`) & Cyber Tetris (`TetrisGame.tsx`):* Normalized particle velocity, exponential drag (`Math.pow(0.96, frameScale)`), alpha decay, and floating score text drift with `frameScale`.
+  - Added dedicated unit test suite `src/features/arcade/utils/arcadeTimeStep.test.ts` and high-refresh-rate physics regression tests in `FlappyGame.test.tsx` and `PixelRunGame.test.tsx` (50 test suites, 292 passing tests).
+
 ## [0.8.10] - 2026-11-13
 
 ### Security & Hardening

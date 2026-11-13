@@ -19,6 +19,7 @@ import {
   type SnakeLevelConfig,
 } from "./snakeLevels";
 import { EMBEDDED_FONT_FAMILY as EMBEDDED_FAMILY, ensureEmbeddedFont } from "@/features/arcade/utils/arcadeFont";
+import { computeArcadeTimeStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 export type GameMode = "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
 
@@ -322,7 +323,7 @@ export default function SnakeGame(props: SnakeGameProps) {
   );
 
   // Frame draw loop
-  const draw = useCallback(() => {
+  const draw = useCallback((frameScale = 0) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -495,13 +496,16 @@ export default function SnakeGame(props: SnakeGameProps) {
     // 6. Draw Particles
     ctx.save();
     ctx.globalCompositeOperation = "lighter";
+    const drag = frameScale > 0 ? Math.pow(0.96, frameScale) : 1;
     for (let i = g.particles.length - 1; i >= 0; i--) {
       const p = g.particles[i];
-      p.x += p.vx;
-      p.y += p.vy;
-      p.vx *= 0.96;
-      p.vy *= 0.96;
-      p.alpha -= 0.025;
+      if (frameScale > 0) {
+        p.x += p.vx * frameScale;
+        p.y += p.vy * frameScale;
+        p.vx *= drag;
+        p.vy *= drag;
+        p.alpha -= 0.025 * frameScale;
+      }
       if (p.alpha <= 0) {
         g.particles.splice(i, 1);
         continue;
@@ -711,7 +715,10 @@ export default function SnakeGame(props: SnakeGameProps) {
     wrapRef.current?.focus();
 
     let raf = 0;
+    let lastFrameTime = performance.now();
     const loop = (time: number) => {
+      const { frameScale } = computeArcadeTimeStep(time, lastFrameTime);
+      lastFrameTime = time;
       const g = gameRef.current;
       if (g && g.mode === "RUNNING") {
         const curConfig = SNAKE_LEVELS[g.levelIndex] ?? SNAKE_LEVELS[0];
@@ -720,7 +727,7 @@ export default function SnakeGame(props: SnakeGameProps) {
           g.lastTick = time;
         }
       }
-      draw();
+      draw(frameScale);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

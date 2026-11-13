@@ -23,6 +23,7 @@ import {
 } from "./flappyLevels";
 import { flappyAudio } from "./flappyAudio";
 import { EMBEDDED_FONT_FAMILY as EMBEDDED_FAMILY, ensureEmbeddedFont } from "@/features/arcade/utils/arcadeFont";
+import { computeArcadeTimeStep, integrateGravityStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 export type FlappyGameMode = "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
 
@@ -461,6 +462,7 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
   // Main 60fps game loop
   useEffect(() => {
     let lastTime = performance.now();
+    let trailSpawnAcc = 0;
 
     function drawCyberModalBox(
       ctx: CanvasRenderingContext2D,
@@ -719,7 +721,7 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
     }
 
     const loop = (currentTime: number) => {
-      const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+      const { dt, frameScale } = computeArcadeTimeStep(currentTime, lastTime);
       lastTime = currentTime;
 
       const canvas = canvasRef.current;
@@ -737,23 +739,23 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
 
         // Parallax stars scroll
         for (const star of s.stars) {
-          star.twinklePhase += star.twinkleSpeed;
+          star.twinklePhase += star.twinkleSpeed * frameScale;
           if (s.mode === "RUNNING") {
-            star.x -= star.speed;
+            star.x -= star.speed * frameScale;
             if (star.x < 0) star.x = GAME_W + 5;
           }
         }
 
         // Aerial traffic lanes update
         for (const tr of s.traffic) {
-          tr.x += tr.speed - (s.mode === "RUNNING" ? level.speed * 0.15 : 0);
+          tr.x += (tr.speed - (s.mode === "RUNNING" ? level.speed * 0.15 : 0)) * frameScale;
           if (tr.x > GAME_W + 50) tr.x = -50;
           if (tr.x < -50) tr.x = GAME_W + 50;
         }
 
         // Parallax far towers & mid buildings scroll
         if (s.mode === "RUNNING") {
-          const farSpeed = level.speed * 0.11;
+          const farSpeed = level.speed * 0.11 * frameScale;
           for (const ft of s.farTowers) {
             ft.x -= farSpeed;
           }
@@ -764,7 +766,7 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
             s.farTowers.push(recycled);
           }
 
-          const bgSpeed = level.speed * 0.28;
+          const bgSpeed = level.speed * 0.28 * frameScale;
           for (const b of s.buildings) {
             b.x -= bgSpeed;
           }
@@ -775,7 +777,7 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
             s.buildings.push(recycled);
           }
 
-          s.groundScrollX = (s.groundScrollX - level.speed) % 40;
+          s.groundScrollX = (s.groundScrollX - level.speed * frameScale) % 40;
         }
 
         // Mode specific updates
@@ -786,10 +788,16 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
         } else if (s.mode === "RUNNING") {
           s.wingTimer += dt * 15;
 
-          // Bird physics
-          s.birdSpeed += GRAVITY;
-          if (s.birdSpeed > MAX_FALL_SPEED) s.birdSpeed = MAX_FALL_SPEED;
-          s.birdY += s.birdSpeed;
+          // Bird physics (frame-rate independent trapezoidal gravity integration)
+          const birdStep = integrateGravityStep(
+            s.birdY,
+            s.birdSpeed,
+            GRAVITY,
+            frameScale,
+            MAX_FALL_SPEED,
+          );
+          s.birdSpeed = birdStep.vy;
+          s.birdY = birdStep.y;
 
           // Ceiling clamp
           if (s.birdY - BIRD_RADIUS <= CEILING_Y) {
@@ -799,30 +807,37 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
 
           // Angle interpolation
           if (s.birdSpeed < 0) {
-            s.birdAngle = Math.max(-0.45, s.birdAngle - 0.15);
+            s.birdAngle = Math.max(-0.45, s.birdAngle - 0.15 * frameScale);
           } else {
-            s.birdAngle = Math.min(1.2, s.birdAngle + 0.05 + s.birdSpeed * 0.02);
+            s.birdAngle = Math.min(
+              1.2,
+              s.birdAngle + (0.05 + s.birdSpeed * 0.02) * frameScale,
+            );
           }
 
           // Update bird ion ribbon trail
           for (let i = s.birdTrail.length - 1; i >= 0; i--) {
-            s.birdTrail[i].x -= level.speed;
-            s.birdTrail[i].alpha -= 0.09;
+            s.birdTrail[i].x -= level.speed * frameScale;
+            s.birdTrail[i].alpha -= 0.09 * frameScale;
             if (s.birdTrail[i].alpha <= 0) {
               s.birdTrail.splice(i, 1);
             }
           }
-          s.birdTrail.push({ x: BIRD_X - 14, y: s.birdY, alpha: 0.85 });
-          if (s.birdTrail.length > 10) {
-            s.birdTrail.shift();
+          trailSpawnAcc += frameScale;
+          if (trailSpawnAcc >= 1) {
+            trailSpawnAcc %= 1;
+            s.birdTrail.push({ x: BIRD_X - 14, y: s.birdY, alpha: 0.85 });
+            if (s.birdTrail.length > 10) {
+              s.birdTrail.shift();
+            }
           }
 
           // Pylons update
           for (const pylon of s.pylons) {
-            pylon.x -= level.speed;
+            pylon.x -= level.speed * frameScale;
 
             if (level.oscillating && pylon.oscillationAmp > 0) {
-              pylon.oscillationPhase += pylon.oscillationSpeed;
+              pylon.oscillationPhase += pylon.oscillationSpeed * frameScale;
               pylon.topHeight =
                 pylon.baseTopHeight + Math.sin(pylon.oscillationPhase) * pylon.oscillationAmp;
               if (pylon.orb && !pylon.orb.collected) {
@@ -875,7 +890,7 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
 
             // Orb collection check
             if (pylon.orb && !pylon.orb.collected) {
-              pylon.orb.sparklePhase += 0.08;
+              pylon.orb.sparklePhase += 0.08 * frameScale;
               const orbX = pylon.x + PYLON_WIDTH / 2;
               if (isBirdCollectingOrb(BIRD_X, s.birdY, BIRD_RADIUS, orbX, pylon.orb.y)) {
                 pylon.orb.collected = true;
@@ -943,9 +958,9 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
         // Particle updates
         for (let i = s.particles.length - 1; i >= 0; i--) {
           const p = s.particles[i];
-          p.x += p.vx;
-          p.y += p.vy;
-          p.alpha -= p.decay;
+          p.x += p.vx * frameScale;
+          p.y += p.vy * frameScale;
+          p.alpha -= p.decay * frameScale;
           if (p.alpha <= 0) {
             s.particles.splice(i, 1);
           }
@@ -954,8 +969,8 @@ export default function FlappyGame({ onExit }: FlappyGameProps) {
         // Floating texts update
         for (let i = s.floatingTexts.length - 1; i >= 0; i--) {
           const ft = s.floatingTexts[i];
-          ft.y += ft.vy;
-          ft.alpha -= 0.022;
+          ft.y += ft.vy * frameScale;
+          ft.alpha -= 0.022 * frameScale;
           if (ft.alpha <= 0) {
             s.floatingTexts.splice(i, 1);
           }

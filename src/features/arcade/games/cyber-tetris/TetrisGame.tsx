@@ -26,6 +26,7 @@ import {
 } from "./tetrisLevels";
 import { tetrisAudio } from "./tetrisAudio";
 import { EMBEDDED_FONT_FAMILY as EMBEDDED_FAMILY, ensureEmbeddedFont } from "@/features/arcade/utils/arcadeFont";
+import { computeArcadeTimeStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 export type TetrisGameMode = "READY" | "RUNNING" | "PAUSED" | "LEVEL_CLEAR" | "VICTORY" | "GAME_OVER";
 
@@ -569,14 +570,18 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
 
     const loop = (now: number) => {
       animId = requestAnimationFrame(loop);
-      const dt = Math.min(now - lastFrameTime, 100);
+      const { dt: dtSec, frameScale } = computeArcadeTimeStep(now, lastFrameTime, 0.1);
+      const dt = dtSec * 1000;
       lastFrameTime = now;
 
       // Smooth score interpolation
       if (displayedScoreRef.current < scoreRef.current) {
+        const interpFactor = Math.min(1, 0.15 * frameScale);
         displayedScoreRef.current = Math.min(
           scoreRef.current,
-          displayedScoreRef.current + Math.ceil((scoreRef.current - displayedScoreRef.current) * 0.15) + 2
+          displayedScoreRef.current +
+            Math.ceil((scoreRef.current - displayedScoreRef.current) * interpFactor) +
+            Math.max(1, Math.round(2 * frameScale))
         );
       }
 
@@ -589,9 +594,9 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
       // Update particles
       for (let i = particlesRef.current.length - 1; i >= 0; i--) {
         const p = particlesRef.current[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.decay;
+        p.x += p.vx * frameScale;
+        p.y += p.vy * frameScale;
+        p.alpha -= p.decay * frameScale;
         if (p.alpha <= 0) {
           particlesRef.current.splice(i, 1);
         }
@@ -600,8 +605,8 @@ export default function TetrisGame({ onExit }: TetrisGameProps) {
       // Update floating texts
       for (let i = floatingTextsRef.current.length - 1; i >= 0; i--) {
         const ft = floatingTextsRef.current[i];
-        ft.y -= 0.6;
-        ft.alpha -= 0.016;
+        ft.y -= 0.6 * frameScale;
+        ft.alpha -= 0.016 * frameScale;
         if (ft.alpha <= 0) {
           floatingTextsRef.current.splice(i, 1);
         }

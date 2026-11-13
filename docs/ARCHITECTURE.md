@@ -125,7 +125,7 @@ A critical technical innovation of this portfolio is projecting interactive 2D H
 
 ### 5.1. Autonomous Mini-Game Engines (`features/arcade/games/`)
 Each mini-game operates as an autonomous, self-contained engine:
-- **Game Loop:** Powered by `requestAnimationFrame` with delta-time ($\Delta t$) normalization to ensure identical physics at 60Hz, 120Hz, or 144Hz.
+- **Game Loop & Refresh-Rate Invariance (`arcadeTimeStep.ts`):** Powered by `requestAnimationFrame` with 60Hz-normalized delta-time scaling (`computeArcadeTimeStep`: $\text{frameScale} = \Delta t \times 60$, clamped at $50\text{ms}$) and exact trapezoidal gravity integration (`integrateGravityStep`: $y_{t+\Delta t} = y_t + \left(\frac{v_t + v_{t+\Delta t}}{2} + \frac{1}{2}g\right)\text{frameScale}$) so jump apex height, airtime, pylon/obstacle scrolling, ball/paddle speed, and particle decay run at identical real-world speeds across 60Hz, 120Hz, 144Hz, 165Hz, 240Hz, and uncapped Linux/Chrome displays.
 - **Decoupled Audio Synthesizer:** Mini-games instantiate isolated Web Audio API graphs (`flappyAudio.ts`, `tetrisAudio.ts`, `pixelRunAudio.ts`) creating retro bleeps, jump sweeps, and collision impacts synthetically without external audio asset downloads.
 - **Universal Pause State Machine:** Every game engine enforces a standardized `"PAUSED"` mode reachable via `'p'` / `'P'` keyboard events. When paused, rendering displays a crisp modal frame while game updates, gravity, timers, and chiptune audio are cleanly suspended. Resuming via `PAUSE` or action keys seamlessly restores last tick timestamps without delta spikes.
 - **High-DPI Uniform Fit Scaling:** Games with dense board layouts (*Cyber Tetris* $880 \times 620$) implement uniform fit scaling:
@@ -135,7 +135,7 @@ Each mini-game operates as an autonomous, self-contained engine:
 
 ### 5.2. Mobile Retro Handheld Console Architecture (`features/arcade/components/`)
 - **Physical Console Emulation (`MobileArcadeModal`):** Structured as a dual-zone handheld console (model DMG-05) with full modal focus trapping, initial focus capture & restoration on close, complete ARIA `tablist`/`tab`/`tabpanel` wiring, and horizontal swipe cartridge switching. The top zone mounts a 4:3 CRT display lens with scanlines and curvature, hosting either the 5-game cartridge carousel or the full-bleed canvas. The bottom zone hosts the tactile controller.
-- **Shared Font & High-Score Utilities (`features/arcade/utils/`):** `arcadeFont.ts` centralizes embedded `"Departure Mono Subset"` `FontFace` loading across all 5 Canvas games, and `arcadeData.ts` centralizes persistent `localStorage` high-score keys (`ARCADE_HIGH_SCORE_KEYS`, including `deparkanoid_high_score`).
+- **Shared Font, High-Score & Time-Step Utilities (`features/arcade/utils/`):** `arcadeFont.ts` centralizes embedded `"Departure Mono Subset"` `FontFace` loading across all 5 Canvas games, `arcadeData.ts` centralizes persistent `localStorage` high-score keys (`ARCADE_HIGH_SCORE_KEYS`, including `deparkanoid_high_score`), and `arcadeTimeStep.ts` provides `computeArcadeTimeStep` and `integrateGravityStep` for refresh-rate-independent physics.
 - **Adaptive Touch Gamepad Bridge (`MobileGamepad`):** Bridges virtual mobile thumb interactions to standard DOM `KeyboardEvent` dispatches (`keydown` / `keyup`). Automatically switches button configurations using per-game control profiles (`GAME_CONTROL_PROFILES`), gates `P` pause dispatches strictly to active gameplay (`isPlaying`), and features immediate `onPointerDown` execution with haptic feedback (`navigator.vibrate(10)`).
 - **Global Event Normalization:** `SnakeGame` and `Deparkanoid` attach `window` listeners during active play (`bindSnakeWindowListeners`, `bindDeparkanoidWindowListeners`), ensuring gamepad dispatches seamlessly reach game engines without requiring artificial focus management. `MobileArcadeModal` resets master mute state on close/unmount and intercepts `Escape` before `FlatLanding` so closing the console never triggers unintended 3D room re-entry.
 
@@ -153,5 +153,5 @@ Each mini-game operates as an autonomous, self-contained engine:
 | **Motion** | Motion (Framer) | 14.10.1 | Spring physics and kinetic transitions |
 | **Optics** | tactile-glass-ui | 0.1.1 | WebGL2 refractive glass buttons |
 | **Liquid Glass** | glisse | 0.5.0 | Optical refractive liquid glass navbar & hero CTA |
-| **Testing** | Vitest | 5.0.5 | 49 unit test suites (286 tests) |
+| **Testing** | Vitest | 5.0.5 | 50 unit test suites (292 tests) |
 | **E2E Testing**| Playwright | 1.64.1 | Cross-browser Chromium end-to-end verification |

@@ -23,6 +23,7 @@ import {
   getSectorProgress,
   type RaptorState,
 } from "./pixelRunLevels";
+import { computeArcadeTimeStep, integrateGravityStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 describe("PixelRunGame & pixelRunLevels Engine", () => {
   it("defines 5 campaign sectors in strictly increasing distance order up to VICTORY_DISTANCE", () => {
@@ -173,6 +174,61 @@ describe("PixelRunGame & pixelRunLevels Engine", () => {
     // Already collected item
     core.collected = true;
     expect(checkCollectiblePickup(raptor, core)).toBe(false);
+  });
+
+  it("clears ground spike obstacles with identical jump horizontal span at 60Hz, 144Hz, and 240Hz", () => {
+    const speed = SECTOR_CONFIGS[0].speed;
+
+    function simulateJumpOverSpike(hz: number) {
+      const raptor: RaptorState = {
+        x: RAPTOR_X,
+        y: GROUND_Y - RAPTOR_UPRIGHT_H,
+        vy: JUMP_IMPULSE,
+        isGrounded: false,
+        isDucking: false,
+        hasShield: false,
+        runFrame: 0,
+        frameTimer: 0,
+      };
+      // Place a single spike ahead so the raptor jumps right over it
+      const spike = createObstacle("spike_single", RAPTOR_X + 110);
+      let collided = false;
+      let horizontalSpan = 0;
+      const frameMs = 1000 / hz;
+
+      for (let step = 0; step < hz * 2; step++) {
+        const { frameScale } = computeArcadeTimeStep((step + 1) * frameMs, step * frameMs);
+        const jumpStep = integrateGravityStep(raptor.y, raptor.vy, GRAVITY, frameScale);
+        raptor.vy = jumpStep.vy;
+        raptor.y = jumpStep.y;
+        const moveDist = speed * frameScale;
+        spike.x -= moveDist;
+        horizontalSpan += moveDist;
+
+        if (raptor.y >= GROUND_Y - RAPTOR_UPRIGHT_H) {
+          raptor.y = GROUND_Y - RAPTOR_UPRIGHT_H;
+          raptor.vy = 0;
+          raptor.isGrounded = true;
+          break;
+        }
+
+        if (checkRaptorCollision(raptor, spike)) {
+          collided = true;
+        }
+      }
+
+      return { collided, horizontalSpan };
+    }
+
+    const jump60 = simulateJumpOverSpike(60);
+    const jump144 = simulateJumpOverSpike(144);
+    const jump240 = simulateJumpOverSpike(240);
+
+    expect(jump60.collided).toBe(false);
+    expect(jump144.collided).toBe(false);
+    expect(jump240.collided).toBe(false);
+    expect(Math.abs(jump144.horizontalSpan - jump60.horizontalSpan)).toBeLessThan(6);
+    expect(Math.abs(jump240.horizontalSpan - jump60.horizontalSpan)).toBeLessThan(6);
   });
 
   it("renders static markup without throwing", () => {

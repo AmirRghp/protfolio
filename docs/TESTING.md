@@ -22,7 +22,7 @@ Key testing principles:
   /         \    DOM testing, keyboard navigation, window drag
  /-----------\   
 /             \  Unit Tests (Vitest)
-/               \ 49 test files · 286 tests (3D math, audio, level data, responsive)
+/               \ 50 test files · 292 tests (3D math, audio, level data, responsive)
 -----------------
 ```
 
@@ -32,7 +32,7 @@ Key testing principles:
 
 Unit testing runs via **Vitest** with in-memory DOM simulation and isolated worker threads.
 
-### Test Suites Breakdown (49 Files, 286 Tests)
+### Test Suites Breakdown (50 Files, 292 Tests)
 - **Device & Responsive Engine:**
   - `src/core/utils/responsive.test.ts`: Tests `useResponsiveDevice` hook, media query matching, snapshot overrides, and strict dual-condition calculation ($\text{allowRoom3D}$).
   - `src/features/landing/components/FlatLanding.test.tsx`: Tests flat landing DOM structure, `#arcade` hash deep-linking, room entry suppression, sticky header with Glisse `<Glass>` liquid glass backdrop (`ldNavGlass`, `lg-glass`), `--lg-blur: 3px`, and decoupling from scrolling sections.
@@ -54,7 +54,8 @@ Unit testing runs via **Vitest** with in-memory DOM simulation and isolated work
   - `src/features/monitor/apps/ProjectApp.test.tsx`: Tests project window details, in-window GitHub repository viewer (`srcDoc`), Markdown scheme sanitization, parent `postMessage` origin verification, corrupt cache schema rejection, repo metadata, and glyphs.
   - `src/features/monitor/utils/desktopDrag.test.ts`: Tests pointer capture, drag bounds clamping, and threshold activations.
 - **Arcade Mini-Games & Mobile Handheld:**
-  - `src/features/arcade/games/*/*.test.tsx`: Tests tick loops, score tracking, high-score persistence (including `deparkanoid_high_score`), keyboard bindings, and reset routines for Flappy, Tetris, Pixel Run, Snake, and Deparkanoid.
+  - `src/features/arcade/utils/arcadeTimeStep.test.ts`: Verifies 60Hz-normalized delta-time scaling (`computeArcadeTimeStep`) and trapezoidal gravity integration (`integrateGravityStep`), ensuring identical jump height, airtime, and travel distance across 60Hz, 120Hz, 144Hz, and 240Hz refresh rates.
+  - `src/features/arcade/games/*/*.test.tsx`: Tests tick loops, refresh-rate-independent jump/flight physics, score tracking, high-score persistence (including `deparkanoid_high_score`), keyboard bindings, and reset routines for Flappy, Tetris, Pixel Run, Snake, and Deparkanoid.
   - `src/features/arcade/components/MobileArcadeModal.test.tsx`: Tests handheld modal carousel/gameplay states, complete ARIA `tablist`/`tab`/`tabpanel` wiring, and unified high-score persistence across all 5 cartridges.
   - `src/features/arcade/components/MobileGamepad.test.tsx`: Tests adaptive per-game action clusters, D-Pad rendering, `isPlaying` pause gating, synthetic `KeyboardEvent` dispatches, and haptic feedback.
   - `src/features/landing/components/MobileArcadeFab.test.tsx`: Tests AssistiveTouch FAB visibility and magnetic horizontal edge snapping.
@@ -85,7 +86,7 @@ End-to-end tests run headless Chromium across responsive viewport configurations
 Run the following commands locally before any release or commit:
 
 ```bash
-# 1. Run all 286 Vitest unit & integration tests (49 test suites)
+# 1. Run all 292 Vitest unit & integration tests (50 test suites)
 npm run test
 
 # 2. Verify complete TypeScript type soundness (zero emits, zero errors)

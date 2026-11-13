@@ -29,6 +29,7 @@ import {
 } from "./pixelRunLevels";
 import { pixelRunAudio } from "./pixelRunAudio";
 import { EMBEDDED_FONT_FAMILY as EMBEDDED_FAMILY, ensureEmbeddedFont } from "@/features/arcade/utils/arcadeFont";
+import { computeArcadeTimeStep, integrateGravityStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 export type PixelRunGameMode = "READY" | "RUNNING" | "PAUSED" | "SECTOR_WARP" | "VICTORY" | "GAME_OVER";
 
@@ -402,6 +403,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
 
   const handleDuckPress = useCallback(() => {
     const state = gameState.current;
+    const wasDuckPressed = state.duckKeyPressed;
     state.duckKeyPressed = true;
     if (state.mode !== "RUNNING" && state.mode !== "SECTOR_WARP") return;
 
@@ -412,7 +414,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
         state.scaleY = 0.82;
         pixelRunAudio.playDuck();
       }
-    } else {
+    } else if (!wasDuckPressed) {
       state.raptor.vy += FAST_FALL_ACCEL * 7;
       pixelRunAudio.playDuck();
     }
@@ -540,7 +542,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
     window.addEventListener("resize", updateCanvasSize);
 
     const renderLoop = (time: number) => {
-      const dt = Math.min((time - lastTime) / 1000, 0.05);
+      const { dt, frameScale } = computeArcadeTimeStep(time, lastTime);
       lastTime = time;
 
       ctx.save();
@@ -574,11 +576,11 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
       // --- GAMEPLAY UPDATE ---
       if (state.mode === "RUNNING" || state.mode === "SECTOR_WARP") {
         const speed = currentSector.speed * (state.isEndless ? 1.25 : 1.0);
-        const distStep = speed * 60 * dt * DISTANCE_SCALE;
+        const distStep = speed * frameScale * DISTANCE_SCALE;
         state.distance += distStep;
         state.score += distStep * 3;
 
-        state.groundScrollX = (state.groundScrollX + speed * 60 * dt) % 64;
+        state.groundScrollX = (state.groundScrollX + speed * frameScale) % 64;
 
         // Check 100m milestones
         const currentMilestone = Math.floor(state.distance / 100);
@@ -636,11 +638,18 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
           }
         }
 
-        // Physics: Raptor Jump & Gravity
+        // Physics: Raptor Jump & Gravity (frame-rate independent trapezoidal integration)
         const raptor = state.raptor;
         if (!raptor.isGrounded) {
-          raptor.vy += GRAVITY * (state.duckKeyPressed ? 2.4 : 1.0);
-          raptor.y += raptor.vy;
+          const effectiveGravity = GRAVITY * (state.duckKeyPressed ? 2.4 : 1.0);
+          const jumpStep = integrateGravityStep(
+            raptor.y,
+            raptor.vy,
+            effectiveGravity,
+            frameScale,
+          );
+          raptor.vy = jumpStep.vy;
+          raptor.y = jumpStep.y;
 
           if (raptor.y >= GROUND_Y - RAPTOR_UPRIGHT_H) {
             raptor.y = GROUND_Y - RAPTOR_UPRIGHT_H;
@@ -686,7 +695,11 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
         }
 
         // Sliding sparks when ducking on ground
-        if (raptor.isGrounded && raptor.isDucking && Math.random() < 0.65) {
+        if (
+          raptor.isGrounded &&
+          raptor.isDucking &&
+          Math.random() < 0.65 * Math.min(1, frameScale)
+        ) {
           spawnParticles(
             raptor.x + RAPTOR_DUCK_W * 0.35,
             GROUND_Y - 2,
@@ -697,7 +710,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
           );
         }
 
-        const moveDist = speed * 60 * dt;
+        const moveDist = speed * frameScale;
 
         // Scroll trail ghosts with world
         for (let i = state.raptorTrail.length - 1; i >= 0; i--) {
@@ -810,9 +823,9 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
       // Update Particles
       for (let i = state.particles.length - 1; i >= 0; i--) {
         const p = state.particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= p.decay;
+        p.x += p.vx * frameScale;
+        p.y += p.vy * frameScale;
+        p.alpha -= p.decay * frameScale;
         if (p.alpha <= 0) {
           state.particles.splice(i, 1);
         }
@@ -821,7 +834,7 @@ export default function PixelRunGame({ onExit }: PixelRunGameProps) {
       // Update Floating Notices
       for (let i = state.floatingNotices.length - 1; i >= 0; i--) {
         const n = state.floatingNotices[i];
-        n.y += n.vy;
+        n.y += n.vy * frameScale;
         n.alpha -= dt * 0.9;
         if (n.alpha <= 0) {
           state.floatingNotices.splice(i, 1);

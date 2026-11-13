@@ -4,8 +4,11 @@ import FlappyGame from "./FlappyGame";
 import {
   BIRD_RADIUS,
   BIRD_X,
+  FLAP_THRUST,
   FLAPPY_LEVELS,
+  GRAVITY,
   GROUND_Y,
+  MAX_FALL_SPEED,
   PYLON_MIN_HEIGHT,
   PYLON_WIDTH,
   TOTAL_FLAPPY_LEVELS,
@@ -16,6 +19,7 @@ import {
   isBirdCollectingOrb,
   type Pylon,
 } from "./flappyLevels";
+import { computeArcadeTimeStep, integrateGravityStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 describe("flappyLevels configuration & physics", () => {
   it("defines exactly 5 progressive levels", () => {
@@ -105,6 +109,34 @@ describe("flappyLevels configuration & physics", () => {
 
     // Bird too far away
     expect(isBirdCollectingOrb(260, 250, BIRD_RADIUS, orbX, orbY)).toBe(false);
+  });
+
+  it("maintains identical bird flight arc and pylon travel distance across 60Hz and 144Hz refresh rates", () => {
+    const levelSpeed = FLAPPY_LEVELS[0].speed;
+
+    function runSimulation(hz: number, seconds: number) {
+      let y = 260;
+      let vy = FLAP_THRUST;
+      let pylonX = 600;
+      const totalFrames = Math.round(hz * seconds);
+      const frameDurationMs = 1000 / hz;
+
+      for (let i = 0; i < totalFrames; i++) {
+        const { frameScale } = computeArcadeTimeStep((i + 1) * frameDurationMs, i * frameDurationMs);
+        const nextBird = integrateGravityStep(y, vy, GRAVITY, frameScale, MAX_FALL_SPEED);
+        y = nextBird.y;
+        vy = nextBird.vy;
+        pylonX -= levelSpeed * frameScale;
+      }
+      return { y, vy, pylonX };
+    }
+
+    const res60 = runSimulation(60, 0.5);
+    const res144 = runSimulation(144, 0.5);
+
+    expect(res144.y).toBeCloseTo(res60.y, 4);
+    expect(res144.vy).toBeCloseTo(res60.vy, 4);
+    expect(res144.pylonX).toBeCloseTo(res60.pylonX, 4);
   });
 });
 

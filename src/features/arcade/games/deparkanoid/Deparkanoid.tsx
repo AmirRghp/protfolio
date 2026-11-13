@@ -15,6 +15,7 @@ import {
 } from "./deparkanoidLevels";
 import { EMBEDDED_FONT_FAMILY as EMBEDDED_FAMILY, ensureEmbeddedFont } from "@/features/arcade/utils/arcadeFont";
 import { readArcadeHighScore, saveArcadeHighScore } from "@/features/arcade/utils/arcadeData";
+import { computeArcadeTimeStep } from "@/features/arcade/utils/arcadeTimeStep";
 
 const BALL_SIZE = 22;
 const PADDLE_H = 22;
@@ -257,7 +258,7 @@ export default function Deparkanoid(props: DeparkanoidProps) {
   }, [ensureGame, launchBall]);
 
   // Frame draw loop
-  const draw = useCallback(() => {
+  const draw = useCallback((frameScale = 0) => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
     if (!canvas || !ctx) return;
@@ -286,12 +287,12 @@ export default function Deparkanoid(props: DeparkanoidProps) {
     const maxX = GAME_W - g.paddle.width - margin;
 
     // Paddle movement
-    if (g.mode !== "PAUSED") {
+    if (g.mode !== "PAUSED" && frameScale > 0) {
       if (optsRef.current.autoPlay && g.mode === "RUNNING") {
         g.paddle.x = clamp(margin, maxX, g.ball.x - g.paddle.width / 2);
       } else {
-        if (g.left && g.paddle.x > margin) g.paddle.x -= PADDLE_STEP;
-        else if (g.right && g.paddle.x < maxX) g.paddle.x += PADDLE_STEP;
+        if (g.left && g.paddle.x > margin) g.paddle.x -= PADDLE_STEP * frameScale;
+        else if (g.right && g.paddle.x < maxX) g.paddle.x += PADDLE_STEP * frameScale;
         g.paddle.x = clamp(margin, maxX, g.paddle.x);
       }
     }
@@ -303,10 +304,10 @@ export default function Deparkanoid(props: DeparkanoidProps) {
     }
 
     // Ball physics in RUNNING mode
-    if (g.mode === "RUNNING") {
+    if (g.mode === "RUNNING" && frameScale > 0) {
       const b = g.ball;
-      b.x += b.xSpeed;
-      b.y += b.ySpeed;
+      b.x += b.xSpeed * frameScale;
+      b.y += b.ySpeed * frameScale;
 
       // Edge collisions
       if (b.x < b.radius || b.x > GAME_W - b.radius) {
@@ -611,8 +612,11 @@ export default function Deparkanoid(props: DeparkanoidProps) {
     wrapRef.current?.focus();
 
     let raf = 0;
-    const loop = () => {
-      draw();
+    let lastTime = performance.now();
+    const loop = (now: number) => {
+      const { frameScale } = computeArcadeTimeStep(now, lastTime);
+      lastTime = now;
+      draw(frameScale);
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

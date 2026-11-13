@@ -344,3 +344,23 @@ This document records the foundational architecture decisions, trade-offs, and d
 - **Consequences:**
   - *Positive:* Eliminates iframe same-origin escape, Markdown XSS vectors, audio leaks, and unintended `Escape` navigation.
   - *Positive:* Removes an unnecessary external dependency (`lucide-react`) and 11 unused binary artifacts while standardizing all 5 arcade games under a single font/high-score layer and expanding unit verification to 49 test suites (286 tests).
+
+---
+
+### ADR-020: Refresh-Rate Independent Arcade Physics & Trapezoidal Gravity Integration (`arcadeTimeStep.ts`)
+- **Status:** Accepted (2026-11-13)
+- **Context:**
+  Testing the arcade cabinet on a laptop running Ubuntu Linux with a 4GB dedicated GPU and Google Chrome on a high-refresh-rate display (120Hz / 144Hz / 240Hz) revealed that *Cyber Flappy*, *Pixel Run*, and *Deparkanoid* ran at unplayably fast speeds:
+  1. In *Pixel Run*, horizontal obstacle movement scaled with `60 * dt`, but vertical raptor jump/gravity (`raptor.vy += GRAVITY; raptor.y += raptor.vy`) executed once per `requestAnimationFrame` without `dt`. On a 144Hz screen, the jump completed in $60 / 144 \approx 41.7\%$ of the intended airtime, slamming the raptor back down before clearing any obstacle.
+  2. In *Cyber Flappy*, `dt` was computed but unused in physics or world scrolling, causing horizontal pylons to move $2.4\times$ faster at 144Hz and vertical gravity to accelerate quadratically ($\sim 5.76\times$ faster at 144Hz due to unscaled double Euler integration).
+  3. In *Deparkanoid*, `draw()` mutated paddle and ball coordinates on every `requestAnimationFrame` (and on `ResizeObserver` callbacks) without `dt` scaling.
+- **Decision:**
+  1. Create `src/features/arcade/utils/arcadeTimeStep.ts` exporting `computeArcadeTimeStep(currentTimeMs, lastTimeMs, maxDeltaSec)` (`frameScale = dt * 60`, clamped to $50\text{ms}$) and `integrateGravityStep(y, vy, gravityPerFrame, frameScale, maxFallSpeed)`.
+  2. Formulate `integrateGravityStep` using exact trapezoidal velocity integration with a discrete 60Hz Euler bias match:
+     $$v_{t+\Delta t} = \min\left(v_{\max},\; v_t + g \cdot s\right), \quad g_{\text{eff}} = \frac{v_{t+\Delta t} - v_t}{s}, \quad y_{t+\Delta t} = y_t + \left(\frac{v_t + v_{t+\Delta t}}{2} + \frac{1}{2}g_{\text{eff}}\right) s$$
+     where $s = \Delta t \times 60$. At 60Hz ($s = 1$), this reduces algebraically to `vy += g; y += vy`. Across any partition of sub-frames where $\sum s_i = T$ (120Hz, 144Hz, 165Hz, 240Hz), the telescoping sum yields the exact same position, velocity, jump apex height, and airtime as 60Hz while rendering smooth intermediate positions on every native refresh frame.
+  3. Apply `frameScale` across all continuous displacements, oscillations, trail spawns, paddle/ball velocities, and particle/floating-text updates in `FlappyGame.tsx`, `PixelRunGame.tsx`, `Deparkanoid.tsx`, `SnakeGame.tsx`, and `TetrisGame.tsx`.
+- **Consequences:**
+  - *Positive:* Guarantees identical gameplay speed, jump arcs, and obstacle clearance across 60Hz, 120Hz, 144Hz, 165Hz, 240Hz, and uncapped Linux/Chrome frame rates while maintaining native high-FPS visual smoothness.
+  - *Positive:* Backed by deterministic mathematical unit tests in `arcadeTimeStep.test.ts`, `FlappyGame.test.tsx`, and `PixelRunGame.test.tsx` (50 test suites, 292 passing tests).
+

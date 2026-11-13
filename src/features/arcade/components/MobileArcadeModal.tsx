@@ -66,6 +66,8 @@ export default function MobileArcadeModal({
 
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const startBtnRef = useRef<HTMLButtonElement>(null);
+  const gameplayStageRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
   const swipeStartRef = useRef<{ x: number; y: number } | null>(null);
 
@@ -92,7 +94,11 @@ export default function MobileArcadeModal({
   useEffect(() => {
     if (!isOpen || typeof document === "undefined") return;
     previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    closeBtnRef.current?.focus();
+    if (startBtnRef.current) {
+      startBtnRef.current.focus();
+    } else {
+      closeBtnRef.current?.focus();
+    }
 
     return () => {
       const prev = previousFocusRef.current;
@@ -102,6 +108,15 @@ export default function MobileArcadeModal({
       }
     };
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || typeof document === "undefined") return;
+    if (isPlaying) {
+      gameplayStageRef.current?.focus();
+    } else {
+      startBtnRef.current?.focus();
+    }
+  }, [isOpen, isPlaying]);
 
   const handleCloseModal = useCallback(() => {
     stopAllGameAudio();
@@ -277,7 +292,12 @@ export default function MobileArcadeModal({
 
             <div className={styles.crtBezel}>
               {isPlaying && ActiveGameComponent ? (
-                <div className={styles.gameplayStage} data-testid="mobile-arcade-gameplay">
+                <div
+                  ref={gameplayStageRef}
+                  tabIndex={-1}
+                  className={styles.gameplayStage}
+                  data-testid="mobile-arcade-gameplay"
+                >
                   <ActiveGameComponent onExit={handleReturnToMenu} />
                 </div>
               ) : (
@@ -357,6 +377,7 @@ export default function MobileArcadeModal({
                       <p className={styles.gameDesc}>{selectedGame.description}</p>
 
                       <button
+                        ref={startBtnRef}
                         type="button"
                         className={styles.startBtn}
                         onClick={handleStartGame}
