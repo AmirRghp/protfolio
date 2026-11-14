@@ -23,7 +23,11 @@ export function MobileWorkGrid({
       role="region"
       aria-label="Selected work project gallery"
     >
-      <div className={styles.mobileWorkKicker}>
+      <div
+        className={styles.mobileWorkKicker}
+        data-pl-text="Selected Work"
+        data-pl-label="SECTION // WORK"
+      >
         <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
           <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
         </svg>

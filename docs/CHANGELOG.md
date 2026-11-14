@@ -4,6 +4,14 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2026-11-14
+
+### Fixed
+- **Work Section Calibration Wireframe Clipping (`portfolioLoaderUtils.ts`, `PortfolioLoader.tsx`, `dome-gallery.tsx`, `mobile-work-grid.tsx`, `FlatLanding.tsx`):**
+  - Updated `scanBlueprintBoxes` to propagate both viewport bounds (excluding docked `<header>` occlusion below sticky navbar height) and ancestor `overflow: hidden | clip | auto | scroll` container clip rectangles down the DOM tree, preventing off-stage `DomeGallery` toroidal buffer rows/columns from spilling onto `.ldTools`, `<header>`, or outside `.ldWrap` margins.
+  - Added resilient CSS-Module screen-reader exclusion (`isVisuallyHiddenElement` matching hashed `.srOnly` classes and CSS `clip: rect(0,0,0,0)` patterns alongside `data-pl-ignore="true"`), stopping hidden semantic project index links from rendering duplicate text wireframes across `#ld-work`.
+  - Pruned partially visible outer `DomeTile` frames (`< 45%` visible inside `.domeStage`), annotated `.hintPill` and `.mobileWorkKicker` badges as composite `data-pl-text` nodes, marked `.ldRise` elements with `data-pl-rise="true"` on intersection, and synced `PortfolioLoader` `requestAnimationFrame` scans on scroll/resize during the active calibration phase.
+
 ## [0.9.2] - 2026-11-14
 
 ### Added

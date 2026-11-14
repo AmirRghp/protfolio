@@ -243,6 +243,7 @@ export default function FlatLanding({
           for (const e of entries) {
             if (e.isIntersecting) {
               e.target.classList.add(styles.in);
+              e.target.setAttribute("data-pl-rise", "true");
               if (e.target.id === "ld-numbers" || e.target.classList.contains(styles.ldNumbers)) {
                 setNumbersInView(true);
               }

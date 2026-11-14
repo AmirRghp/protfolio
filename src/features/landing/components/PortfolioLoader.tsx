@@ -27,31 +27,37 @@ export function PortfolioLoader({
   const [boxes, setBoxes] = useState<BlueprintBox[]>([]);
   const [stage, setStage] = useState<"active" | "wipe" | "done">("active");
 
-  // Scan live DOM elements inside the landing viewport on mount and on resize
+  // Scan live DOM elements inside the landing viewport while active
   useEffect(() => {
-    if (typeof window === "undefined") return undefined;
+    if (typeof window === "undefined" || stage !== "active") return undefined;
 
-    let hasScanned = false;
-    const runScan = (force = false) => {
-      if (hasScanned && !force) return;
+    let rafId = 0;
+    const runScan = () => {
       const scanned = scanBlueprintBoxes(scopeRef?.current ?? null);
       if (scanned.length > 0) {
-        hasScanned = true;
         setBoxes(scanned);
       }
     };
+    const scheduleScan = () => {
+      window.cancelAnimationFrame(rafId);
+      rafId = window.requestAnimationFrame(() => runScan());
+    };
 
-    const initialTimer = window.setTimeout(() => runScan(true), 0);
-    const fallbackTimer = window.setTimeout(() => runScan(false), 80);
-    const handleResize = () => runScan(true);
-    window.addEventListener("resize", handleResize);
+    scheduleScan();
+    const settleTimer = window.setTimeout(() => runScan(), 140);
+    const lateSettleTimer = window.setTimeout(() => runScan(), 380);
+    const scrollTarget = scopeRef?.current ?? null;
+    window.addEventListener("resize", scheduleScan);
+    scrollTarget?.addEventListener("scroll", scheduleScan, { passive: true });
 
     return () => {
-      window.clearTimeout(initialTimer);
-      window.clearTimeout(fallbackTimer);
-      window.removeEventListener("resize", handleResize);
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(settleTimer);
+      window.clearTimeout(lateSettleTimer);
+      window.removeEventListener("resize", scheduleScan);
+      scrollTarget?.removeEventListener("scroll", scheduleScan);
     };
-  }, [scopeRef]);
+  }, [scopeRef, stage]);
 
   // Drive 0..100 ease-in-out progress counter
   useEffect(() => {
@@ -208,7 +214,10 @@ export function PortfolioLoader({
             box.h >= 20 &&
             !box.textStyle?.centerVertically;
           const showCoordBadge = effectiveW >= 140 && box.h >= 34;
-          const isHeroBanner = box.kind === "media" && effectiveW > 240;
+          const isHeroBanner =
+            box.kind === "media" &&
+            box.label === "VIEWPORT // ASCII_CORE" &&
+            effectiveW > 240;
           const svgW = Math.max(Math.round(effectiveW), 100);
           const svgH = Math.max(Math.round(box.h), 100);
           const reticleX = Math.round(svgW * (effectiveW >= 720 ? 0.74 : 0.78));

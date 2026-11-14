@@ -342,9 +342,15 @@ export function DomeGallery({ projects }: DomeGalleryProps) {
 
   return (
     <>
-      <h2 className={styles.srOnly}>Selected Work</h2>
+      <h2 className={styles.srOnly} data-pl-ignore="true">
+        Selected Work
+      </h2>
 
-      <ul className={styles.srOnly} aria-label="Selected work project index">
+      <ul
+        className={styles.srOnly}
+        data-pl-ignore="true"
+        aria-label="Selected work project index"
+      >
         {projects.map((proj) => (
           <li key={proj.id}>
             <h3>{proj.title}</h3>
@@ -377,7 +383,11 @@ export function DomeGallery({ projects }: DomeGalleryProps) {
               active ? styles.stageFooterHidden : ""
             }`}
           >
-            <div className={styles.hintPill}>
+            <div
+              className={styles.hintPill}
+              data-pl-text="Selected Work"
+              data-pl-label="TAG // WORK"
+            >
               <svg
                 viewBox="0 0 16 16"
                 fill="currentColor"
@@ -424,6 +434,8 @@ export function DomeGallery({ projects }: DomeGalleryProps) {
             <div
               aria-hidden="true"
               className={styles.hintPill}
+              data-pl-text={hintLabel}
+              data-pl-label="HINT // DOME"
               style={{ opacity: hasInteracted ? 0.65 : 1 }}
             >
               <span className={styles.hintDot} />

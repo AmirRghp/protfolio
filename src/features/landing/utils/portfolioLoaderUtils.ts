@@ -143,6 +143,113 @@ function extractPadding(style: CSSStyleDeclaration): BlueprintPadding {
   };
 }
 
+interface ClipRect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+const MIN_VISIBLE_BOX_SIZE = 4;
+const MIN_CONTAINER_VISIBLE_RATIO = 0.45;
+
+function intersectClip(a: ClipRect, b: ClipRect): ClipRect {
+  return {
+    left: Math.max(a.left, b.left),
+    top: Math.max(a.top, b.top),
+    right: Math.min(a.right, b.right),
+    bottom: Math.min(a.bottom, b.bottom),
+  };
+}
+
+function isClipOverflowValue(value: string): boolean {
+  return (
+    value === "hidden" ||
+    value === "clip" ||
+    value === "scroll" ||
+    value === "auto"
+  );
+}
+
+function isVisuallyHiddenElement(
+  node: HTMLElement | SVGElement,
+  style: CSSStyleDeclaration,
+  rect: DOMRect,
+): boolean {
+  const className = node.getAttribute("class") ?? "";
+  if (
+    node.classList.contains("sr-only") ||
+    /(?:^|[\s_-])sr-?only(?:$|[\s_-])/i.test(className)
+  ) {
+    return true;
+  }
+  const normalizedClip = style.clip.replace(/\s+/g, "");
+  if (
+    normalizedClip === "rect(0px,0px,0px,0px)" ||
+    normalizedClip === "rect(0,0,0,0)" ||
+    style.clipPath === "inset(50%)"
+  ) {
+    return true;
+  }
+  if (
+    rect.width <= 2 &&
+    rect.height <= 2 &&
+    (style.overflow === "hidden" || style.overflow === "clip")
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function clipElementRect(
+  rect: DOMRect,
+  viewportClip: ClipRect,
+  containerClip: ClipRect,
+  vw: number,
+  vh: number,
+  options?: { minViewportSize?: number },
+): { x: number; y: number; w: number; h: number } | null {
+  const inTightContainer =
+    containerClip.left > 0.5 ||
+    containerClip.top > 0.5 ||
+    containerClip.right < vw - 0.5 ||
+    containerClip.bottom < vh - 0.5;
+
+  const cLeft = Math.max(rect.left, containerClip.left);
+  const cTop = Math.max(rect.top, containerClip.top);
+  const cRight = Math.min(rect.right, containerClip.right);
+  const cBottom = Math.min(rect.bottom, containerClip.bottom);
+  const cW = cRight - cLeft;
+  const cH = cBottom - cTop;
+
+  if (cW < MIN_VISIBLE_BOX_SIZE || cH < MIN_VISIBLE_BOX_SIZE) {
+    return null;
+  }
+
+  // Skip elements substantially cut off by an ancestor overflow container (e.g. stage edge tiles)
+  if (
+    inTightContainer &&
+    (cW < rect.width * MIN_CONTAINER_VISIBLE_RATIO ||
+      cH < rect.height * MIN_CONTAINER_VISIBLE_RATIO)
+  ) {
+    return null;
+  }
+
+  const vLeft = Math.max(cLeft, viewportClip.left);
+  const vTop = Math.max(cTop, viewportClip.top);
+  const vRight = Math.min(cRight, viewportClip.right);
+  const vBottom = Math.min(cBottom, viewportClip.bottom);
+  const vW = vRight - vLeft;
+  const vH = vBottom - vTop;
+  const minSize = options?.minViewportSize ?? MIN_VISIBLE_BOX_SIZE;
+
+  if (vW < minSize || vH < minSize) {
+    return null;
+  }
+
+  return { x: vLeft, y: vTop, w: vW, h: vH };
+}
+
 /**
  * Scans the live DOM inside `scopeRoot` (or `document.body`) and returns the
  * spatial calibration wireframe boxes visible in the initial viewport.
@@ -163,8 +270,39 @@ export function scanBlueprintBoxes(
   const pad2 = (n: number) => String(n).padStart(2, "0");
 
   const root = scopeRoot ?? document.getElementById("landing") ?? document.body;
+  const baseViewportClip: ClipRect = { left: 0, top: 0, right: vw, bottom: vh };
 
-  const visit = (node: Element) => {
+  let contentTopClip = 0;
+  const headerEl = root.querySelector("header");
+  if (headerEl instanceof HTMLElement) {
+    const hStyle = window.getComputedStyle(headerEl);
+    const hRect = headerEl.getBoundingClientRect();
+    if (
+      hStyle.display !== "none" &&
+      hStyle.visibility !== "hidden" &&
+      parseFloat(hStyle.opacity || "1") >= 0.05 &&
+      hRect.height >= 20 &&
+      hRect.top <= 4 &&
+      hRect.bottom > 0 &&
+      hRect.bottom < vh * 0.4
+    ) {
+      contentTopClip = Math.max(0, hRect.bottom);
+    }
+  }
+
+  const contentViewportClip: ClipRect = {
+    left: 0,
+    top: contentTopClip,
+    right: vw,
+    bottom: vh,
+  };
+
+  const visit = (
+    node: Element,
+    viewportClip: ClipRect,
+    containerClip: ClipRect,
+    inHeader: boolean,
+  ) => {
     if (boxes.length >= LOADER_MAX_BOXES) return;
     if (!(node instanceof HTMLElement || node instanceof SVGElement)) return;
     if (
@@ -189,30 +327,96 @@ export function scanBlueprintBoxes(
       return;
     }
     const isRiseContainer = node.hasAttribute("data-pl-rise");
-    if (!isRiseContainer && parseFloat(style.opacity) < 0.05) {
+    if (!isRiseContainer && parseFloat(style.opacity || "1") < 0.05) {
       return;
     }
 
     const rect = node.getBoundingClientRect();
-    const hasSize = rect.width >= 2 && rect.height >= 2;
+    if (isVisuallyHiddenElement(node, style, rect)) {
+      return;
+    }
+
+    const activeInHeader = inHeader || node === headerEl;
+    const activeViewportClip = activeInHeader
+      ? baseViewportClip
+      : viewportClip;
+    const effectiveClip = intersectClip(activeViewportClip, containerClip);
     if (
-      hasSize &&
-      (rect.bottom < 0 || rect.top > vh || rect.right < 0 || rect.left > vw)
+      effectiveClip.right - effectiveClip.left < MIN_VISIBLE_BOX_SIZE ||
+      effectiveClip.bottom - effectiveClip.top < MIN_VISIBLE_BOX_SIZE
     ) {
       return;
     }
 
+    const hasSize = rect.width >= 2 && rect.height >= 2;
     const tag = node.tagName.toLowerCase();
+
+    // Update container clip when traversing through overflow-clipping elements.
+    // Skip overflowing check for dome tile buttons so outer buffer tiles only prune on [data-frame] visibility.
+    let childContainerClip = containerClip;
+    if (node !== root && hasSize && node instanceof HTMLElement) {
+      const clipsX = isClipOverflowValue(style.overflowX || style.overflow);
+      const clipsY = isClipOverflowValue(style.overflowY || style.overflow);
+      if (clipsX || clipsY) {
+        childContainerClip = intersectClip(containerClip, {
+          left: clipsX ? rect.left : containerClip.left,
+          top: clipsY ? rect.top : containerClip.top,
+          right: clipsX ? rect.right : containerClip.right,
+          bottom: clipsY ? rect.bottom : containerClip.bottom,
+        });
+      }
+    }
+
+    // For DomeGallery tiles, prune the entire tile (image + overflowing bottom caption)
+    // if its media frame is offscreen or mostly clipped by stage bounds or sticky header.
+    if (tag === "button" && node.hasAttribute("data-slot")) {
+      const frameEl = node.querySelector("[data-frame]");
+      if (frameEl instanceof HTMLElement) {
+        const frameClip = clipElementRect(
+          frameEl.getBoundingClientRect(),
+          activeViewportClip,
+          containerClip,
+          vw,
+          vh,
+          { minViewportSize: 28 },
+        );
+        if (
+          !frameClip ||
+          frameClip.w < frameEl.getBoundingClientRect().width * 0.45 ||
+          frameClip.h < frameEl.getBoundingClientRect().height * 0.45
+        ) {
+          return;
+        }
+      }
+    } else if (hasSize && childContainerClip !== containerClip) {
+      // Prune whole clipped subtrees that sit completely outside their parent's clip rect
+      if (
+        childContainerClip.right - childContainerClip.left <
+          MIN_VISIBLE_BOX_SIZE ||
+        childContainerClip.bottom - childContainerClip.top <
+          MIN_VISIBLE_BOX_SIZE
+      ) {
+        return;
+      }
+    }
 
     // Explicit media container override (e.g. Hero ASCII reel frame)
     const explicitMedia = node.getAttribute("data-pl-media");
     if (hasSize && explicitMedia) {
+      const boxRect = clipElementRect(
+        rect,
+        activeViewportClip,
+        containerClip,
+        vw,
+        vh,
+      );
+      if (!boxRect) return;
       boxes.push({
         kind: "media",
-        x: rect.left,
-        y: rect.top,
-        w: rect.width,
-        h: rect.height,
+        x: boxRect.x,
+        y: boxRect.y,
+        w: boxRect.w,
+        h: boxRect.h,
         label:
           explicitMedia === "BANNER"
             ? "VIEWPORT // ASCII_CORE"
@@ -222,20 +426,29 @@ export function scanBlueprintBoxes(
       return;
     }
 
-    // Explicit composite text override (e.g. DynamicText role wrapper)
+    // Explicit composite text override (e.g. DynamicText role wrapper or pill badge)
     const explicitText = node.getAttribute("data-pl-text");
     if (hasSize && explicitText && node instanceof HTMLElement) {
+      const boxRect = clipElementRect(
+        rect,
+        activeViewportClip,
+        containerClip,
+        vw,
+        vh,
+      );
+      if (!boxRect) return;
       const label =
         node.getAttribute("data-pl-label") || "ROLE // STREAM";
       boxes.push({
         kind: "text",
-        x: rect.left,
-        y: rect.top,
-        w: rect.width,
-        h: rect.height,
+        x: boxRect.x,
+        y: boxRect.y,
+        w: boxRect.w,
+        h: boxRect.h,
         label,
         text: explicitText,
         textStyle: extractTextStyle(style),
+        radius: style.borderRadius,
         pad: extractPadding(style),
       });
       return;
@@ -256,6 +469,15 @@ export function scanBlueprintBoxes(
 
     // Media elements (Banner video, images, canvases)
     if (hasSize && (tag === "img" || tag === "video" || tag === "canvas")) {
+      const boxRect = clipElementRect(
+        rect,
+        activeViewportClip,
+        containerClip,
+        vw,
+        vh,
+        { minViewportSize: rect.height >= 40 ? 24 : MIN_VISIBLE_BOX_SIZE },
+      );
+      if (!boxRect) return;
       const label =
         rect.width > rect.height * 1.4 && rect.width > 240
           ? "VIEWPORT // ASCII_CORE"
@@ -265,10 +487,10 @@ export function scanBlueprintBoxes(
       if (label === "VEC // ICON") counters.icon++;
       boxes.push({
         kind: "media",
-        x: rect.left,
-        y: rect.top,
-        w: rect.width,
-        h: rect.height,
+        x: boxRect.x,
+        y: boxRect.y,
+        w: boxRect.w,
+        h: boxRect.h,
         label,
         radius: style.borderRadius,
       });
@@ -277,12 +499,20 @@ export function scanBlueprintBoxes(
 
     if (hasSize && tag === "svg") {
       if (rect.width >= 10) {
+        const boxRect = clipElementRect(
+          rect,
+          activeViewportClip,
+          containerClip,
+          vw,
+          vh,
+        );
+        if (!boxRect) return;
         boxes.push({
           kind: "media",
-          x: rect.left,
-          y: rect.top,
-          w: rect.width,
-          h: rect.height,
+          x: boxRect.x,
+          y: boxRect.y,
+          w: boxRect.w,
+          h: boxRect.h,
           label: "VEC",
           radius: "4px",
         });
@@ -300,6 +530,14 @@ export function scanBlueprintBoxes(
       rect.height < 100 &&
       node instanceof HTMLElement
     ) {
+      const boxRect = clipElementRect(
+        rect,
+        activeViewportClip,
+        containerClip,
+        vw,
+        vh,
+      );
+      if (!boxRect) return;
       const rawText = (node.innerText || node.textContent || "")
         .replace(/\s+/g, " ")
         .trim();
@@ -325,10 +563,10 @@ export function scanBlueprintBoxes(
 
       boxes.push({
         kind: isNavLink ? "text" : "btn",
-        x: rect.left,
-        y: rect.top,
-        w: Math.max(rect.width, isNavLink && rect.width < 48 ? 48 : rect.width),
-        h: rect.height,
+        x: boxRect.x,
+        y: boxRect.y,
+        w: Math.max(boxRect.w, isNavLink && boxRect.w < 48 ? 48 : boxRect.w),
+        h: boxRect.h,
         label,
         text: rawText,
         textStyle: extractTextStyle(style),
@@ -349,15 +587,24 @@ export function scanBlueprintBoxes(
       style.borderTopStyle !== "none" &&
       parseFloat(style.borderTopLeftRadius) >= 8
     ) {
-      boxes.push({
-        kind: "card",
-        x: rect.left,
-        y: rect.top,
-        w: rect.width,
-        h: rect.height,
-        label: "SURFACE // CARD",
-        radius: style.borderRadius,
-      });
+      const boxRect = clipElementRect(
+        rect,
+        activeViewportClip,
+        containerClip,
+        vw,
+        vh,
+      );
+      if (boxRect) {
+        boxes.push({
+          kind: "card",
+          x: boxRect.x,
+          y: boxRect.y,
+          w: boxRect.w,
+          h: boxRect.h,
+          label: "SURFACE // CARD",
+          radius: style.borderRadius,
+        });
+      }
     }
 
     // Direct text elements (headings, paragraphs, spans)
@@ -373,6 +620,14 @@ export function scanBlueprintBoxes(
       directText.trim().length > 0 &&
       node instanceof HTMLElement
     ) {
+      const boxRect = clipElementRect(
+        rect,
+        activeViewportClip,
+        containerClip,
+        vw,
+        vh,
+      );
+      if (!boxRect) return;
       const isHeading = /^h[1-6]$/.test(tag);
       const label =
         tag === "h1"
@@ -384,10 +639,10 @@ export function scanBlueprintBoxes(
 
       boxes.push({
         kind: "text",
-        x: rect.left,
-        y: rect.top,
-        w: rect.width,
-        h: rect.height,
+        x: boxRect.x,
+        y: boxRect.y,
+        w: boxRect.w,
+        h: boxRect.h,
         label,
         text: (node.innerText || node.textContent || "").trim(),
         textStyle: extractTextStyle(style),
@@ -396,10 +651,12 @@ export function scanBlueprintBoxes(
       return;
     }
 
-    Array.from(node.children).forEach(visit);
+    Array.from(node.children).forEach((child) =>
+      visit(child, activeViewportClip, childContainerClip, activeInHeader),
+    );
   };
 
-  visit(root);
+  visit(root, contentViewportClip, baseViewportClip, false);
 
   // Align wide multi-line text boxes to the right edge of the text column,
   // provided no sibling box sits to the right on the same horizontal row.
