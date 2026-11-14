@@ -66,19 +66,20 @@ describe("FlatLanding component", () => {
     expect(html).toContain("Product Management");
   });
 
-  it("renders the four work branches and all project cards", () => {
+  it("renders the Selected Work header and infinite DomeGallery with all project cards", () => {
     const html = renderToStaticMarkup(
       <FlatLanding isOpen={true} snapshotCanvas={null} onReenter={() => {}} />,
     );
 
-    expect(html).toContain("Applied AI &amp; RAG");
-    expect(html).toContain("Computer Vision");
-    expect(html).toContain("Autonomous Agents");
-    expect(html).toContain("Pipelines &amp; Fine-tuning");
+    expect(html).toContain('id="ld-work"');
+    expect(html).toContain("Selected Work");
+    expect(html).toContain(
+      'aria-label="Selected work infinite dome gallery — drag or use arrow keys to explore"',
+    );
+    expect(html).toContain("Drag to explore · Click any project card for stack &amp; details");
 
     for (const project of portfolioContent.projects) {
       expect(html).toContain(project.title);
-      expect(html).toContain(`href="${project.githubUrl}"`);
     }
   });
 

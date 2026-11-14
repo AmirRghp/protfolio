@@ -705,7 +705,11 @@
   background: var(--hover);
 }
 
-/* Work Accordion Section */
+/* Work Dome Section */
+.ldWork {
+  padding: 0 !important;
+}
+
 .ldHead {
   display: flex;
   justify-content: space-between;
@@ -1551,6 +1555,10 @@
     padding: 52px 24px;
   }
 
+  .ldWork {
+    padding: 0 !important;
+  }
+
   .ldLinks {
     display: none;
   }
@@ -1706,6 +1714,10 @@
 
   .ldWrap > section {
     padding: 44px 18px;
+  }
+
+  .ldWork {
+    padding: 0 !important;
   }
 
   .ldWrap > footer {

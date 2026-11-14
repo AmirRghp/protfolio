@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { TactileButton } from "tactile-glass-ui";
 import { LiquidGrid, PixelTetris } from "@/features/landing/effects";
-import WorkAccordion from "./WorkAccordion";
+import { DomeGallery } from "./dome-gallery/dome-gallery";
+import { DOME_PROJECTS } from "./dome-gallery/domeProjects";
 import { PortfolioLoader } from "./PortfolioLoader";
 import { getAssetUrl } from "@/core/utils";
 import { portfolioContent } from "@/data";
@@ -480,27 +481,9 @@ export default function FlatLanding({
             </section>
 
             {/* Work Section */}
-            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work">
-              <div className={`${styles.ldHead} ${styles.ldRise}`}>
-                <div>
-                  <div className={styles.ldKicker}>
-                    <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-                      <path d="M8 .6 9.4 6.6 15.4 8 9.4 9.4 8 15.4 6.6 9.4.6 8 6.6 6.6Z" />
-                    </svg>
-                    Selected Work
-                  </div>
-                  <h2>
-                    Four branches
-                    <br />
-                    of the work
-                  </h2>
-                </div>
-                <p className={styles.ldHeadNote}>
-                  The four core pillars of applied machine learning, vision, and autonomous agent systems. Open one to scroll through its projects.
-                </p>
-              </div>
+            <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work" aria-label="Selected Work">
               <div className={styles.ldRise}>
-                <WorkAccordion />
+                <DomeGallery projects={DOME_PROJECTS} />
               </div>
             </section>
 

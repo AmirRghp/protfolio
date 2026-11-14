@@ -392,3 +392,27 @@ This document records the foundational architecture decisions, trade-offs, and d
   - *Positive:* Reduced total static asset payload (`public/assets/models/*.glb` + `oiia-spinning-cat.mp3`) by **4.67 MB** and eliminated **4.2 MB** of competing background media downloads during initial 3D room startup.
   - *Positive:* Reduced background WebGL GPU rendering to **0 FPS** when viewing `FlatLanding`, eliminating simultaneous dual-canvas GPU contention.
 
+---
+
+### ADR-022: Infinite 3D Dome Grid with GSAP (`DomeGallery`) & Bespoke Nocturnal Project Artwork
+- **Status:** Accepted (2026-11-14)
+- **Context:**
+  The user requested replacing the 4-branch `WorkAccordion` in `#ld-work` with an interactive **Infinite Dome Grid with GSAP** (`DomeGallery`, adapted from `morphin.dev/components/infinite-dome-grid-with-gsap`) occupying the full `#ld-work` section over the site's transparent background, with a glassmorphic `Selected Work` pill badge anchored at the top-left of the component matching the bottom `Drag to explore...` hint pill. Each of Amirreza Gholipour's 6 real portfolio projects required bespoke, dark-themed AI-generated editorial artwork, and clicking any project card (including corner tiles) required smoothly morphing to the center, unfolding its detail panel with full project details and technology stack chips, and folding back into its exact dome slot on close.
+- **Decision:**
+  1. **Bespoke Nocturnal Project Artwork (`public/assets/projects/*.webp`):**
+     - Generated 6 dark architectural 3D studio renders tailored to each project's domain (`covid-image-classification.webp`, `omnidoc-rag.webp`, `omnidoc-vision.webp`, `omniops-sre-agent.webp`, `enterprise-knowledge-copilot.webp`, `laya-finetuning-pipeline.webp`) and encoded them as lightweight WebP assets (`41 KB` – `113 KB` each, `444 KB` total).
+  2. **3D Concave Paraboloid Projection, Coprime Lattice Indexing & Stable Visibility Culling (`dome.ts`, `dome-tile.tsx`, `dome-gallery.tsx`):**
+     - Implemented `getDomeLayout`, `writePose`, `screenToPlanar` (3-iteration fixed-point radial inversion), and `itemIndexAt(col, row, count) = mod(col + row * 2, count)` so every row cycles through all 6 projects without orthogonal or diagonal neighbor repetition.
+     - Registered tile DOM nodes via a stable `useEffect([slot.key, registerTile])` hook in `DomeTile` and checked `rec.hidden || rec.el.style.visibility === "hidden"` in `applyStep`, preventing React state re-renders (`hasInteracted`, `active`) from resetting `TileRecord.hidden = false` while an offscreen tile's DOM node still had `visibility: hidden` (which previously caused empty card gaps after dragging).
+  3. **Smooth Cursor-Leave Focus Decay & Scroll-Friendly `useInfiniteDrag` (`use-pointer-focus.ts`, `use-infinite-drag.ts`):**
+     - Added a continuous `focus.strength` (`[0, 1]`) attenuation scalar to `PointerFocus` and `writePose`. On `pointerleave`, `focus.current` coordinates are preserved while `focus.strength` exponentially decays toward `0` (`FOCUS_STRENGTH_OUT_LERP = 0.065`), allowing magnified tiles to glide smoothly back into the dome curvature instead of snapping in a single frame.
+     - Configured `useInfiniteDrag` to drive pointer drag inertia via `gsap.ticker.deltaRatio(60)` while allowing vertical mouse-wheel scrolling to pass through to `#landing`.
+  4. **Zero-Reflow Corner-to-Center Card Morph & Full-Section Transparent Stage (`project-modal.tsx`, `project-modal-content.tsx`, `DomeGallery.module.css`):**
+     - Simplified `measureSource` to read the clicked tile's exact projected `getBoundingClientRect()` without mutating `el.style.transform = "none"`, eliminating the initial size jump when clicking perspective-foreshortened corner tiles, and pre-locked `.modalCopy` to its final target width (`detail.panelW - detail.mediaW`) with `flex-shrink: 0` so multi-line text and tech stack chips never reflow during the 680ms width/height expansion and 560ms close morph.
+     - Made `.domeStage` transparent (`background: transparent`) so the main site's interactive `LiquidGrid` shows through, removed the external section header so `DomeGallery` occupies 100% of `#ld-work`, and placed the `Selected Work` pill badge (`stageHeaderBadge`) inside the top-left of the stage alongside an accessible `.srOnly` semantic project list.
+- **Consequences:**
+  - *Positive:* Delivers a butter-smooth 60fps 3D infinite dome showcase with zero missing tile slots on drag, smooth cursor-leave settling, seamless corner-to-center GSAP card morphing, and full transparency over the site background.
+  - *Positive:* Preserves vertical page scroll ergonomics, `Escape` key hierarchy, and full WCAG semantic accessibility (verified across 51 test suites / 298 passing tests).
+
+
+

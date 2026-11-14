@@ -37,7 +37,7 @@ export default defineConfig({
             },
             {
               name: "vendor-motion",
-              test: /node_modules[\\/](motion|framer-motion)[\\/]/,
+              test: /node_modules[\\/](motion|framer-motion|gsap)[\\/]/,
               priority: 15,
             },
             {

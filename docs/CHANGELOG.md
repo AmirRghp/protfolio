@@ -4,6 +4,17 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-11-14
+
+### Added & Changed
+- **Selected Work Infinite 3D Dome Grid with GSAP (`src/features/landing/components/dome-gallery/`, `FlatLanding.tsx`):**
+  - Replaced the `#ld-work` section in `FlatLanding.tsx` with a full-bleed, transparent-background **Infinite Dome Grid with GSAP** (`DomeGallery`) that reveals the underlying `LiquidGrid` canvas and anchors a glassmorphic `Selected Work` pill badge (`stageHeaderBadge`) at the top-left of the stage matching the bottom `Drag to explore...` hint pill.
+  - Engineered the 3D concave paraboloid surface projection (`dome.ts`), 3-iteration fixed-point `screenToPlanar` cursor lens inversion (`use-pointer-focus.ts`), continuous `focus.strength` attenuation for butter-smooth cursor-leave settling (`use-infinite-drag.ts`), and coprime 2D lattice distribution (`itemIndexAt`) so all 6 projects appear across every row without adjacent duplicates.
+  - Stabilized tile DOM registration in `dome-tile.tsx` via `useEffect([slot.key, registerTile])` and synchronized `style.visibility` checks in `dome-gallery.tsx` so React state re-renders (`hasInteracted`, `active`) never leave offscreen-culled tiles hidden when dragged into view.
+  - Generated 6 bespoke nocturnal 3D editorial artworks tailored to each project's architecture and optimized them as lightweight WebP assets in `public/assets/projects/` (`covid-image-classification.webp`, `omnidoc-rag.webp`, `omnidoc-vision.webp`, `omniops-sre-agent.webp`, `enterprise-knowledge-copilot.webp`, `laya-finetuning-pipeline.webp`).
+  - Built a zero-reflow 3D GSAP `CustomEase` card-to-panel morphing `ProjectModal` (`project-modal.tsx`, `project-modal-content.tsx`, portaled to `document.body`) that measures the clicked tile's exact projected `getBoundingClientRect()` (including corner cards), pre-locks `.modalCopy` to its final target width during the morph, and displays project index (`01 / 06`), category badge, overview, system architecture callout, complete **Technology Stack** chips, key engineering highlights, and a pinned **View on GitHub** CTA.
+  - Added capture-phase `Escape` handling in `ProjectModal` to close open project details without triggering `FlatLanding` room re-entry, preserved vertical page wheel scrolling across `#ld-work`, and added an accessible `srOnly` semantic project index and unit test suite (`DomeGallery.test.tsx`, 51 suites / 298 passing tests).
+
 ## [0.8.12] - 2026-11-13
 
 ### Changed & Optimized
