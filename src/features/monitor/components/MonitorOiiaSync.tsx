@@ -19,6 +19,44 @@ import {
 } from "@/features/room";
 import styles from "./MonitorDesktop.module.css";
 
+let cachedCatScenePromise: Promise<Group> | null = null;
+
+function loadCachedCatModel(): Promise<Group> {
+  if (!cachedCatScenePromise) {
+    const loader = new GLTFLoader();
+    cachedCatScenePromise = new Promise<Group>((resolve, reject) => {
+      loader.load(
+        getAssetUrl("assets/models/oiia-cat.glb"),
+        (gltf) => resolve(gltf.scene),
+        undefined,
+        (err) => {
+          cachedCatScenePromise = null;
+          reject(err);
+        },
+      );
+    });
+  }
+  return cachedCatScenePromise;
+}
+
+function cloneCatSceneWithMaterials(template: Group): Group {
+  const clone = template.clone(true);
+  clone.traverse((obj) => {
+    if (obj instanceof Mesh) {
+      obj.geometry = obj.geometry.clone();
+      if (Array.isArray(obj.material)) {
+        obj.material = obj.material.map((m) => m.clone());
+      } else if (obj.material) {
+        obj.material = obj.material.clone();
+      }
+      if (obj.morphTargetInfluences) {
+        obj.morphTargetInfluences = [...obj.morphTargetInfluences];
+      }
+    }
+  });
+  return clone;
+}
+
 function disposeSceneObjects(root: Group | Scene) {
   root.traverse((obj) => {
     if (obj instanceof Mesh) {
@@ -111,16 +149,11 @@ export default function MonitorOiiaSync({ active }: { active: boolean }) {
       resizeObserver.observe(canvas);
     }
 
-    // Load glTF cat model
-    const loader = new GLTFLoader();
-    loader.load(
-      getAssetUrl("assets/models/oiia-cat.glb"),
-      (gltf) => {
-        if (destroyed) {
-          disposeSceneObjects(gltf.scene);
-          return;
-        }
-        const root = gltf.scene;
+    // Load and cache glTF cat model template so repeated drops do not re-fetch or re-parse the GLB binary
+    loadCachedCatModel()
+      .then((template) => {
+        if (destroyed) return;
+        const root = cloneCatSceneWithMaterials(template);
         modelGroup = new Group();
 
         root.traverse((child) => {
@@ -142,17 +175,20 @@ export default function MonitorOiiaSync({ active }: { active: boolean }) {
         root.position.set(0.006 * scale, 0.01101 * scale, -0.059 * scale);
         modelGroup.add(root);
         scene.add(modelGroup);
-      },
-      undefined,
-      (err) => {
+      })
+      .catch((err) => {
         console.warn("Oiia cat sync model load warning:", err);
-      },
-    );
+      });
 
     const tick = (now: number) => {
       if (destroyed) return;
       const delta = Math.min(0.1, (now - lastTime) / 1000);
       lastTime = now;
+
+      if (typeof document !== "undefined" && document.hidden) {
+        animId = requestAnimationFrame(tick);
+        return;
+      }
 
       const audioState = oiiaAudio.getState();
       const color = calculateMonitorRaveColor(audioState.currentTime, reducedMotion);

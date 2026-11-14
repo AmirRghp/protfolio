@@ -101,6 +101,9 @@ export function CoffeeSteam({ active = true }: { active?: boolean }) {
     return { geo, mat };
   });
 
+  const activeUntilRef = useRef(3.5);
+  const clockElapsedRef = useRef(0);
+
   useEffect(() => {
     return () => {
       steam.geo.dispose();
@@ -108,12 +111,25 @@ export function CoffeeSteam({ active = true }: { active?: boolean }) {
     };
   }, [steam]);
 
+  useEffect(() => {
+    if (!active || typeof window === "undefined") return undefined;
+    const wakeSteam = () => {
+      activeUntilRef.current = clockElapsedRef.current + 2.5;
+      invalidate();
+    };
+    window.addEventListener("pointermove", wakeSteam, { passive: true });
+    return () => window.removeEventListener("pointermove", wakeSteam);
+  }, [active, invalidate]);
+
   useFrame((state) => {
+    const elapsed = state.clock.getElapsedTime();
+    clockElapsedRef.current = elapsed;
+
     const reducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (!active || reducedMotion || isSoftwareGl) {
+    if (!active || reducedMotion || isSoftwareGl || elapsed > activeUntilRef.current) {
       return;
     }
 
@@ -125,7 +141,7 @@ export function CoffeeSteam({ active = true }: { active?: boolean }) {
 
     const points = pointsRef.current;
     if (points && points.material instanceof ShaderMaterial) {
-      points.material.uniforms.uTime.value = state.clock.getElapsedTime();
+      points.material.uniforms.uTime.value = elapsed;
       invalidate();
     }
   });

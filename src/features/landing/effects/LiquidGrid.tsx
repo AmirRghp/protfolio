@@ -452,7 +452,11 @@ export default function LiquidGrid(props: LiquidGridProps) {
       }
     }
 
-    if (!reducedMotion) {
+    const isFinePointer =
+      typeof window !== "undefined" &&
+      (!window.matchMedia || window.matchMedia("(pointer: fine)").matches);
+
+    if (!reducedMotion && isFinePointer) {
       window.addEventListener("mousemove", onMove, { passive: true });
       window.addEventListener("click", onClick);
       window.addEventListener("scroll", updateRect, { passive: true });
@@ -464,7 +468,7 @@ export default function LiquidGrid(props: LiquidGridProps) {
       if (raf) cancelAnimationFrame(raf);
       repaintRef.current = null;
       ro?.disconnect();
-      if (!reducedMotion) {
+      if (!reducedMotion && isFinePointer) {
         window.removeEventListener("mousemove", onMove);
         window.removeEventListener("click", onClick);
         window.removeEventListener("scroll", updateRect);

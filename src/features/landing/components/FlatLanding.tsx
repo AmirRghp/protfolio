@@ -110,14 +110,7 @@ export default function FlatLanding({
 }: FlatLandingProps) {
   const device = useResponsiveDevice();
   const rootRef = useRef<HTMLDivElement>(null);
-  const backdropRef = useRef<HTMLDivElement>(null);
-  const transitionImgRef = useRef<HTMLImageElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
-  const reelRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const heroOverlayRef = useRef<HTMLDivElement>(null);
-  const portalFxRef = useRef<HTMLDivElement>(null);
-  const scanCrestRef = useRef<HTMLDivElement>(null);
   const navRef = useRef<HTMLElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
@@ -303,7 +296,7 @@ export default function FlatLanding({
       )}
 
       {isElementVisible && (
-        <div ref={backdropRef} className={styles.ldBackground} data-pl-ignore="true" aria-hidden="true">
+        <div className={styles.ldBackground} data-pl-ignore="true" aria-hidden="true">
           <LiquidGrid
             mode="dots"
             background="#000000"
@@ -397,19 +390,18 @@ export default function FlatLanding({
         <div className={styles.ldPage}>
           <section className={styles.ldHero} id="ld-top">
             <div className={styles.ldHeroInner}>
-              <div ref={frameRef} className={styles.ldFrame}>
+              <div className={styles.ldFrame}>
                 <div
-                  ref={reelRef}
                   className={styles.ldReel}
                   data-pl-media="BANNER"
                   aria-label="Room ASCII Animation"
                 >
                   <img
-                    ref={transitionImgRef}
                     className={styles.ldTransitionImg}
                     src={getAssetUrl("assets/ascii-room.webp")}
                     alt=""
                     aria-hidden="true"
+                    decoding="async"
                   />
                   <video
                     ref={videoRef}
@@ -423,15 +415,15 @@ export default function FlatLanding({
                     preload="metadata"
                     aria-label="Nocturnal Room ASCII Loop"
                   />
-                  <div ref={portalFxRef} className={styles.ldPortalFx} aria-hidden="true">
+                  <div className={styles.ldPortalFx} aria-hidden="true">
                     <div className={styles.ldMatrixGrid} />
-                    <div ref={scanCrestRef} className={styles.ldScanCrest} />
+                    <div className={styles.ldScanCrest} />
                     <div className={styles.ldPortalSheen} />
                   </div>
                 </div>
 
                 {/* Hero Intro Overlay */}
-                <div ref={heroOverlayRef} className={styles.ldHeroOverlay} aria-label="Introduction">
+                <div className={styles.ldHeroOverlay} aria-label="Introduction">
                   <div className={styles.ldHeroStack}>
                     <p className={styles.ldHeroEyebrow}>Hey there 👋 Welcome to my digital space.</p>
                     <h1 id="name">{portfolioContent.owner.name}</h1>

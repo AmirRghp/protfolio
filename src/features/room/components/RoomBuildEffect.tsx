@@ -20,7 +20,8 @@ import {
 import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 import type { RoomBuildItemGroup, RoomBuildState } from "@/features/room/utils/roomBuildAnimation";
 
-const edgesCache = new WeakMap<BufferGeometry, BufferGeometry>();
+let edgesCache = new WeakMap<BufferGeometry, BufferGeometry>();
+const allocatedEdges = new Set<BufferGeometry>();
 const _tempBox = new Box3();
 
 function getCachedEdgesGeometry(geometry: BufferGeometry, thresholdAngle: number): BufferGeometry {
@@ -28,6 +29,7 @@ function getCachedEdgesGeometry(geometry: BufferGeometry, thresholdAngle: number
   if (!cached) {
     cached = new EdgesGeometry(geometry, thresholdAngle);
     edgesCache.set(geometry, cached);
+    allocatedEdges.add(cached);
   }
   return cached;
 }
@@ -541,6 +543,11 @@ export class RoomBlueprintPipeline {
     for (const geo of this.supplementaryGeos) {
       geo.dispose();
     }
+    for (const edgeGeo of allocatedEdges) {
+      edgeGeo.dispose();
+    }
+    allocatedEdges.clear();
+    edgesCache = new WeakMap<BufferGeometry, BufferGeometry>();
     this.target.dispose();
   }
 }

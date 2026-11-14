@@ -694,18 +694,25 @@ function HotspotOutlinePass({
   const passesRef = useRef<{
     composer: EffectComposer;
     outlinePass: OutlinePass;
+    outputPass: OutputPass;
     blueprintPipeline: RoomBlueprintPipeline;
     buildPass: ShaderPass;
   } | null>(null);
 
-  if (passesRef.current == null) {
+  useLayoutEffect(() => {
     const pr = gl.getPixelRatio();
+    const pixelW = Math.max(1, Math.round(size.width * pr));
+    const pixelH = Math.max(1, Math.round(size.height * pr));
+
     const composer = new EffectComposer(gl);
+    composer.setPixelRatio(pr);
+    composer.setSize(size.width, size.height);
+
     const renderPass = new RenderPass(scene, camera);
     composer.addPass(renderPass);
 
     const outlinePass = new OutlinePass(
-      new Vector2(size.width, size.height),
+      new Vector2(pixelW, pixelH),
       scene,
       camera,
     );
@@ -715,26 +722,40 @@ function HotspotOutlinePass({
     outlinePass.pulsePeriod = 0;
     outlinePass.visibleEdgeColor.set("#ffffff");
     outlinePass.hiddenEdgeColor.set("#000000");
+    outlinePass.enabled = false;
     composer.addPass(outlinePass);
 
     const outputPass = new OutputPass();
     composer.addPass(outputPass);
 
-    const blueprintPipeline = new RoomBlueprintPipeline(
-      Math.max(1, Math.round(size.width * pr)),
-      Math.max(1, Math.round(size.height * pr)),
-    );
+    const blueprintPipeline = new RoomBlueprintPipeline(pixelW, pixelH);
     const buildPass = createRoomBuildShaderPass(blueprintPipeline.target.texture);
-    buildPass.uniforms.uResolution.value.set(
-      Math.max(1, Math.round(size.width * pr)),
-      Math.max(1, Math.round(size.height * pr)),
-    );
+    buildPass.uniforms.uResolution.value.set(pixelW, pixelH);
     buildPass.uniforms.uPixelScale.value = Math.max(6, Math.round(10.5 * pr));
     buildPass.enabled = introPhase !== "ready";
     composer.addPass(buildPass);
 
-    passesRef.current = { composer, outlinePass, blueprintPipeline, buildPass };
-  }
+    passesRef.current = {
+      composer,
+      outlinePass,
+      outputPass,
+      blueprintPipeline,
+      buildPass,
+    };
+
+    return () => {
+      if (softwareTimerRef.current) {
+        window.clearTimeout(softwareTimerRef.current);
+      }
+      outlinePass.dispose();
+      outputPass.dispose();
+      buildPass.material.dispose();
+      blueprintPipeline.dispose();
+      composer.dispose();
+      passesRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gl, scene, camera]);
 
   useEffect(() => {
     const passes = passesRef.current;
@@ -755,6 +776,7 @@ function HotspotOutlinePass({
     const passes = passesRef.current;
     if (!passes) return;
     passes.outlinePass.selectedObjects = selectedObjects;
+    passes.outlinePass.enabled = selectedObjects.length > 0;
     invalidate();
   }, [selectedObjects, invalidate]);
 
@@ -774,17 +796,6 @@ function HotspotOutlinePass({
       invalidate();
     }
   }, [introPhase, modelsReady, invalidate, onBuildStageChange, onDesktopOpacityChange]);
-
-  useEffect(() => {
-    return () => {
-      if (softwareTimerRef.current) {
-        window.clearTimeout(softwareTimerRef.current);
-      }
-      passesRef.current?.blueprintPipeline.dispose();
-      passesRef.current?.composer.dispose();
-      passesRef.current = null;
-    };
-  }, []);
 
   useFrame((_, delta) => {
     const passes = passesRef.current;
@@ -1084,12 +1095,23 @@ function RoomLighting({ destination }: { destination: RoomDestination }) {
   );
 }
 
-function ContextGuard({ onLost }: { onLost: () => void }) {
+function ContextGuard({ onLost, onRestored }: { onLost: () => void; onRestored?: () => void }) {
   const canvas = useThree((state) => state.gl.domElement);
   useLayoutEffect(() => {
-    canvas.addEventListener("webglcontextlost", onLost);
-    return () => canvas.removeEventListener("webglcontextlost", onLost);
-  }, [canvas, onLost]);
+    const handleLost = (event: Event) => {
+      event.preventDefault();
+      onLost();
+    };
+    const handleRestored = () => {
+      onRestored?.();
+    };
+    canvas.addEventListener("webglcontextlost", handleLost);
+    canvas.addEventListener("webglcontextrestored", handleRestored);
+    return () => {
+      canvas.removeEventListener("webglcontextlost", handleLost);
+      canvas.removeEventListener("webglcontextrestored", handleRestored);
+    };
+  }, [canvas, onLost, onRestored]);
   return null;
 }
 
@@ -1221,6 +1243,7 @@ export default function RoomScene({
   const [contextLost, setContextLost] = useState(false);
   const [highlightedHotspot, setHighlightedHotspot] = useState<RoomHotspot | null>(null);
   const highlightedHotspotRef = useRef<RoomHotspot | null>(null);
+  const envTargetRef = useRef<{ dispose: () => void } | null>(null);
   const reportHotspotHover = useCallback((hover: RoomHotspotHover | null) => {
     const next = introPhase === "ready" ? (hover?.destination ?? null) : null;
     if (highlightedHotspotRef.current !== next) {
@@ -1234,6 +1257,13 @@ export default function RoomScene({
     if (destination !== "room" || introPhase !== "ready") reportHotspotHover(null);
   }, [destination, introPhase, reportHotspotHover]);
 
+  useEffect(() => {
+    return () => {
+      envTargetRef.current?.dispose();
+      envTargetRef.current = null;
+    };
+  }, []);
+
   if (contextLost) return <RoomUnavailable onExitToFlat={onExitToFlat} />;
   return (
     <Canvas
@@ -1246,11 +1276,13 @@ export default function RoomScene({
         gl.toneMapping = ACESFilmicToneMapping;
         gl.toneMappingExposure = 1.12;
         if (!isSoftwareGl) {
+          envTargetRef.current?.dispose();
           const pmremGenerator = new PMREMGenerator(gl);
           const roomEnv = new RoomEnvironment();
           const envTarget = pmremGenerator.fromScene(roomEnv, 0.04);
           pmremGenerator.dispose();
           roomEnv.dispose();
+          envTargetRef.current = envTarget;
           scene.environment = envTarget.texture;
           scene.environmentIntensity = 0.45;
         }
@@ -1260,10 +1292,15 @@ export default function RoomScene({
       aria-label="Frontal study with workstation and arcade"
     >
       <CameraFocus destination={destination} onHotspotHover={reportHotspotHover} />
-      <ContextGuard onLost={() => {
-        setContextLost(true);
-        onUnavailable?.();
-      }} />
+      <ContextGuard
+        onLost={() => {
+          setContextLost(true);
+          onUnavailable?.();
+        }}
+        onRestored={() => {
+          setContextLost(false);
+        }}
+      />
       <Study
         destination={destination}
         onNavigate={onNavigate}

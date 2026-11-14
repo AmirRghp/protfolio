@@ -76,6 +76,14 @@ export default function ProjectCarousel({ projects, color, autoFocus = false }: 
     };
   }, [target]);
 
+  useEffect(() => {
+    const a = animRef.current;
+    return () => {
+      if (a.wheelTimer) window.clearTimeout(a.wheelTimer);
+      if (a.raf) cancelAnimationFrame(a.raf);
+    };
+  }, []);
+
   const goTo = (i: number) => {
     const clamped = Math.max(0, Math.min(n - 1, Math.round(i)));
     setTarget(clamped);

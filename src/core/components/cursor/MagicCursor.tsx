@@ -74,8 +74,13 @@ export function OriginkitMagicCursor({
   const resolvedLabelFont = { ...DEFAULT_LABEL_FONT, ...labelFont };
 
   useEffect(() => {
-    // Only run on fine-pointer desktop/laptop devices
-    if (typeof window === "undefined" || (window.matchMedia && !window.matchMedia("(pointer: fine)").matches)) {
+    // Only run on fine-pointer desktop/laptop devices when reduced motion is not requested
+    if (
+      typeof window === "undefined" ||
+      (window.matchMedia &&
+        (!window.matchMedia("(pointer: fine)").matches ||
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches))
+    ) {
       return undefined;
     }
 
@@ -107,59 +112,14 @@ export function OriginkitMagicCursor({
     let down = false;
     let seen = false;
     let inside = false;
-
-    const onMove = (e: PointerEvent) => {
-      if (e.pointerType === "touch") return;
-
-      const rect = frameEl.getBoundingClientRect();
-      const over =
-        e.clientX >= rect.left &&
-        e.clientX <= rect.right &&
-        e.clientY >= rect.top &&
-        e.clientY <= rect.bottom;
-      hideNativeCursor(over);
-      if (!over) {
-        inside = false;
-        return;
-      }
-      const sx = rect.width > 0 ? frameEl.clientWidth / rect.width : 1;
-      const sy = rect.height > 0 ? frameEl.clientHeight / rect.height : 1;
-      targetX = (e.clientX - rect.left) * sx;
-      targetY = (e.clientY - rect.top) * sy;
-      if (!seen || !inside) {
-        x = targetX;
-        y = targetY;
-        vx = 0;
-        vy = 0;
-        seen = true;
-      }
-      inside = true;
-    };
-
-    const onWindowLeave = () => {
-      inside = false;
-      hideNativeCursor(false);
-    };
-
-    const onDown = (e: PointerEvent) => {
-      if (e.pointerType === "touch") return;
-      down = true;
-    };
-
-    const onUp = (e: PointerEvent) => {
-      if (e.pointerType === "touch") return;
-      down = false;
-    };
-
-    window.addEventListener("pointermove", onMove, { passive: true });
-    document.documentElement.addEventListener("pointerleave", onWindowLeave);
-    window.addEventListener("pointerdown", onDown, { passive: true });
-    window.addEventListener("pointerup", onUp, { passive: true });
-
     let raf = 0;
     let last = performance.now();
 
     const frame = (now: number) => {
+      raf = 0;
+      if (typeof document !== "undefined" && document.hidden) {
+        return;
+      }
       const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
       last = now;
       const p = live.current;
@@ -190,6 +150,18 @@ export function OriginkitMagicCursor({
       pressed += (clickTarget - pressed) * (1 - Math.exp(-dt / 0.05));
       const press = 1 - pressed * 0.2;
 
+      const dist = Math.hypot(targetX - x, targetY - y);
+      const pressDelta = Math.abs(clickTarget - pressed);
+      const isSettled = !inside || (dist < 0.08 && speed < 0.5 && pressDelta < 0.005);
+
+      if (isSettled && inside) {
+        x = targetX;
+        y = targetY;
+        vx = 0;
+        vy = 0;
+        pressed = clickTarget;
+      }
+
       const s = (p.cursorSize / ARROW_H) * press;
       host.style.opacity = seen && inside ? "1" : "0";
       host.style.transform =
@@ -197,9 +169,70 @@ export function OriginkitMagicCursor({
         `rotate(${angle}rad) ` +
         `scale(${s * squash}, ${s * stretch})`;
 
-      raf = requestAnimationFrame(frame);
+      if (!isSettled) {
+        raf = requestAnimationFrame(frame);
+      }
     };
-    raf = requestAnimationFrame(frame);
+
+    const wake = () => {
+      if (!raf && (typeof document === "undefined" || !document.hidden)) {
+        last = performance.now();
+        raf = requestAnimationFrame(frame);
+      }
+    };
+
+    const onMove = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+
+      const rect = frameEl.getBoundingClientRect();
+      const over =
+        e.clientX >= rect.left &&
+        e.clientX <= rect.right &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom;
+      hideNativeCursor(over);
+      if (!over) {
+        inside = false;
+        host.style.opacity = "0";
+        return;
+      }
+      const sx = rect.width > 0 ? frameEl.clientWidth / rect.width : 1;
+      const sy = rect.height > 0 ? frameEl.clientHeight / rect.height : 1;
+      targetX = (e.clientX - rect.left) * sx;
+      targetY = (e.clientY - rect.top) * sy;
+      if (!seen || !inside) {
+        x = targetX;
+        y = targetY;
+        vx = 0;
+        vy = 0;
+        seen = true;
+      }
+      inside = true;
+      wake();
+    };
+
+    const onWindowLeave = () => {
+      inside = false;
+      host.style.opacity = "0";
+      hideNativeCursor(false);
+    };
+
+    const onDown = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+      down = true;
+      wake();
+    };
+
+    const onUp = (e: PointerEvent) => {
+      if (e.pointerType === "touch") return;
+      down = false;
+      wake();
+    };
+
+    window.addEventListener("pointermove", onMove, { passive: true });
+    document.documentElement.addEventListener("pointerleave", onWindowLeave);
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
 
     return () => {
       cancelAnimationFrame(raf);

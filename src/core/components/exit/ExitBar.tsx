@@ -23,6 +23,7 @@ export default function ExitBar({
   const ctaRef = useRef<HTMLDivElement>(null);
   const isExitingRef = useRef(false);
   const exitTimerRef = useRef<number | null>(null);
+  const resetTimerRef = useRef<number | null>(null);
   const [isShutting, setIsShutting] = useState(false);
   const [width, setWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1200));
   const [btnSize, setBtnSize] = useState({ w: 200, h: 56 });
@@ -43,7 +44,15 @@ export default function ExitBar({
       setWidth(clientWidth || window.innerWidth);
     };
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (exitTimerRef.current !== null) {
+        window.clearTimeout(exitTimerRef.current);
+      }
+      if (resetTimerRef.current !== null) {
+        window.clearTimeout(resetTimerRef.current);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -163,7 +172,7 @@ export default function ExitBar({
     setIsShutting(true);
     exitTimerRef.current = window.setTimeout(() => {
       onExit();
-      window.setTimeout(() => {
+      resetTimerRef.current = window.setTimeout(() => {
         setIsShutting(false);
         isExitingRef.current = false;
       }, 160);

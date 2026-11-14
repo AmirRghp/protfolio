@@ -288,17 +288,63 @@ export function ProjectModal({
 
   useEffect(() => {
     if (!active) return;
+    const previousFocused =
+      typeof document !== "undefined" && document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+
+    const focusTimer = window.setTimeout(() => {
+      closeBtnRef.current?.focus();
+    }, 50);
+
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
         animateClose();
+        return;
+      }
+
+      if (e.key === "Tab") {
+        const container = cardRef.current;
+        if (!container) return;
+        const focusable = Array.from(
+          container.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => el.offsetParent !== null || el === document.activeElement);
+
+        if (focusable.length === 0) {
+          e.preventDefault();
+          return;
+        }
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        const current = document.activeElement as HTMLElement | null;
+
+        if (e.shiftKey) {
+          if (!current || current === first || !container.contains(current)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else {
+          if (!current || current === last || !container.contains(current)) {
+            e.preventDefault();
+            first.focus();
+          }
+        }
       }
     };
     window.addEventListener("keydown", onKey, { capture: true });
-    return () =>
+    return () => {
+      window.clearTimeout(focusTimer);
       window.removeEventListener("keydown", onKey, { capture: true });
+      if (previousFocused && typeof previousFocused.focus === "function" && !active.focusReturnEl) {
+        previousFocused.focus();
+      }
+    };
   }, [active, animateClose]);
 
   if (!active) return null;

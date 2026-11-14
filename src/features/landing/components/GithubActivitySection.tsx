@@ -297,6 +297,20 @@ export function GithubActivitySection() {
     const stageH = rect.height;
     if (stageW <= 0 || stageH <= 0) return;
 
+    const dpr = Math.min(2, typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1);
+    canvas.width = Math.max(1, Math.round(stageW * dpr));
+    canvas.height = Math.max(1, Math.round(stageH * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+
+    if (prefersReduced) {
+      drawSkyline(ctx, stageW, stageH, 4200);
+      return;
+    }
+
     const render = (now: number) => {
       if (startTimeRef.current === null) {
         startTimeRef.current = now;

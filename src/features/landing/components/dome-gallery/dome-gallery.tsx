@@ -146,12 +146,21 @@ export function DomeGallery({ projects }: DomeGalleryProps) {
           );
           if (rec.stackEl) {
             const chips = proj.techStack.slice(0, 3);
-            rec.stackEl.innerHTML = chips
-              .map(
-                (t) =>
-                  `<span class="${styles.tileStackChip}">${t}</span>`
-              )
-              .join("");
+            const existing = rec.stackEl.children;
+            for (let c = 0; c < 3; c++) {
+              let span = existing[c] as HTMLElement | undefined;
+              if (c < chips.length) {
+                if (!span) {
+                  span = document.createElement("span");
+                  span.className = styles.tileStackChip;
+                  rec.stackEl.appendChild(span);
+                }
+                span.textContent = chips[c];
+                span.hidden = false;
+              } else if (span) {
+                span.hidden = true;
+              }
+            }
           }
         }
 

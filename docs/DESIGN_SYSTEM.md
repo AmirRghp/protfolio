@@ -121,7 +121,7 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - Window drag initiates from header title region with pointer capture.
 - Constrained strictly within virtual desktop bounds to prevent clipping.
 
-### 6.3. Arc UI Segmented Tabs (`@uiarc/tabs`)
+### 6.3. Arc UI Segmented Tabs (`src/core/components/arc/tabs.tsx` — `@radix-ui/react-tabs` + `motion/react`)
 - Spring-physics sliding active indicator pill implemented as a single persistent DOM element inside `TabsPrimitive.List`.
 - Scroll-invariant geometry calculation ($x$, $\text{width}$) derived directly from active tab's `offsetLeft` and `offsetWidth`, preventing indicator drift, jumps, or frozen transitions during mobile horizontal scrolling.
 - Accessible ARIA tabs and keyboard arrow navigation.
@@ -199,6 +199,7 @@ When `prefers-reduced-motion: reduce` is detected:
 - Camera destination transitions jump instantaneously or resolve via brief crossfade.
 - `PixelTetris` canvas renders a static frame instead of a continuous animation loop.
 - `DynamicText` cycles text without kinetic spring oscillations.
+- `MagicCursor` is suppressed and `GithubActivitySection` renders its completed skyline immediately without diagonal wave animations.
 - `MobileArcadeModal`, `MobileArcadeFab`, and arcade canvas prompt labels (`SnakeGame`, `Deparkanoid`) disable pulsing/blinking animations and CSS transitions.
 - `DomeGallery` and `ProjectModal` fall back cleanly and preserve semantic accessibility without disorienting 3D motion.
 

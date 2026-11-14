@@ -577,7 +577,8 @@ function formatInlineMarkdown(line: string, repoUrl: string, branch: string): st
     const resolved = /^https?:\/\/|^mailto:/i.test(trimmed)
       ? trimmed
       : `${repoUrl}/blob/${branch}/${trimmed.replace(/^\.?\//, "")}`;
-    return `<a href="${resolved}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    const safeHref = resolved.replace(/[\s"'<>`]/g, "");
+    return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${label}</a>`;
   });
   return out;
 }

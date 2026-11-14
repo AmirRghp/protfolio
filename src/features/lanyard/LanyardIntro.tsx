@@ -1,8 +1,9 @@
 import { getAssetUrl } from "@/core/utils/assetUrl";
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
-import Lanyard from "./Lanyard";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { LANYARD_PULL_MIN_PX } from "./lanyardPull";
 import styles from "./LanyardIntro.module.css";
+
+const Lanyard = lazy(() => import("./Lanyard"));
 
 const CARD_IMAGE_PATH = getAssetUrl("assets/lanyard-photo.webp");
 const EXIT_DURATION_MS = 480;
@@ -73,29 +74,31 @@ export default function LanyardIntro({ onEnter, onDismissed }: LanyardIntroProps
       aria-label="Portfolio loading screen"
     >
       <div className={styles.lanyardStage}>
-        <Lanyard
-          frontImage={CARD_IMAGE_PATH}
-          backImage={CARD_IMAGE_PATH}
-          finish="holographic"
-          orientation="portrait"
-          cornerRadius={0.3}
-          size={0.58}
-          anchor="center"
-          strapLength={0.56}
-          strapColor="#111111"
-          strapWidth={0.65}
-          metal="silver"
-          gravity={1}
-          damping={0.5}
-          elasticity={0.5}
-          breeze={0.5}
-          interactive={state === "active"}
-          intro={true}
-          pullThreshold={LANYARD_PULL_MIN_PX}
-          onPullProgress={handlePullProgress}
-          onPullComplete={triggerSmoothExit}
-          onUnavailable={triggerSmoothExit}
-        />
+        <Suspense fallback={null}>
+          <Lanyard
+            frontImage={CARD_IMAGE_PATH}
+            backImage={CARD_IMAGE_PATH}
+            finish="holographic"
+            orientation="portrait"
+            cornerRadius={0.3}
+            size={0.58}
+            anchor="center"
+            strapLength={0.56}
+            strapColor="#111111"
+            strapWidth={0.65}
+            metal="silver"
+            gravity={1}
+            damping={0.5}
+            elasticity={0.5}
+            breeze={0.5}
+            interactive={state === "active"}
+            intro={true}
+            pullThreshold={LANYARD_PULL_MIN_PX}
+            onPullProgress={handlePullProgress}
+            onPullComplete={triggerSmoothExit}
+            onUnavailable={triggerSmoothExit}
+          />
+        </Suspense>
       </div>
       <button
         type="button"

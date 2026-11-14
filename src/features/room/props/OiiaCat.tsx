@@ -28,9 +28,6 @@ import {
   createLoafShadowTexture,
 } from "@/features/room/utils/oiiaCatLogic";
 import type { RoomDestination } from "@/features/room/utils/roomNavigation";
-import { detectSoftwareGl } from "@/core/utils/webglUtils";
-
-const isSoftwareGl = detectSoftwareGl();
 
 export const DESK_SURFACE_Y = 1.906;
 export const CAT_SCALE = 1.40;
@@ -247,7 +244,7 @@ export default function OiiaCat({
     };
   }, []);
 
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     const reducedMotion =
       typeof window !== "undefined" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -380,16 +377,9 @@ export default function OiiaCat({
           spinAngleRef.current = CAT_REST_ROTATION_Y;
         }
 
-        // Very subtle idle breathing when fully resting
-        const away = typeof document !== "undefined" && document.body.classList.contains("away");
-        const exitBar = typeof document !== "undefined" ? document.getElementById("exitbar") : null;
-        const shutterClosing = exitBar?.classList.contains("shutter-closing") ?? false;
-        if (!reducedMotion && !isSoftwareGl && currentMorphRef.current < 0.05 && !away && !shutterClosing) {
-          const breathe = Math.sin(state.clock.getElapsedTime() * 2.2) * 0.004;
-          modelGroupRef.current.scale.set(1 + breathe * 0.5, 1 + breathe, 1 + breathe * 0.5);
-          needsInvalidate = true;
-        } else {
+        if (modelGroupRef.current.scale.y !== 1) {
           modelGroupRef.current.scale.set(1, 1, 1);
+          needsInvalidate = true;
         }
 
         if (shadowGroupRef.current) {

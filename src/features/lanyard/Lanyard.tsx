@@ -1470,7 +1470,9 @@ export default function Lanyard({
         twistDamping: 3,
         grip: 40,
         gripDamping: 6,
-        breeze: reducedMotion ? 0 : clamp(s.breeze, 0, 1),
+        breeze: reducedMotion
+          ? 0
+          : clamp(s.breeze, 0, 1) * (sim.grab ? 1 : clamp(1 - (sim.calm - 2.0) / 1.5, 0, 1)),
       };
     };
 
@@ -1489,7 +1491,7 @@ export default function Lanyard({
         placeHanging(sim, layout, false);
       }
       render();
-      const resting = sim.calm > 1.2 && !sim.grab && current.breeze === 0;
+      const resting = sim.calm > 3.5 && !sim.grab && current.breeze < 0.005;
       if (visible && !resting) {
         if (isSoftwareGl) afterDraw(tick);
         else raf = requestAnimationFrame(tick);
@@ -1631,6 +1633,15 @@ export default function Lanyard({
       if (pickCard()) event.preventDefault();
     };
 
+    const onContextLost = (event: Event) => {
+      event.preventDefault();
+      alive = false;
+      cancelAnimationFrame(raf);
+      clearTimeout(timerId);
+      settingsRef.current.onUnavailable?.();
+    };
+
+    canvas.addEventListener("webglcontextlost", onContextLost);
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointermove", onPointerMove);
     canvas.addEventListener("pointerup", onPointerUp);
@@ -1670,6 +1681,7 @@ export default function Lanyard({
       resizeObserver.disconnect();
       intersectionObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
+      canvas.removeEventListener("webglcontextlost", onContextLost);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointermove", onPointerMove);
       canvas.removeEventListener("pointerup", onPointerUp);

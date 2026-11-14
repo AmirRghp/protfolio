@@ -63,6 +63,7 @@ const WORK_BRANCHES: BranchData[] = [
     projects: [
       buildCarouselProject("covid-image-classification", "PyTorch", "ResNet · EfficientNet · Radiology"),
       buildCarouselProject("omnidoc-vision", "Multimodal", "Visual RAG · Complex PDF Parsing"),
+      buildCarouselProject("video-kyc", "Biometrics", "Liveness Detection · DeepFace · OCR"),
     ],
   },
   {
@@ -79,6 +80,7 @@ const WORK_BRANCHES: BranchData[] = [
     ),
     projects: [
       buildCarouselProject("omniops-sre-agent", "FastMCP", "LangGraph · SRE · HITL Safety"),
+      buildCarouselProject("kanban-studio", "Multi-Agent", "Claude Agent SDK · WebSocket · SQLite"),
     ],
   },
   {
