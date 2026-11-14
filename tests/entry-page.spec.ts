@@ -38,6 +38,14 @@ test("production entry page loads without browser errors or horizontal overflow"
     "href",
     "https://github.com/AmirRghp/laya-finetune",
   );
+  await expect(page.getByRole("link", { name: "View Video KYC on GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/AmirRghp/video-kyc",
+  );
+  await expect(page.getByRole("link", { name: "View Kanban Studio on GitHub" })).toHaveAttribute(
+    "href",
+    "https://github.com/AmirRghp/kanban-studio",
+  );
 
   for (const width of [320, 375, 768, 1024, 1440]) {
     await page.setViewportSize({ width, height: 800 });
@@ -94,11 +102,11 @@ test("unavailable WebGL preserves all portfolio content and links", async ({ pag
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("status")).toContainText("The 3D view is unavailable.");
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
 
 
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
   await page.getByRole("link", { name: "Read portfolio" }).click();
   await expect(page.getByRole("heading", { level: 1 })).toBeInViewport();
 });
@@ -162,7 +170,7 @@ test("a lost wallpaper context leaves the room usable and stops its frame loop",
   expect(afterLossEnd - afterLossStart).toBeLessThan(5);
   await expect(page.locator("canvas[data-engine]")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
   await expect(page.getByText("The 3D view is unavailable.")).not.toBeVisible();
 });
 
@@ -178,5 +186,5 @@ test("a lost GPU context falls back without removing the HTML portfolio", async 
   });
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
 });

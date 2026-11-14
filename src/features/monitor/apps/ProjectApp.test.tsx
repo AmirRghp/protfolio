@@ -11,6 +11,8 @@ import {
 import ProjectApp, {
   AgentGlyph,
   ChatGlyph,
+  KanbanGlyph,
+  KycGlyph,
   LayersGlyph,
   RagGlyph,
   ScanGlyph,
@@ -142,6 +144,8 @@ describe("ProjectApp component & GitHub repository in-frame viewer", () => {
       <AgentGlyph key="agent" />,
       <ChatGlyph key="chat" />,
       <LayersGlyph key="layers" />,
+      <KycGlyph key="kyc" />,
+      <KanbanGlyph key="kanban" />,
     ];
 
     for (const glyph of glyphs) {

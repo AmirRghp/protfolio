@@ -51,6 +51,8 @@ describe("portfolio entry page", () => {
       "https://github.com/AmirRghp/omniops-sre-agent",
       "https://github.com/AmirRghp/enterprise-knowledge-copilot",
       "https://github.com/AmirRghp/laya-finetune",
+      "https://github.com/AmirRghp/video-kyc",
+      "https://github.com/AmirRghp/kanban-studio",
     ]);
   });
 

@@ -252,6 +252,83 @@ cd laya-finetune
 pip install -r requirements.txt
 \`\`\``,
   },
+  "video-kyc": {
+    branch: "main",
+    language: "Python · FastAPI & Computer Vision",
+    description:
+      "Real-time browser-based Video KYC identity verification pipeline combining MediaPipe blink liveness, active pose challenges, and DeepFace VGG-Face matching across three Dockerized services.",
+    topics: ["video-kyc", "liveness-detection", "mediapipe", "deepface", "fastapi", "websockets", "docker-compose"],
+    files: [
+      { name: "services/ai", path: "services/ai", type: "dir", summary: "FastAPI inference engine (app.py, liveness.py, challenges.py, face_match.py)" },
+      { name: "services/backend", path: "services/backend", type: "dir", summary: "FastAPI WebSocket & session orchestrator (main.py, ai_client.py)" },
+      { name: "services/frontend", path: "services/frontend", type: "dir", summary: "Nginx proxy and browser camera/ID capture UI (index.html, nginx.conf)" },
+      { name: "docker-compose.yml", path: "docker-compose.yml", type: "file", summary: "Three-service production orchestration across isolated edge & ai-internal networks" },
+      { name: "docker-compose.dev.yml", path: "docker-compose.dev.yml", type: "file", summary: "Development compose override for hot-reload local iteration" },
+      { name: "LICENSE", path: "LICENSE", type: "file", summary: "Open-source repository license" },
+      { name: "README.md", path: "README.md", type: "file", summary: "3-stage verification pipeline, service topology, and Docker setup" },
+    ],
+    readmeMarkdown: `# Video KYC
+
+A real-time browser-based **Video Identity Verification (KYC)** pipeline separated into three Dockerized microservices (\`frontend\`, \`backend\`, and \`ai\`).
+
+## 3-Stage Verification Pipeline
+
+1. **Blink Liveness (MediaPipe):** Tracks Eye Aspect Ratio (EAR) using \`face_landmarker.task\` to verify 3 natural blinks.
+2. **Active Pose & Expression Challenges:** Issues 2 randomized smile or head-turn prompts with a 3-second hold requirement and 10-second timeout per challenge.
+3. **ID Face Matching (DeepFace):** Compares captured live frames against the uploaded government ID portrait using \`VGG-Face\`.
+
+## Service Topology
+
+\`\`\`text
+video-kyc/
+├── services/frontend/   # Nginx reverse proxy & browser camera/ID UI (:3000)
+├── services/backend/    # FastAPI WebSocket & verification orchestrator (:8000)
+├── services/ai/         # Isolated FastAPI + MediaPipe + DeepFace service (:8001)
+└── docker-compose.yml   # edge + ai-internal isolated networks & cache volumes
+\`\`\`
+
+## Quick Start
+
+\`\`\`bash
+git clone https://github.com/AmirRghp/video-kyc.git
+cd video-kyc
+docker compose up --build
+\`\`\``,
+  },
+  "kanban-studio": {
+    branch: "main",
+    language: "TypeScript & Python · Next.js + FastAPI",
+    description:
+      "A Kanban board with an AI Assistant: multi-user 5-column workspace with Next.js drag-and-drop UI, FastAPI backend, SQLite persistence, and optimistic concurrency control.",
+    topics: ["kanban", "ai-assistant", "nextjs", "react", "fastapi", "sqlite", "dnd-kit", "docker"],
+    files: [
+      { name: "frontend", path: "frontend", type: "dir", summary: "Next.js 16 + React 19 + dnd-kit board UI, Vitest & Playwright suites" },
+      { name: "backend", path: "backend", type: "dir", summary: "Python 3.13 FastAPI API, PBKDF2-SHA256 auth, SQLite storage & OpenRouter AI proxy" },
+      { name: "scripts", path: "scripts", type: "dir", summary: "Lifecycle helpers (start.sh, stop.sh, test.sh, test-unit.sh)" },
+      { name: "docs", path: "docs", type: "dir", summary: "Architecture, database schema, and AI mutation specifications" },
+      { name: "Dockerfile", path: "Dockerfile", type: "file", summary: "Single-container build serving Next.js static frontend + FastAPI backend" },
+      { name: "docker-compose.yml", path: "docker-compose.yml", type: "file", summary: "Persistent pm-mvp SQLite volume and server-side env wiring" },
+      { name: "README.md", path: "README.md", type: "file", summary: "Setup instructions, auth/board guarantees, and AI connectivity checks" },
+    ],
+    readmeMarkdown: `# Kanban Studio
+
+A Kanban board with an **AI Assistant**, packaged cleanly as a single Dockerized full-stack application.
+
+## Key Capabilities
+
+- **5-Column Interactive Board:** Built with **Next.js 16**, **React 19**, and **@dnd-kit** for fluid drag-and-drop card scheduling across isolated user boards.
+- **Multi-User Auth & SQLite Persistence:** PBKDF2-SHA256 password hashing with \`itsdangerous\` signed session cookies and durable storage on \`/app/data/app.db\`.
+- **Server-Side AI Assistant:** Integrates an assistant sidebar via \`OPENROUTER_API_KEY\` kept strictly server-side (verified via \`GET /api/ai/ping\`).
+- **Optimistic Concurrency Control:** Clients send \`If-Match\` board revision headers so stale concurrent or AI-driven edits fail safely with HTTP \`409\`.
+
+## Quick Start
+
+\`\`\`bash
+git clone https://github.com/AmirRghp/kanban-studio.git
+cd kanban-studio
+./scripts/start.sh
+\`\`\``,
+  },
 };
 
 export function getBundledRepoSnapshot(project: Project): GitHubRepoSnapshot {

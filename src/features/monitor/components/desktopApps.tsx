@@ -3,6 +3,8 @@ import {
   AboutMeFileIcon,
   AgentGlyph,
   ChatGlyph,
+  KanbanGlyph,
+  KycGlyph,
   LayersGlyph,
   ProjectApp,
   RagGlyph,
@@ -29,6 +31,8 @@ const projectGlyphs: Record<ProjectIcon, () => React.ReactElement> = {
   agent: AgentGlyph,
   chat: ChatGlyph,
   layers: LayersGlyph,
+  kyc: KycGlyph,
+  kanban: KanbanGlyph,
 };
 
 /** Every project of the shared content becomes an app of the monitor desktop. */

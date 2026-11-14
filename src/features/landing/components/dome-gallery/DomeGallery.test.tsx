@@ -22,8 +22,9 @@ afterEach(() => {
 });
 
 describe("DomeGallery & 3D Paraboloid Math", () => {
-  it("maps all 6 real portfolio projects with bespoke WebP artwork and complete tech stacks", () => {
+  it("maps all 8 real portfolio projects with bespoke WebP artwork and complete tech stacks", () => {
     expect(DOME_PROJECTS).toHaveLength(portfolioContent.projects.length);
+    expect(DOME_PROJECTS).toHaveLength(8);
 
     for (const proj of DOME_PROJECTS) {
       expect(proj.image).toMatch(/assets\/projects\/[a-z0-9-]+\.webp$/);
@@ -70,13 +71,13 @@ describe("DomeGallery & 3D Paraboloid Math", () => {
   });
 
   it("wraps modular coordinates, distributes all projects across every row, and computes smooth radial lightFalloff", () => {
-    expect(mod(-3, 6)).toBe(3);
+    expect(mod(-3, 8)).toBe(5);
     expect(wrapCentered(510, 1000)).toBe(-490);
-    expect(itemIndexAt(0, 0, 6)).toBe(0);
+    expect(itemIndexAt(0, 0, 8)).toBe(0);
     const rowIndices = new Set(
-      [0, 1, 2, 3, 4, 5].map((c) => itemIndexAt(c, 0, 6))
+      [0, 1, 2, 3, 4, 5, 6, 7].map((c) => itemIndexAt(c, 0, 8))
     );
-    expect(rowIndices.size).toBe(6);
+    expect(rowIndices.size).toBe(8);
     expect(lightFalloff(0.2)).toBe(0);
     expect(lightFalloff(1.5)).toBe(1);
   });
@@ -99,6 +100,8 @@ describe("DomeGallery & 3D Paraboloid Math", () => {
     expect(galleryHtml).toContain("COVID-19 Image Classification");
     expect(galleryHtml).toContain("OmniDoc RAG");
     expect(galleryHtml).toContain("OmniOps SRE Agent");
+    expect(galleryHtml).toContain("Video KYC");
+    expect(galleryHtml).toContain("Kanban Studio");
 
     const project = DOME_PROJECTS[1]; // OmniDoc RAG
     const detail = getDetailLayout(1280, 800);
@@ -115,7 +118,7 @@ describe("DomeGallery & 3D Paraboloid Math", () => {
       />
     );
 
-    expect(modalHtml).toContain("02 / 06");
+    expect(modalHtml).toContain("02 / 08");
     expect(modalHtml).toContain(project.title);
     expect(modalHtml).toContain(project.category.replaceAll("&", "&amp;"));
     expect(modalHtml).toContain(project.description.replaceAll("&", "&amp;"));

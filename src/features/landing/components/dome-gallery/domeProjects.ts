@@ -148,6 +148,52 @@ const PROJECT_ENRICHMENT: Record<string, ProjectEnrichment> = {
       "Held-out bilingual evaluation suite measuring instruction adherence and domain terminology accuracy.",
     ],
   },
+  "video-kyc": {
+    category: "Computer Vision",
+    year: "2026",
+    imagePath: "assets/projects/video-kyc.webp",
+    alt: "Matte-black optical verification aperture ring hovering over a translucent smoked-glass plate pierced by a horizontal ice-cyan laser beam",
+    architecture:
+      "Three-service Dockerized verification architecture pairing a browser WebSocket client and Nginx proxy on an edge network with a FastAPI session orchestrator and an isolated MediaPipe + DeepFace inference container over an internal bridge.",
+    techStack: [
+      "Python",
+      "FastAPI",
+      "MediaPipe",
+      "DeepFace (VGG-Face)",
+      "OpenCV",
+      "WebSockets",
+      "Nginx",
+      "Docker Compose",
+    ],
+    highlights: [
+      "Stage 1 eye-aspect-ratio (EAR) liveness verification detecting 3 natural blinks via MediaPipe facial landmarks.",
+      "Stage 2 randomized smile and head-turn pose challenges with 3-second hold windows and 10-second timeouts.",
+      "Stage 3 VGG-Face embedding verification comparing live captured frames against the uploaded government ID photo.",
+    ],
+  },
+  "kanban-studio": {
+    category: "Full-Stack AI",
+    year: "2026",
+    imagePath: "assets/projects/kanban-studio.webp",
+    alt: "Isometric arrangement of three matte-charcoal and smoked-glass Kanban columns beside a translucent sky-blue edge prism",
+    architecture:
+      "Single-container full-stack workspace combining a Next.js App Router and dnd-kit client with a Python 3.13 FastAPI backend, SQLite persistence, signed session auth, and server-proxied OpenRouter AI board assistance.",
+    techStack: [
+      "Next.js 16",
+      "React 19",
+      "TypeScript",
+      "dnd-kit",
+      "FastAPI",
+      "SQLite",
+      "Tailwind CSS",
+      "Docker",
+    ],
+    highlights: [
+      "Five-column drag-and-drop task workflow with multi-board isolation per user, inline card editing, and PBKDF2-SHA256 auth.",
+      "Integrated AI Assistant sidebar executing board mutations server-side with OpenRouter credentials isolated from the browser.",
+      "Revision-based If-Match optimistic concurrency control rejecting stale concurrent or AI edits with HTTP 409 conflict checks.",
+    ],
+  },
 };
 
 export const DOME_PROJECTS: DomeProject[] = portfolioContent.projects.map(

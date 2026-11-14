@@ -1,4 +1,4 @@
-export type ProjectIcon = "scan" | "rag" | "vision" | "agent" | "chat" | "layers";
+export type ProjectIcon = "scan" | "rag" | "vision" | "agent" | "chat" | "layers" | "kyc" | "kanban";
 
 export type ExperienceItem = {
   company: string;
@@ -312,6 +312,24 @@ export const portfolioContent: PortfolioContent = {
       githubUrl: "https://github.com/AmirRghp/laya-finetune",
       highlights: ["Persian RAG data", "Model fine-tuning", "Evaluation"],
       icon: "layers",
+    },
+    {
+      id: "video-kyc",
+      title: "Video KYC",
+      brief:
+        "A real-time browser-based video identity verification pipeline split into three Dockerized services (Nginx frontend, FastAPI WebSocket orchestrator, and isolated AI inference engine). Enforces Eye Aspect Ratio blink liveness via MediaPipe, randomized smile and head-pose challenges, and DeepFace VGG-Face matching against an uploaded ID.",
+      githubUrl: "https://github.com/AmirRghp/video-kyc",
+      highlights: ["MediaPipe Liveness", "DeepFace ID Match", "FastAPI WebSockets"],
+      icon: "kyc",
+    },
+    {
+      id: "kanban-studio",
+      title: "Kanban Studio",
+      brief:
+        "A multi-user 5-column Kanban board paired with a server-side AI Assistant sidebar in a single Docker container. Features Next.js drag-and-drop scheduling, PBKDF2-SHA256 signed session auth, persistent SQLite board storage, and If-Match optimistic concurrency control across manual and AI mutations.",
+      githubUrl: "https://github.com/AmirRghp/kanban-studio",
+      highlights: ["AI Board Assistant", "Next.js & FastAPI", "Optimistic Locking"],
+      icon: "kanban",
     },
   ],
 };

@@ -93,6 +93,28 @@ export function LayersGlyph() {
   );
 }
 
+export function KycGlyph() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <rect x="4.5" y="6.5" width="23" height="19" rx="3" fill="none" stroke="currentColor" strokeWidth="2.1" />
+      <circle cx="13" cy="14" r="3" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M8.5 21.5c1-2.5 2.7-3.5 4.5-3.5s3.5 1 4.5 3.5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+      <path d="M20 12.5h4.5M20 16.5h4.5M20 20.5h3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function KanbanGlyph() {
+  return (
+    <svg viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+      <rect x="4.5" y="5.5" width="23" height="21" rx="3" fill="none" stroke="currentColor" strokeWidth="2.1" />
+      <rect x="7.5" y="9" width="4.5" height="12" rx="1" fill="currentColor" opacity="0.9" />
+      <rect x="13.75" y="9" width="4.5" height="8.5" rx="1" fill="currentColor" opacity="0.72" />
+      <rect x="20" y="9" width="4.5" height="14" rx="1" fill="currentColor" opacity="0.9" />
+    </svg>
+  );
+}
+
 /** The project app of the monitor desktop: the address of the project and an in-window browser view. */
 export default function ProjectApp({ project, icon }: { project: Project; icon: ReactNode }) {
   const target = projectTarget(project);

@@ -59,7 +59,7 @@ for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
 
     await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
     await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
     await page.goto("/?destination=monitor");
     await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "Go Back (ESC)", exact: true }).click();
@@ -73,7 +73,7 @@ for (const model of ["room-furnishings.glb", "curved-monitor.glb"]) {
     await page.goto("/");
 
     await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
-    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+    await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
     await expect(page.getByRole("button", { name: "Go Back (ESC)", exact: true })).toHaveCount(0);
   });
 }
@@ -84,7 +84,7 @@ test("a failed arcade cabinet GLB load preserves the HTML portfolio path", async
 
   await expect(page.getByText("The 3D view is unavailable.")).toBeVisible();
   await expect(page.getByRole("heading", { level: 1, name: "Amirreza Gholipour" })).toBeVisible();
-  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(6);
+  await expect(page.getByRole("link", { name: /View .* on GitHub/ })).toHaveCount(8);
   await page.goto("/?destination=arcade");
   await expect(page.getByRole("button", { name: "Play game" })).toBeVisible();
 });

@@ -4,6 +4,8 @@ export {
   default as ProjectApp,
   AgentGlyph,
   ChatGlyph,
+  KanbanGlyph,
+  KycGlyph,
   LayersGlyph,
   RagGlyph,
   ScanGlyph,

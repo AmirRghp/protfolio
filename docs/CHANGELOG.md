@@ -4,6 +4,14 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.2] - 2026-11-14
+
+### Added
+- **Two New Portfolio Projects (`Video KYC` & `Kanban Studio`):**
+  - Added [`AmirRghp/video-kyc`](https://github.com/AmirRghp/video-kyc) and [`AmirRghp/kanban-studio`](https://github.com/AmirRghp/kanban-studio) across `src/data/content.ts` (automatically populating the 3D monitor `about-me.txt` Projects section and landing showcase), `src/features/landing/components/dome-gallery/domeProjects.ts`, and `src/data/githubRepoPreview.ts`.
+  - Generated and optimized matching `#09090b` smoked-glass 3D project cards (`public/assets/projects/video-kyc.webp`, `public/assets/projects/kanban-studio.webp`, `900×1205` VP8 WebP) and created dedicated 3D monitor desktop SVG glyphs (`KycGlyph`, `KanbanGlyph` in `ProjectApp.tsx` / `desktopApps.tsx`).
+  - Updated unit and Playwright E2E assertions across `App.test.tsx`, `DomeGallery.test.tsx`, `ProjectApp.test.tsx`, `entry-page.spec.ts`, `room-navigation.spec.ts`, and `monitor.spec.ts` for all 8 portfolio projects.
+
 ## [0.9.1] - 2026-11-14
 
 ### Added & Fixed
