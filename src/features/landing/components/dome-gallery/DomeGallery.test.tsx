@@ -1,6 +1,7 @@
 import { createRef } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { setDeviceSnapshotForTesting } from "@/core/utils/responsive";
 import { portfolioContent } from "@/data/content";
 import { getDetailLayout } from "./detail-layout";
 import {
@@ -15,6 +16,10 @@ import {
 import { DomeGallery } from "./dome-gallery";
 import { DOME_PROJECTS } from "./domeProjects";
 import { ProjectModalContent } from "./project-modal-content";
+
+afterEach(() => {
+  setDeviceSnapshotForTesting(null);
+});
 
 describe("DomeGallery & 3D Paraboloid Math", () => {
   it("maps all 6 real portfolio projects with bespoke WebP artwork and complete tech stacks", () => {
@@ -121,5 +126,66 @@ describe("DomeGallery & 3D Paraboloid Math", () => {
     }
     expect(modalHtml).toContain(`href="${project.githubUrl}"`);
     expect(modalHtml).toContain("View on GitHub");
+
+    const mobileDetail = getDetailLayout(375, 812);
+    const mobileModalHtml = renderToStaticMarkup(
+      <ProjectModalContent
+        project={project}
+        index={1}
+        total={DOME_PROJECTS.length}
+        detail={mobileDetail}
+        mediaRef={createRef()}
+        copyRef={createRef()}
+        closeBtnRef={createRef()}
+        onClose={() => {}}
+      />
+    );
+    expect(mobileModalHtml).toContain("modalMediaCloseBtn");
+    expect(mobileModalHtml.match(/aria-label="Close project details"/g)).toHaveLength(1);
+  });
+
+  it("renders flat MobileWorkGrid instead of 3D dome on mobile viewports (< 768px)", () => {
+    setDeviceSnapshotForTesting({
+      isMobile: true,
+      isTablet: false,
+      isMobileOrTablet: true,
+      isDesktop: false,
+      isTouch: true,
+      allowRoom3D: false,
+    });
+
+    const mobileHtml = renderToStaticMarkup(
+      <DomeGallery projects={DOME_PROJECTS} />
+    );
+
+    expect(mobileHtml).toContain("Selected Work");
+    expect(mobileHtml).toContain("mobileWorkKicker");
+    expect(mobileHtml).toContain("Selected work project gallery");
+    expect(mobileHtml).not.toContain("Selected work infinite dome gallery");
+    for (const proj of DOME_PROJECTS) {
+      expect(mobileHtml).toContain(`data-project-id="${proj.id}"`);
+    }
+  });
+
+  it("renders touch-adapted 3D dome with directional pan buttons on tablet touch viewports", () => {
+    setDeviceSnapshotForTesting({
+      isMobile: false,
+      isTablet: true,
+      isMobileOrTablet: true,
+      isDesktop: false,
+      isTouch: true,
+      allowRoom3D: false,
+    });
+
+    const tabletHtml = renderToStaticMarkup(
+      <DomeGallery projects={DOME_PROJECTS} />
+    );
+
+    expect(tabletHtml).toContain("Selected work infinite dome gallery");
+    expect(tabletHtml).toContain(
+      "Swipe horizontally or use arrows · Tap any card for details"
+    );
+    expect(tabletHtml).toContain("Pan dome left");
+    expect(tabletHtml).toContain("Pan dome right");
   });
 });

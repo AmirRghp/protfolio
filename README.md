@@ -18,8 +18,9 @@ The project blends an immersive, nocturnal cyberpunk 3D workspace built with **T
 ### 2. 2D Flat Landing (`FlatLanding`)
 - **Instant Accessible Navigation:** Direct URL hash `#portfolio` or transition through the sleek black `ExitBar` ("Exit The Room") with WebGL2 refractive glass buttons (`TactileButton`).
 - **Interactive Elements:** Nocturnal `LiquidGrid` canvas backdrop, `MagicCursor`, and dynamic role cycling.
+- **Selected Work Showcase (`DomeGallery` & `MobileWorkGrid`):** Full-bleed transparent 3D GSAP concave dome grid on desktop/tablet (`>= 768px`) with smoked-glass project cards, touch-safe directional controls, and smooth cursor-leave settling; responsive 2-to-1 card grid on mobile (`< 768px`) with inner-card captions and a zero-reflow morphing `ProjectModal` displaying architecture summaries and complete tech stacks.
 - **GitHub Contribution Skyline:** Visualizes annual commit activity as an isometric 3D procedural skyline ("As a city") with live caching and offline fallback.
-- **Categorized Showcase:** Filtered project highlights powered by Arc UI spring tabs (`@uiarc/tabs`).
+- **Tech Stack Explorer:** Filterable skill matrix powered by Arc UI spring tabs (`@uiarc/tabs`) with responsive two-row visual clamping.
 - **Seamless Return:** One-click re-entry to the 3D room anytime.
 
 ---
@@ -30,8 +31,8 @@ The project blends an immersive, nocturnal cyberpunk 3D workspace built with **T
 |---|---|
 | **Framework & Language** | React 19, TypeScript (Strict), Vite 8 |
 | **3D Graphics & Physics** | Three.js 0.186, React Three Fiber 9 |
-| **Animation & Motion** | Motion (`motion/react`), Spring Kinematics |
-| **Tactile UI** | `tactile-glass-ui` (WebGL2 Refractive Optical Glass) |
+| **Animation & Motion** | Motion (`motion/react`), GSAP (`gsap` + `CustomEase`), Spring Kinematics |
+| **Tactile UI** | `tactile-glass-ui` (WebGL2 Refractive Optical Glass), `glisse` (Liquid Glass) |
 | **Testing & Quality** | Vitest 5, Playwright 1.64, ESLint 10, TypeScript 6 |
 
 ---
@@ -122,11 +123,11 @@ For detailed architectural decisions, design tokens, error fallbacks, and engine
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | System Architecture, Feature Modules, and 3D Projection Math |
 | [`docs/DESIGN_SYSTEM.md`](docs/DESIGN_SYSTEM.md) | Nocturnal Palette (`#080614`), Typography, Spacing, and Motion Tokens |
 | [`docs/UX_FLOWS.md`](docs/UX_FLOWS.md) | Interactive State Machines, Portal Transitions, and User Journeys |
-| [`docs/TESTING.md`](docs/TESTING.md) | Testing Pyramid, 40 Vitest Suites, and Playwright E2E Configurations |
+| [`docs/TESTING.md`](docs/TESTING.md) | Testing Pyramid, 51 Vitest Suites (300 Tests), and Playwright E2E Configurations |
 | [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md) | Node/Vite Configuration, Client Requirements, and GitHub API Caching |
 | [`docs/ERROR_HANDLING.md`](docs/ERROR_HANDLING.md) | Resilience, WebGL Context Loss Recovery, and Iframe Fallbacks |
 | [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | Static Hosting, Dynamic Code-Splitting, and GitHub Actions CI/CD |
-| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture Decision Records (ADRs 001–008) |
+| [`docs/DECISIONS.md`](docs/DECISIONS.md) | Architecture Decision Records (ADRs 001–023) |
 | [`docs/CHANGELOG.md`](docs/CHANGELOG.md) | Semantic Release Notes and Version History |
 | [`AGENTS.md`](AGENTS.md) | AI Agent Guardrails, Coding Standards, and Local Skills Directory |
 

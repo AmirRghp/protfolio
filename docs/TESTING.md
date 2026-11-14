@@ -22,7 +22,7 @@ Key testing principles:
   /         \    DOM testing, keyboard navigation, window drag
  /-----------\   
 /             \  Unit Tests (Vitest)
-/               \ 50 test files · 292 tests (3D math, audio, level data, responsive)
+/               \ 51 test files · 300 tests (3D math, dome lens, audio, level data, responsive)
 -----------------
 ```
 
@@ -32,14 +32,15 @@ Key testing principles:
 
 Unit testing runs via **Vitest** with in-memory DOM simulation and isolated worker threads.
 
-### Test Suites Breakdown (50 Files, 292 Tests)
+### Test Suites Breakdown (51 Files, 300 Tests)
 - **Device & Responsive Engine:**
   - `src/core/utils/responsive.test.ts`: Tests `useResponsiveDevice` hook, media query matching, snapshot overrides, and strict dual-condition calculation ($\text{allowRoom3D}$).
   - `src/features/landing/components/FlatLanding.test.tsx`: Tests flat landing DOM structure, `#arcade` hash deep-linking, room entry suppression, sticky header with Glisse `<Glass>` liquid glass backdrop (`ldNavGlass`, `lg-glass`), `--lg-blur: 3px`, and decoupling from scrolling sections.
   - `src/App.test.tsx`: Validates root application shell, semantic owner role structure, `#arcade` hash initialization, and clean markup integration decoupled from `data-glisse-backdrop`.
+  - `src/features/landing/components/dome-gallery/DomeGallery.test.tsx`: Verifies all 6 project entries & minimalist WebP asset paths, 3D concave paraboloid surface & Gaussian `focusStrength` lens math, `screenToPlanar` inversion, coprime toroidal grid indexing, desktop `Selected Work` dome + `ProjectModalContent` tech stack & GitHub CTAs, mobile `ProjectModalContent` (`modalMediaCloseBtn` inside `.modalMedia` with single close control), `MobileWorkGrid` `< 768px` switching, and tablet touch dome directional controls.
   - `src/features/landing/components/TechStackSection.test.tsx`: Tests responsive 2-row clamping, exclusion of expand buttons for categories fitting in two rows (Languages, Frontend, DevOps), category filtering, and expand/collapse button state.
-  - `src/features/landing/components/WorkAccordion.test.tsx`: Tests mobile accordion layout and circular glass close button interaction.
-  - `src/features/landing/components/ProjectCarousel.test.tsx`: Tests desktop project carousel slide navigation, dot indicators, and keyboard arrow controls.
+  - `src/features/landing/components/WorkAccordion.test.tsx`: Tests legacy mobile accordion layout and circular glass close button interaction (retained unit test; `FlatLanding` now renders `MobileWorkGrid` / `DomeGallery`).
+  - `src/features/landing/components/ProjectCarousel.test.tsx`: Tests legacy desktop project carousel slide navigation, dot indicators, and keyboard arrow controls (retained unit test).
   - `src/features/landing/effects/PixelTetris.test.tsx`: Tests SSR canvas rendering and responsive `mobileCellSize`, `mobileMaxStackHeight`, and `mobilePrefillRows` props.
 - **3D Room & Camera Math:**
   - `src/features/room/utils/roomCamera.test.ts`: Verifies camera poses, frustum calculations, aspect ratio scaling, and quintic smootherstep easing.
@@ -86,7 +87,7 @@ End-to-end tests run headless Chromium across responsive viewport configurations
 Run the following commands locally before any release or commit:
 
 ```bash
-# 1. Run all 292 Vitest unit & integration tests (50 test suites)
+# 1. Run all 300 Vitest unit & integration tests (51 test suites)
 npm run test
 
 # 2. Verify complete TypeScript type soundness (zero emits, zero errors)

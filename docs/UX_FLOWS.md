@@ -146,7 +146,7 @@ flowchart TD
     TextLock --> SpectralWipe[Progress = 100%: Cyan-White Spectral Edge .plEdge wipes sheet open vertically]
     
     SpectralWipe --> FlatLandingActive[Interactive Flat Landing Live with ASCII room video & LiquidGrid]
-    FlatLandingActive --> ScrollExplore[Scroll through Tech Stack, Experience, GitHub City]
+    FlatLandingActive --> ScrollExplore[Scroll through Selected Work, Tech Stack, Experience, GitHub City]
     
     ScrollExplore --> ScrollThreshold{Scroll offset > 12px?}
     ScrollThreshold -- Yes --> ScrolledNav[Activate .ldNav.scrolled: Fade in Glisse Optical Liquid Glass backdrop]
@@ -160,5 +160,31 @@ flowchart TD
     ShutterDown --> ProgressiveUnveil[RoomPreview at z-index 50 progressively unveiled from top to bottom]
     ProgressiveUnveil --> DockArch[ExitBar docks at bottom: 0; tactile button arch springs up (-22px -> 0px)]
     DockArch --> RestoreRoom[Unpause WebGL canvas loop & resume 3D room navigation]
+```
+
+---
+
+### Flow 7: Selected Work Showcase (`DomeGallery`, `MobileWorkGrid` & `ProjectModal`)
+
+```mermaid
+flowchart TD
+    EnterWork[Visitor reaches #ld-work] --> DeviceCheck{Viewport width >= 768px?}
+
+    DeviceCheck -- Yes: Desktop / Tablet --> MountDome[Render transparent 3D DomeGallery + top-left Selected Work badge]
+    MountDome --> DomeInteract{User Interaction}
+    DomeInteract -- Desktop drag / wheel / hover --> Orbit3D[Infinite drag inertia + Gaussian focus lens; pointerleave eases focusStrength -> 0]
+    DomeInteract -- Tablet vertical swipe --> AbortDrag[DragPhase cancelled when absDy > 12 -> native vertical page scroll]
+    DomeInteract -- Tablet horizontal swipe / arrows --> PanHorizontal[Axis-locked horizontal pan or 34px nudge buttons]
+    DomeInteract -- Click or Touch Tap <= 14px --> OpenDesktopModal[Measure tile rect -> 3D GSAP CustomEase morph to 2-col ProjectModal + external CardCaption]
+
+    DeviceCheck -- No: Mobile < 768px --> MountGrid[Render Selected Work kicker + MobileWorkGrid: 2 cols >=375px / 1 col <375px]
+    MountGrid --> CardTap[Tap 3:4 card with inner-card title & Category · Year scrim]
+    CardTap --> OpenMobileModal[GSAP morph to compact non-scrolling 1-col ProjectModal; X button at top-right of image; inner overlay fades out]
+
+    OpenDesktopModal --> ModalActions[Inspect Architecture, Tech Stack chips, Highlights, GitHub CTA]
+    OpenMobileModal --> ModalActions
+    ModalActions --> CloseModal{Close via X / Backdrop / Escape}
+    CloseModal -- Desktop / Tablet --> FoldDesktop[Fold back into dome slot without triggering room re-entry]
+    CloseModal -- Mobile --> FoldMobile[Fade out X button -> shrink back into card while inner overlay fades smoothly in; restore button focus]
 ```
 

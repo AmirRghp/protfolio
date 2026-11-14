@@ -96,6 +96,10 @@ src/components/arc/tabs.tsx is a spring-physics tab navigation component based o
 
 `src/components/originkit/PixelTetris.tsx` is an integrated, self-playing 2D canvas Tetris component based on Pixel Tetris (https://www.originkit.dev/components/pixel-tetris?preset=base) published by OriginKit. It provides an autonomous tetromino stacking engine with circular matrix dots (`rounded: 20`), pre-filled bottom rows for active mid-game appearance, height-capping AI logic, and responsive `IntersectionObserver` pause/resume controls.
 
+## Infinite Dome Grid with GSAP (Morphin)
+
+`src/features/landing/components/dome-gallery/` is adapted from the Infinite Dome Grid with GSAP component concept (`https://morphin.dev/components/infinite-dome-grid-with-gsap`), customized with a transparent stage, concave paraboloid cursor-lens math (`focusStrength` decay), touch-safe tablet axis locking, responsive mobile 2-to-1 card grid (`MobileWorkGrid`), and zero-reflow `CustomEase` modal morphing (`ProjectModal`) powered by `gsap` (`^3.15.1`, GreenSock Standard License).
+
 ## 3D models
 
 The 3D assets used in the room workstation and scene are licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):

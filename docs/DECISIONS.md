@@ -399,11 +399,11 @@ This document records the foundational architecture decisions, trade-offs, and d
 - **Context:**
   The user requested replacing the 4-branch `WorkAccordion` in `#ld-work` with an interactive **Infinite Dome Grid with GSAP** (`DomeGallery`, adapted from `morphin.dev/components/infinite-dome-grid-with-gsap`) occupying the full `#ld-work` section over the site's transparent background, with a glassmorphic `Selected Work` pill badge anchored at the top-left of the component matching the bottom `Drag to explore...` hint pill. Each of Amirreza Gholipour's 6 real portfolio projects required bespoke, dark-themed AI-generated editorial artwork, and clicking any project card (including corner tiles) required smoothly morphing to the center, unfolding its detail panel with full project details and technology stack chips, and folding back into its exact dome slot on close.
 - **Decision:**
-  1. **Bespoke Nocturnal Project Artwork (`public/assets/projects/*.webp`):**
-     - Generated 6 dark architectural 3D studio renders tailored to each project's domain (`covid-image-classification.webp`, `omnidoc-rag.webp`, `omnidoc-vision.webp`, `omniops-sre-agent.webp`, `enterprise-knowledge-copilot.webp`, `laya-finetuning-pipeline.webp`) and encoded them as lightweight WebP assets (`41 KB` – `113 KB` each, `444 KB` total).
+  1. **Bespoke Minimalist Smoked-Glass Project Artwork (`public/assets/projects/*.webp`):**
+     - Generated 6 ultra-minimal `#09090b` smoked-glass and brushed-metal studio renders tailored to each project's domain (`covid-image-classification.webp`, `omnidoc-rag.webp`, `omnidoc-vision.webp`, `omniops-sre-agent.webp`, `enterprise-knowledge-copilot.webp`, `laya-finetuning-pipeline.webp`) encoded as compact WebP assets (`10 KB` – `15 KB` each).
   2. **3D Concave Paraboloid Projection, Coprime Lattice Indexing & Stable Visibility Culling (`dome.ts`, `dome-tile.tsx`, `dome-gallery.tsx`):**
      - Implemented `getDomeLayout`, `writePose`, `screenToPlanar` (3-iteration fixed-point radial inversion), and `itemIndexAt(col, row, count) = mod(col + row * 2, count)` so every row cycles through all 6 projects without orthogonal or diagonal neighbor repetition.
-     - Registered tile DOM nodes via a stable `useEffect([slot.key, registerTile])` hook in `DomeTile` and checked `rec.hidden || rec.el.style.visibility === "hidden"` in `applyStep`, preventing React state re-renders (`hasInteracted`, `active`) from resetting `TileRecord.hidden = false` while an offscreen tile's DOM node still had `visibility: hidden` (which previously caused empty card gaps after dragging).
+     - Registered tile DOM nodes via a stable `useEffect([slot.key, registerTile])` hook in `DomeTile` and checked `rec.hidden || rec.el.style.visibility === "hidden"` in `applyStep`, preventing React state re-renders (`hasInteracted`, `active`) from resetting `TileRecord.hidden = false` while an offscreen tile's DOM node still had `visibility: hidden`.
   3. **Smooth Cursor-Leave Focus Decay & Scroll-Friendly `useInfiniteDrag` (`use-pointer-focus.ts`, `use-infinite-drag.ts`):**
      - Added a continuous `focus.strength` (`[0, 1]`) attenuation scalar to `PointerFocus` and `writePose`. On `pointerleave`, `focus.current` coordinates are preserved while `focus.strength` exponentially decays toward `0` (`FOCUS_STRENGTH_OUT_LERP = 0.065`), allowing magnified tiles to glide smoothly back into the dome curvature instead of snapping in a single frame.
      - Configured `useInfiniteDrag` to drive pointer drag inertia via `gsap.ticker.deltaRatio(60)` while allowing vertical mouse-wheel scrolling to pass through to `#landing`.
@@ -412,7 +412,30 @@ This document records the foundational architecture decisions, trade-offs, and d
      - Made `.domeStage` transparent (`background: transparent`) so the main site's interactive `LiquidGrid` shows through, removed the external section header so `DomeGallery` occupies 100% of `#ld-work`, and placed the `Selected Work` pill badge (`stageHeaderBadge`) inside the top-left of the stage alongside an accessible `.srOnly` semantic project list.
 - **Consequences:**
   - *Positive:* Delivers a butter-smooth 60fps 3D infinite dome showcase with zero missing tile slots on drag, smooth cursor-leave settling, seamless corner-to-center GSAP card morphing, and full transparency over the site background.
-  - *Positive:* Preserves vertical page scroll ergonomics, `Escape` key hierarchy, and full WCAG semantic accessibility (verified across 51 test suites / 298 passing tests).
+  - *Positive:* Preserves vertical page scroll ergonomics, `Escape` key hierarchy, and full WCAG semantic accessibility.
+
+---
+
+### ADR-023: Responsive Mobile Work Card Grid (`< 768px`), Touch Axis-Lock & 3D `preserve-3d` Hit-Testing Fix
+- **Status:** Accepted (2026-11-14)
+- **Context:**
+  Device testing across mobile (`< 768px`) and touch tablets (`768px–1023px`) surfaced three UX and browser hit-testing issues in `#ld-work`:
+  1. On mobile phones, a full-bleed draggable 3D dome hindered vertical page scrolling and made small projected tiles awkward to tap.
+  2. On tablet/touch viewports, `DRAG_THRESHOLD_PX = 6` was frequently exceeded by routine finger-tap micro-jitter (`6–14px`), blocking tile taps, while vertical touch movement tracked `target.y` before `pan-y` cancelled the gesture.
+  3. Under Chromium 3D `preserve-3d` rendering, `.domeWorld` at `z = 0` intercepted hit-testing in front of concave dome tiles positioned at `tz < 0`, blocking clicks/taps on side tiles; additionally, newly added rows on viewport resize/StrictMode remount briefly inherited default `visibility: visible` at `(0, 0)`.
+- **Decision:**
+  1. **Mobile 2-to-1 Card Grid & Compact Mobile Modal (`MobileWorkGrid`, `ProjectModal` at `< 768px`):**
+     - Created `src/features/landing/components/dome-gallery/mobile-work-grid.tsx` gated by `useResponsiveDevice().isMobile`. Renders the uppercase monospace `Selected Work` kicker (`.mobileWorkKicker`, matching `.ldKicker` in "About Me") above a responsive grid (**2 columns** for `375px–767px`, collapsing to **1 column** under `@media (max-width: 374px)`), displaying 3:4 smoked-glass cards with full titles and `Category · Year` overlaid at the bottom of `.mobileTileFrame` over a dark gradient scrim, restoring `.ldWork` mobile section padding, and passing `sourceEl` (the 3:4 image frame) + `focusReturnEl` (the `<button>`) into `ProjectModal` with an unmounted `sourceEl.isConnected` close guard.
+     - On mobile (`< 768px`), moved the `ProjectModal` close (`×`) button onto the top-right corner of `.modalMedia` (`.modalMediaCloseBtn`), calibrated `getDetailLayout` (`panelH <= min(vh - 24, 748)`, `mediaH <= min(panelH * 0.23, 165)`) and compact mobile CSS spacing so the full modal fits without vertical scrolling/overflow (`scrollbar-width: none` fallback), omitted external `<CardCaption>` (`mobile:` `slotKey`s), and faded `closeBtnRef` (`0.14s`) + an inner `mobileOverlayRef` inside `.modalMedia` during open/close morphs so closing back into a grid card avoids sudden external text pop-in.
+  2. **Touch Axis-Lock & Adaptive Tap State Machine (`use-infinite-drag.ts`):**
+     - Rewrote pointer tracking as an explicit `DragPhase` state machine (`"idle" | "pending" | "dragging" | "cancelled"`):
+       - Ignores `[data-dome-control]` footer buttons so `.nudgeBtn` arrows (`34×34px` below `1024px`) never trigger stage drags.
+       - For touch pointers (`pointerType !== "mouse"`), aborts dome drag (`"cancelled"`) when vertical movement leads (`absDy > 12 && absDy >= absDx * 1.1`) so native page scroll flows freely, axis-locks horizontal touch panning (`target.x` only) when `absDx > 12 && absDx > absDy * 1.25`, and invokes `onTouchTap` on `pointerup` within `TOUCH_TAP_TOLERANCE_PX = 14` paired with a 450ms click deduplication guard in `DomeGallery`.
+  3. **3D Hit-Testing & Tile Registration Guard (`DomeGallery.module.css`, `dome-gallery.tsx`):**
+     - Set `.domeWorld { pointer-events: none; }`, `.tileButton { pointer-events: auto; visibility: hidden; }`, initialized newly registered tiles hidden in `registerTile`, and called `wakeBridgeRef.current()` so both concave tiles (`tz < 0`) receive clicks/taps/hover and StrictMode/resize-added rows never appear unpositioned at center.
+- **Consequences:**
+  - *Positive:* Effortless 2-to-1 card browsing, seamless inner-card morph transitions, non-scrolling mobile project modal, and unobstructed vertical scrolling on mobile (`320px` and `375px+`), reliable finger taps and scroll-safe horizontal panning on touch tablets (`768px+`), and universal side-tile click/hover hit-testing on desktop (`1440px`), verified via Vitest (`51` suites) and Playwright headless Chromium checks.
+
 
 
 

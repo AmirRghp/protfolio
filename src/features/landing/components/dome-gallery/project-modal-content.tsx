@@ -1,6 +1,6 @@
 import { type RefObject } from "react";
 import type { DetailLayout } from "./detail-layout";
-import type { DomeProject } from "./dome";
+import { formatMeta, type DomeProject } from "./dome";
 import styles from "./DomeGallery.module.css";
 
 type ProjectModalContentProps = {
@@ -11,6 +11,8 @@ type ProjectModalContentProps = {
   mediaRef: RefObject<HTMLDivElement | null>;
   copyRef: RefObject<HTMLDivElement | null>;
   closeBtnRef: RefObject<HTMLButtonElement | null>;
+  mobileOverlayRef?: RefObject<HTMLDivElement | null>;
+  showMobileOverlay?: boolean;
   onClose: () => void;
 };
 
@@ -22,20 +24,33 @@ export function ProjectModalContent({
   mediaRef,
   copyRef,
   closeBtnRef,
+  mobileOverlayRef,
+  showMobileOverlay = false,
   onClose,
 }: ProjectModalContentProps) {
   const indexLabel = `${String(index + 1).padStart(2, "0")} / ${String(
     total
   ).padStart(2, "0")}`;
 
-  const copyWidth =
-    detail.direction === "row"
-      ? detail.panelW - detail.mediaW
-      : detail.panelW;
-  const copyHeight =
-    detail.direction === "row"
-      ? detail.panelH
-      : detail.panelH - detail.mediaH;
+  const isMobileLayout = detail.direction === "column";
+
+  const copyWidth = isMobileLayout
+    ? detail.panelW
+    : detail.panelW - detail.mediaW;
+  const copyHeight = isMobileLayout
+    ? detail.panelH - detail.mediaH
+    : detail.panelH;
+
+  const closeIcon = (
+    <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path
+        d="M2 2L10 10M10 2L2 10"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
 
   return (
     <>
@@ -51,6 +66,27 @@ export function ProjectModalContent({
           className={styles.modalMediaImg}
         />
         <div className={styles.modalMediaOverlay} />
+        {showMobileOverlay && (
+          <div
+            ref={mobileOverlayRef}
+            aria-hidden="true"
+            className={styles.mobileCardCaption}
+          >
+            <span className={styles.mobileCardTitle}>{project.title}</span>
+            <span className={styles.captionMeta}>{formatMeta(project)}</span>
+          </div>
+        )}
+        {isMobileLayout && (
+          <button
+            ref={closeBtnRef}
+            type="button"
+            onClick={onClose}
+            aria-label="Close project details"
+            className={`${styles.modalCloseBtn} ${styles.modalMediaCloseBtn}`}
+          >
+            {closeIcon}
+          </button>
+        )}
       </div>
 
       <div
@@ -68,22 +104,17 @@ export function ProjectModalContent({
             <span>·</span>
             <span className={styles.modalCategoryBadge}>{project.category}</span>
           </div>
-          <button
-            ref={closeBtnRef}
-            type="button"
-            onClick={onClose}
-            aria-label="Close project details"
-            className={styles.modalCloseBtn}
-          >
-            <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-              <path
-                d="M2 2L10 10M10 2L2 10"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+          {!isMobileLayout && (
+            <button
+              ref={closeBtnRef}
+              type="button"
+              onClick={onClose}
+              aria-label="Close project details"
+              className={styles.modalCloseBtn}
+            >
+              {closeIcon}
+            </button>
+          )}
         </div>
 
         <div className={styles.modalBody} style={{ gap: detail.copyGap }}>

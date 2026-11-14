@@ -4,6 +4,20 @@ All notable changes to Amirreza Gholipour's portfolio project will be documented
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2026-11-14
+
+### Added & Fixed
+- **Mobile 2-to-1 Selected Work Card Grid & Compact Modal (`mobile-work-grid.tsx`, `project-modal.tsx`, `project-modal-content.tsx`, `detail-layout.ts`, `DomeGallery.module.css`):**
+  - Replaced the 3D dome on viewports `< 768px` (`useResponsiveDevice().isMobile`) with `MobileWorkGrid`: renders the uppercase monospace `Selected Work` kicker (`.mobileWorkKicker`, matching `.ldKicker` in "About Me") above a responsive grid (**2 columns** at `375px–767px`, collapsing to **1 column** below `375px`), with 3:4 minimalist project cards featuring full project titles + `Category · Year` inside each card over a bottom gradient scrim, native vertical scrolling, and GSAP morph transitions into `ProjectModal` (`focusReturnEl`, `sourceEl.isConnected`, and synchronized inner `mobileOverlayRef` fade without external caption pop).
+  - Positioned the mobile `ProjectModal` close (`×`) button on the top-right corner of the modal image (`.modalMediaCloseBtn`), tuned compact mobile typography/height sizing (`getDetailLayout` for `vw < 768`) to eliminate vertical scrolling/overflow on `375px+` viewports (with hidden scrollbar fallback below), and preserved desktop/tablet (`>= 768px`) modal layout untouched.
+- **Tablet & Touch 3D Dome Ergonomics (`use-infinite-drag.ts`, `dome-gallery.tsx`):**
+  - Implemented an explicit `DragPhase` state machine supporting `14px` touch-tap tolerance (`onTouchTap` + 450ms synthetic click deduplication), vertical scroll priority (`absDy > 12` aborts dome drag cleanly so page scrolling works without resistance), horizontal touch pan axis-locking, `[data-dome-control]` directional arrow isolation (`34×34px` touch-friendly buttons below `1024px`), and touch-adapted footer hints.
+- **3D `preserve-3d` Hit-Testing & Resize/StrictMode Tile Isolation (`DomeGallery.module.css`, `dome-gallery.tsx`):**
+  - Added `pointer-events: none` to `.domeWorld` and `pointer-events: auto; visibility: hidden;` to `.tileButton` so concave dome tiles (`tz < 0`) never get occluded by `.domeWorld`'s `z = 0` plane on click, tap, or hover, and woken `registerTile` prevents newly mounted viewport rows from briefly appearing unpositioned at center.
+- **Minimalist Smoked-Glass Artwork Refresh & CI Lockfile Sync:**
+  - Refined all 6 project WebP illustrations (`public/assets/projects/*.webp`, `10–15 KB` each) into ultra-minimal `#09090b` smoked-glass + brushed metal visuals matching the nocturnal landing dot-grid aesthetic, and synced `package-lock.json` (`256` packages including `gsap` and cross-platform optional bindings) for clean `npm ci` workflows.
+  - Expanded unit test coverage in `DomeGallery.test.tsx` across mobile grid, mobile modal image close button, tablet touch dome, and desktop views.
+
 ## [0.9.0] - 2026-11-14
 
 ### Added & Changed

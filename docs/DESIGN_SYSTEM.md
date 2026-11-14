@@ -96,7 +96,7 @@ Based on an 8-point harmonic grid:
 | **Mobile Compact** | `< 375px` (e.g. 320px) | Single-column collapse (`grid-template-columns: 1fr`) for tools and social links; stacked cards |
 | **Mobile Standard** | `375px – 480px` | 2-column side-by-side grids; container width `calc(100% - 20px)`; text-overflow ellipsis |
 | **Mobile Wide** | `481px – 767px` | 2-column tools, full-width touch targets (>=44px), inertia momentum scrolling |
-| **Tablet** | `768px – 1023px` | 3-column tools, 3D room bypass for touch, fluid project accordion columns |
+| **Tablet** | `768px – 1023px` | 3-column tools, 3D room bypass for touch, transparent 3D Selected Work Dome with `34×34px` directional arrows & horizontal touch pan |
 | **Desktop Baseline**| `1024px – 1440px`| Full 3D room hero with curved monitor; flush 1240px container alignment between Hero and sections |
 | **Wide Desktop** | `1440px+` | Fixed field-of-view (`ROOM_FOV = 40`); centered 1240px column (`min(1240px, calc(100% - 48px))`) |
 
@@ -136,10 +136,12 @@ Standardized responsive vertical and horizontal padding across all `.ldWrap > se
 - Hardware-accelerated smooth height transition (`transition: max-height 0.42s cubic-bezier(0.16, 1, 0.3, 1)`) expanding smoothly to the tab's measured `scrollHeight` without jumping or clipping lower page sections.
 - Minimalist frosted glass pill button (`VIEW ALL TECHNOLOGIES (${count})` / `COLLAPSE STACK`) with rotating SVG chevron.
 
-### 6.5. Mobile Work Accordion Close Control (`WorkAccordion`)
-- Circular optical glass `✕` icon button ($36\text{px}$) with $50\%$ border radius.
-- Positioned in the header row directly opposite the branch title for instant thumb accessibility.
-- Branch titles maintain stabilized typography (`clamp(20px, 6.4vw, 24px)`) when sibling branches expand.
+### 6.5. Selected Work 3D Dome, Mobile 2-to-1 Card Grid & Compact Modal (`DomeGallery` & `MobileWorkGrid`)
+- **Transparent Stage & Glassmorphic Badges (`DomeGallery`):** Transparent full-section canvas (`.domeStage { background: transparent }`) revealing the underlying `LiquidGrid` backdrop, with matching frosted dark pill badges (`backdrop-filter: blur(10px)`) for the top-left `Selected Work` title badge and bottom navigation hint (`Drag to explore...` on desktop, `Swipe horizontally or use arrows...` on touch).
+- **Minimalist Smoked-Glass Project Cards:** All 6 projects use consistent `#09090b` smoked-glass and brushed-metal studio WebP renders (`public/assets/projects/*.webp`) inside crisp `1px solid rgba(255, 255, 255, 0.08)` card frames.
+- **Mobile 2-to-1 Grid (`< 768px` — `MobileWorkGrid`):** Uses the uppercase monospace `Selected Work` kicker (`.mobileWorkKicker`, `11px` mono with `#3b82f6` star matching `.ldKicker` in "About Me") above a 2-column grid at `375px–767px` that collapses to 1 column below `375px`. Each 3:4 card embeds title (`13px`) and `Category · Year` (`9.5px`) directly over a bottom dark gradient scrim (`linear-gradient(180deg, rgba(8, 9, 13, 0) 0%, rgba(8, 9, 13, 0.72) 48%, rgba(8, 9, 13, 0.94) 100%)`) for crisp contrast without external pop-in on modal close.
+- **Responsive `ProjectModal`:** On desktop/tablet (`>= 768px`), displays a two-column frosted panel (`media` left, `copy` right with `×` in the header row and external `<CardCaption>` below). On mobile (`< 768px`), places a `34×34px` frosted circular `×` close control at the top-right corner of `.modalMedia` (`top: 12px; right: 12px`), suppresses external `<CardCaption>`, and calibrates compact spacing (`panelH <= min(vh - 24, 748)`) so the full modal reads without vertical scrolling.
+- *(Note: `WorkAccordion.tsx` remains tested in the codebase as a legacy module no longer mounted in `FlatLanding`.)*
 
 ### 6.6. High-Density Mobile Pixel Tetris (`PixelTetris`)
 - Circular matrix cells scale from standard $20\text{px}$ (desktop) to $10\text{px}$ (mobile).
@@ -198,3 +200,9 @@ When `prefers-reduced-motion: reduce` is detected:
 - `PixelTetris` canvas renders a static frame instead of a continuous animation loop.
 - `DynamicText` cycles text without kinetic spring oscillations.
 - `MobileArcadeModal`, `MobileArcadeFab`, and arcade canvas prompt labels (`SnakeGame`, `Deparkanoid`) disable pulsing/blinking animations and CSS transitions.
+- `DomeGallery` and `ProjectModal` fall back cleanly and preserve semantic accessibility without disorienting 3D motion.
+
+### 7.4. Selected Work Dome & Modal Morph Curves (`gsap`)
+- **Card-to-Modal Morph (`CustomEase`):** `"M0,0 C0.16,1 0.3,1 1,1"` (`0.68s` open, `0.56s` close), keeping `.modalCopy` locked to its target width so multi-line descriptions and tech stack badges never reflow mid-flight.
+- **Cursor-Leave Lens Settling:** `focusStrength` eases continuously toward `0` (`FOCUS_STRENGTH_OUT_LERP = 0.065`) on `pointerleave` for gradual surface relaxation.
+- **Mobile Inner Overlay Sync:** On close, `.modalMediaCloseBtn` fades out immediately (`0.14s`) while the inner caption scrim fades in (`0.34s` delay `0.18s`) inside the shrinking card frame.

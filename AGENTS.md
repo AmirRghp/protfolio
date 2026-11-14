@@ -33,7 +33,7 @@
   - No computer tower, floor, side walls, baseboards, chairs, desk legs, plants, or wall art.
 - **Dual-Experience Flat Landing (`FlatLanding`):**
   - Reached via the sleek black `ExitBar` (`#000000`) with a WebGL2 refractive `TactileButton` ("Exit The Room") or direct `#portfolio` / `#arcade` URL hashes.
-  - Features a digital laser portal transition, full-bleed ASCII room loop video (`public/assets/ascii-room.webm`), interactive nocturnal `LiquidGrid` canvas, `MagicCursor`, `DynamicText` role cycling, Arc UI spring tabs (`@uiarc/tabs`) with an **Agent Harness** category, and a 3D isometric GitHub contribution skyline ("As a city").
+  - Features a digital laser portal transition, full-bleed ASCII room loop video (`public/assets/ascii-room.webm`), interactive nocturnal `LiquidGrid` canvas, `MagicCursor`, `DynamicText` role cycling, a responsive **Selected Work** showcase (`DomeGallery` 3D GSAP paraboloid dome on desktop/tablet `>= 768px` with touch axis-locking and top-left `Selected Work` pill badge; `MobileWorkGrid` 2-to-1 card grid on `< 768px` with inner-card captions and compact non-scrolling `ProjectModal` with top-right image close button), Arc UI spring tabs (`@uiarc/tabs`) with an **Agent Harness** category, and a 3D isometric GitHub contribution skyline ("As a city").
   - Seamless re-entry to the 3D room via "Re-enter" and "Enter The Room" glass buttons.
 - **Arcade Cabinet & Playable Mini-Games:**
   - 5 built-in original HTML5 Canvas games: *Cyber Flappy*, *Cyber Tetris*, *Pixel Run*, *Snake Grid*, and *Deparkanoid*.

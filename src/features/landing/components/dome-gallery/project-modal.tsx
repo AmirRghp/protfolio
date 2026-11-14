@@ -14,6 +14,7 @@ export type ActiveDetail = {
   slotKey: string;
   pose: TilePose;
   sourceEl: HTMLElement;
+  focusReturnEl?: HTMLElement;
 };
 
 type ProjectModalProps = {
@@ -40,9 +41,12 @@ export function ProjectModal({
   const mediaRef = useRef<HTMLDivElement>(null);
   const copyRef = useRef<HTMLDivElement>(null);
   const captionRef = useRef<HTMLDivElement>(null);
+  const mobileOverlayRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const closingRef = useRef(false);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
+
+  const isMobileCard = active?.slotKey.startsWith("mobile:") ?? false;
 
   const detail = getDetailLayout(viewport.vw, viewport.vh);
 
@@ -63,6 +67,7 @@ export function ProjectModal({
     const media = mediaRef.current;
     const copy = copyRef.current;
     const caption = captionRef.current;
+    const mobileOverlay = mobileOverlayRef.current;
     if (!scrim || !card || !media || !copy) return;
 
     closingRef.current = false;
@@ -89,6 +94,8 @@ export function ProjectModal({
       gsap.set(media, { width: d.mediaW, height: d.mediaH });
       gsap.set(copy, { autoAlpha: 1, x: 0 });
       if (caption) gsap.set(caption, { autoAlpha: 0 });
+      if (mobileOverlay) gsap.set(mobileOverlay, { autoAlpha: 0 });
+      if (closeBtnRef.current) gsap.set(closeBtnRef.current, { autoAlpha: 1 });
       closeBtnRef.current?.focus();
       return;
     }
@@ -103,12 +110,14 @@ export function ProjectModal({
       width: src.w,
       height: src.h,
       borderRadius: COMPACT_RADIUS,
-      overflow: "visible",
+      overflow: isMobileCard ? "hidden" : "visible",
       transformOrigin: "50% 50%",
     });
     gsap.set(media, { width: src.w, height: src.h });
     gsap.set(copy, { autoAlpha: 0, x: 18 });
     if (caption) gsap.set(caption, { autoAlpha: 1, y: 0 });
+    if (mobileOverlay) gsap.set(mobileOverlay, { autoAlpha: 1 });
+    if (closeBtnRef.current) gsap.set(closeBtnRef.current, { autoAlpha: 1 });
 
     const tl = gsap.timeline({
       defaults: { ease: MORPH_EASE },
@@ -128,7 +137,17 @@ export function ProjectModal({
       );
     }
 
-    tl.set(card, { overflow: "hidden" }, 0.12);
+    if (mobileOverlay) {
+      tl.to(
+        mobileOverlay,
+        { autoAlpha: 0, duration: 0.18, ease: "power2.out" },
+        0
+      );
+    }
+
+    if (!isMobileCard) {
+      tl.set(card, { overflow: "hidden" }, 0.12);
+    }
 
     tl.to(
       card,
@@ -169,7 +188,7 @@ export function ProjectModal({
     return () => {
       tl.kill();
     };
-  }, [active, viewport.vw, viewport.vh, measureSource]);
+  }, [active, isMobileCard, viewport.vw, viewport.vh, measureSource]);
 
   const animateClose = useCallback(() => {
     if (!active || closingRef.current) return;
@@ -181,11 +200,13 @@ export function ProjectModal({
     const media = mediaRef.current;
     const copy = copyRef.current;
     const caption = captionRef.current;
+    const mobileOverlay = mobileOverlayRef.current;
     const sourceEl = active.sourceEl;
+    const focusTarget = active.focusReturnEl ?? sourceEl;
 
     const finish = () => {
       onRequestClose();
-      sourceEl?.focus?.();
+      focusTarget?.focus?.();
     };
 
     if (!scrim || !card || !media || !copy || prefersReducedMotion()) {
@@ -194,6 +215,10 @@ export function ProjectModal({
     }
 
     const src = measureSource(sourceEl);
+    if (!sourceEl.isConnected || src.w <= 0 || src.h <= 0) {
+      finish();
+      return;
+    }
     const { pose } = active;
 
     const tl = gsap.timeline({
@@ -207,6 +232,14 @@ export function ProjectModal({
       { autoAlpha: 0, x: 12, duration: 0.16, ease: "power2.in" },
       0
     );
+
+    if (closeBtnRef.current) {
+      tl.to(
+        closeBtnRef.current,
+        { autoAlpha: 0, duration: 0.14, ease: "power2.in" },
+        0
+      );
+    }
 
     tl.to(
       card,
@@ -234,6 +267,14 @@ export function ProjectModal({
     );
 
     tl.to(scrim, { autoAlpha: 0, duration: 0.38, ease: "power2.inOut" }, 0.1);
+
+    if (mobileOverlay) {
+      tl.to(
+        mobileOverlay,
+        { autoAlpha: 1, duration: 0.24, ease: "power2.out" },
+        0.34
+      );
+    }
 
     if (caption) {
       tl.set(card, { overflow: "visible" }, 0.38);
@@ -300,14 +341,18 @@ export function ProjectModal({
             mediaRef={mediaRef}
             copyRef={copyRef}
             closeBtnRef={closeBtnRef}
+            mobileOverlayRef={mobileOverlayRef}
+            showMobileOverlay={isMobileCard}
             onClose={animateClose}
           />
 
-          <CardCaption
-            id="dome-project-modal-caption"
-            captionRef={captionRef}
-            project={project}
-          />
+          {!isMobileCard && (
+            <CardCaption
+              id="dome-project-modal-caption"
+              captionRef={captionRef}
+              project={project}
+            />
+          )}
         </div>
       </div>
     </div>

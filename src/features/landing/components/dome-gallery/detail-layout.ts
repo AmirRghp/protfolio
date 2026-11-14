@@ -16,12 +16,12 @@ export type DetailLayout = {
  * desktop to a stacked vertical sheet on narrow viewports.
  */
 export function getDetailLayout(vw: number, vh: number): DetailLayout {
-  const compact = vw < 760;
+  const compact = vw < 768;
 
   if (compact) {
     const panelW = Math.round(Math.min(vw - 24, 480));
-    const panelH = Math.round(Math.min(vh - 32, 720));
-    const mediaH = Math.round(Math.min(panelH * 0.34, 210));
+    const panelH = Math.round(Math.min(vh - 24, 748));
+    const mediaH = Math.round(Math.min(panelH * 0.23, 165));
     return {
       direction: "column",
       panelW,
@@ -30,8 +30,8 @@ export function getDetailLayout(vw: number, vh: number): DetailLayout {
       panelTop: Math.round((vh - panelH) / 2),
       mediaW: panelW,
       mediaH,
-      copyPadding: 20,
-      copyGap: 12,
+      copyPadding: 15,
+      copyGap: 7,
     };
   }
 

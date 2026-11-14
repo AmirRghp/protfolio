@@ -705,9 +705,11 @@
   background: var(--hover);
 }
 
-/* Work Dome Section */
-.ldWork {
-  padding: 0 !important;
+/* Work Dome Section (full-bleed on tablet/desktop; padded grid on mobile) */
+@media (min-width: 768px) {
+  .ldWork {
+    padding: 0 !important;
+  }
 }
 
 .ldHead {
@@ -1555,9 +1557,7 @@
     padding: 52px 24px;
   }
 
-  .ldWork {
-    padding: 0 !important;
-  }
+  /* Mobile Work Grid uses standard .ldWrap > section responsive padding */
 
   .ldLinks {
     display: none;
@@ -1714,10 +1714,6 @@
 
   .ldWrap > section {
     padding: 44px 18px;
-  }
-
-  .ldWork {
-    padding: 0 !important;
   }
 
   .ldWrap > footer {

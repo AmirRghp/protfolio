@@ -27,6 +27,7 @@
 }
 
 .domeWorld {
+  pointer-events: none;
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
@@ -60,6 +61,8 @@
 }
 
 .tileButton {
+  pointer-events: auto;
+  visibility: hidden;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -290,6 +293,7 @@
   background: rgba(0, 0, 0, 0.55);
   opacity: 0;
   will-change: opacity;
+  touch-action: none;
 }
 
 .modalMorphStage {
@@ -412,12 +416,33 @@
   color: #ffffff;
 }
 
+.modalMediaCloseBtn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  width: 34px;
+  height: 34px;
+  background: rgba(10, 11, 16, 0.72);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: rgba(244, 244, 246, 0.94);
+  backdrop-filter: blur(10px);
+}
+
+.modalMediaCloseBtn:hover,
+.modalMediaCloseBtn:focus-visible {
+  background: rgba(16, 18, 26, 0.9);
+  border-color: rgba(255, 255, 255, 0.36);
+}
+
 .modalBody {
   margin: 10px 0;
   display: flex;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   padding-right: 4px;
   flex-direction: column;
   gap: 11px;
@@ -541,6 +566,202 @@
   transform: translateY(-1px);
 }
 
+/* Mobile 2-to-1 Column Card Grid (< 768px) */
+.mobileWorkSection {
+  width: 100%;
+}
+
+.mobileWorkKicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace);
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted, #8b8b92);
+}
+
+.mobileWorkKicker svg {
+  width: 12px;
+  height: 12px;
+  color: #3b82f6;
+}
+
+.mobileWorkGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.mobileWorkCard {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.mobileWorkCard:active {
+  transform: scale(0.985);
+}
+
+.mobileTileFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #121318;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 18px 36px -18px rgba(0, 0, 0, 0.78),
+    0 4px 12px -3px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition:
+    border-color 0.24s ease,
+    box-shadow 0.24s ease;
+}
+
+.mobileWorkCard:focus-visible .mobileTileFrame,
+.mobileWorkCard:hover .mobileTileFrame {
+  border-color: rgba(56, 189, 248, 0.55);
+  box-shadow:
+    0 20px 44px -14px rgba(0, 0, 0, 0.85),
+    0 0 20px -4px rgba(56, 189, 248, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.mobileCardCaption {
+  pointer-events: none;
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 32px 11px 10px;
+  min-width: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 9, 13, 0) 0%,
+    rgba(8, 9, 13, 0.72) 48%,
+    rgba(8, 9, 13, 0.94) 100%
+  );
+  will-change: opacity;
+}
+
+.mobileCardTitle {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: rgba(248, 250, 252, 0.98);
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.65);
+}
+
+.mobileCardCaption .captionMeta {
+  font-size: 9.5px;
+  letter-spacing: 0.005em;
+  color: rgba(186, 190, 200, 0.88);
+}
+
+@media (max-width: 1023px) {
+  .stageFooter {
+    width: calc(100% - 32px);
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .nudgeBtn {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 767px) {
+  .modalBody {
+    margin: 6px 0;
+    padding-right: 0;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .modalBody::-webkit-scrollbar {
+    display: none;
+  }
+
+  .modalTitle {
+    font-size: 18px;
+    line-height: 1.15;
+  }
+
+  .modalDescription {
+    font-size: 11.5px;
+    line-height: 1.38;
+  }
+
+  .modalArchitecture {
+    padding: 6px 9px;
+    font-size: 11px;
+    line-height: 1.36;
+  }
+
+  .modalSectionLabel {
+    margin-bottom: 4px;
+    font-size: 9.5px;
+  }
+
+  .modalStackList {
+    gap: 4px;
+  }
+
+  .modalStackBadge {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .modalHighlights {
+    gap: 3px;
+    padding-left: 14px;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .modalFooterRow {
+    padding-top: 9px;
+  }
+
+  .modalGithubBtn {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 374px) {
+  .mobileWorkGrid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
 @media (max-width: 640px) {
   .domeStage {
     height: clamp(560px, 78vh, 740px);
@@ -553,5 +774,18 @@
 
   .nudgeGroup {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobileWorkCard,
+  .tileImage,
+  .mobileTileFrame,
+  .tileFrame {
+    transition: none;
+  }
+
+  .mobileWorkCard:active {
+    transform: none;
   }
 }

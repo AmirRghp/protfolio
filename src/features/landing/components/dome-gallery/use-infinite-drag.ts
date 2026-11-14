@@ -16,10 +16,16 @@ type UseInfiniteDragOptions = {
   stageRef: RefObject<HTMLElement | null>;
   focusRef: RefObject<PointerFocus>;
   paused: boolean;
+  enabled?: boolean;
   onStep: (args: DragStepArgs) => void;
+  onTouchTap?: (target: EventTarget | null) => void;
 };
 
-const DRAG_THRESHOLD_PX = 6;
+type DragPhase = "idle" | "pending" | "dragging" | "cancelled";
+
+const MOUSE_DRAG_THRESHOLD_PX = 6;
+const TOUCH_TAP_TOLERANCE_PX = 14;
+const TOUCH_AXIS_LOCK_PX = 12;
 const LERP = 0.085;
 const FOCUS_LERP = 0.12;
 const FOCUS_STRENGTH_IN_LERP = 0.1;
@@ -31,7 +37,9 @@ export function useInfiniteDrag({
   stageRef,
   focusRef,
   paused,
+  enabled = true,
   onStep,
+  onTouchTap,
 }: UseInfiniteDragOptions) {
   const targetRef = useRef({ x: 0, y: 0 });
   const currentRef = useRef({ x: 0, y: 0 });
@@ -39,6 +47,7 @@ export function useInfiniteDrag({
   const dragMovedRef = useRef(false);
   const pausedRef = useRef(paused);
   const onStepRef = useRef(onStep);
+  const onTouchTapRef = useRef(onTouchTap);
   const wakeRef = useRef<() => void>(() => {});
 
   useEffect(() => {
@@ -50,8 +59,12 @@ export function useInfiniteDrag({
   }, [onStep]);
 
   useEffect(() => {
+    onTouchTapRef.current = onTouchTap;
+  }, [onTouchTap]);
+
+  useEffect(() => {
     const el = stageRef.current;
-    if (!el) return;
+    if (!el || !enabled) return;
 
     const target = targetRef.current;
     const current = currentRef.current;
@@ -59,6 +72,7 @@ export function useInfiniteDrag({
     const reduced = prefersReducedMotion();
 
     let ticking = false;
+    let phase: DragPhase = "idle";
 
     const tick = () => {
       const ratio = gsap.ticker.deltaRatio(60);
@@ -113,7 +127,7 @@ export function useInfiniteDrag({
 
       const dx = Math.abs(target.x - current.x);
       const dy = Math.abs(target.y - current.y);
-      if (!dragging && dx < SETTLE_EPS && dy < SETTLE_EPS && focusSettled) {
+      if (phase !== "dragging" && dx < SETTLE_EPS && dy < SETTLE_EPS && focusSettled) {
         current.x = target.x;
         current.y = target.y;
         vel.x = 0;
@@ -131,8 +145,9 @@ export function useInfiniteDrag({
     };
     wakeRef.current = wake;
 
-    let dragging = false;
     let activePointerId: number | null = null;
+    let activePointerType = "mouse";
+    let startTarget: EventTarget | null = null;
     let startX = 0;
     let startY = 0;
     let originX = 0;
@@ -141,11 +156,24 @@ export function useInfiniteDrag({
     let moveVx = 0;
     let moveVy = 0;
 
+    const resetPointer = () => {
+      phase = "idle";
+      activePointerId = null;
+      startTarget = null;
+      delete el.dataset.dragging;
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       if (pausedRef.current) return;
       if (e.button !== 0 && e.pointerType === "mouse") return;
-      dragging = true;
+      // Ignore pointerdowns starting on interactive footer controls (e.g. directional nudge buttons)
+      const targetEl = e.target as HTMLElement | null;
+      if (targetEl?.closest("[data-dome-control]")) return;
+
+      phase = "pending";
       activePointerId = e.pointerId;
+      activePointerType = e.pointerType || "mouse";
+      startTarget = e.target;
       dragMovedRef.current = false;
       startX = e.clientX;
       startY = e.clientY;
@@ -154,44 +182,100 @@ export function useInfiniteDrag({
       moveVx = 0;
       moveVy = 0;
       lastMoveT = performance.now();
-      el.dataset.dragging = "true";
-      wake();
     };
 
     const onPointerMove = (e: PointerEvent) => {
-      if (!dragging || e.pointerId !== activePointerId) return;
+      if (
+        activePointerId === null ||
+        e.pointerId !== activePointerId ||
+        phase === "idle" ||
+        phase === "cancelled"
+      ) {
+        return;
+      }
+
       const dx = e.clientX - startX;
       const dy = e.clientY - startY;
-      if (
-        !dragMovedRef.current &&
-        Math.hypot(dx, dy) > DRAG_THRESHOLD_PX
-      ) {
-        dragMovedRef.current = true;
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      const isTouchLike = activePointerType !== "mouse";
+
+      if (phase === "pending") {
+        if (isTouchLike) {
+          // Prioritize native vertical page scrolling when vertical touch motion leads
+          if (absDy > TOUCH_AXIS_LOCK_PX && absDy >= absDx * 1.1) {
+            phase = "cancelled";
+            dragMovedRef.current = true;
+            delete el.dataset.dragging;
+            return;
+          }
+          // Lock into horizontal dome panning once horizontal intent is clear
+          if (absDx > TOUCH_AXIS_LOCK_PX && absDx > absDy * 1.25) {
+            phase = "dragging";
+            dragMovedRef.current = true;
+            originX = target.x - dx;
+            lastMoveT = performance.now();
+            el.dataset.dragging = "true";
+            wake();
+          } else {
+            return;
+          }
+        } else {
+          if (Math.hypot(dx, dy) > MOUSE_DRAG_THRESHOLD_PX) {
+            phase = "dragging";
+            dragMovedRef.current = true;
+            el.dataset.dragging = "true";
+            wake();
+          } else {
+            return;
+          }
+        }
       }
+
       const now = performance.now();
       const dt = Math.max(8, now - lastMoveT);
       const nextX = originX + dx;
-      const nextY = originY + dy;
+      const nextY = isTouchLike ? originY : originY + dy;
+
       moveVx = ((nextX - target.x) / dt) * 16;
-      moveVy = ((nextY - target.y) / dt) * 16;
+      moveVy = isTouchLike ? 0 : ((nextY - target.y) / dt) * 16;
+
       target.x = nextX;
-      target.y = nextY;
+      if (!isTouchLike) {
+        target.y = nextY;
+      }
       lastMoveT = now;
       wake();
     };
 
-    const endDrag = (e: PointerEvent) => {
-      if (!dragging || e.pointerId !== activePointerId) return;
-      dragging = false;
-      activePointerId = null;
-      delete el.dataset.dragging;
-      const stale = performance.now() - lastMoveT > 80;
-      if (!stale && !reduced) {
-        const boost = 7;
-        target.x += Math.max(-520, Math.min(520, moveVx * boost));
-        target.y += Math.max(-520, Math.min(520, moveVy * boost));
+    const onPointerUp = (e: PointerEvent) => {
+      if (activePointerId === null || e.pointerId !== activePointerId) return;
+
+      const isTouchLike = activePointerType !== "mouse";
+      const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
+
+      if (phase === "dragging") {
+        const stale = performance.now() - lastMoveT > 80;
+        if (!stale && !reduced) {
+          const boost = 7;
+          target.x += Math.max(-520, Math.min(520, moveVx * boost));
+          if (!isTouchLike) {
+            target.y += Math.max(-520, Math.min(520, moveVy * boost));
+          }
+        }
+        wake();
+      } else if (phase === "pending" && isTouchLike && dist <= TOUCH_TAP_TOLERANCE_PX) {
+        dragMovedRef.current = false;
+        onTouchTapRef.current?.(startTarget ?? e.target);
       }
-      wake();
+
+      resetPointer();
+    };
+
+    const onPointerCancel = (e: PointerEvent) => {
+      if (activePointerId === null || e.pointerId !== activePointerId) return;
+      dragMovedRef.current = false;
+      resetPointer();
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -238,8 +322,8 @@ export function useInfiniteDrag({
 
     el.addEventListener("pointerdown", onPointerDown);
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("pointerup", endDrag);
-    window.addEventListener("pointercancel", endDrag);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerCancel);
     el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("keydown", onKeyDown);
 
@@ -247,12 +331,12 @@ export function useInfiniteDrag({
       gsap.ticker.remove(tick);
       el.removeEventListener("pointerdown", onPointerDown);
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("pointerup", endDrag);
-      window.removeEventListener("pointercancel", endDrag);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerCancel);
       el.removeEventListener("wheel", onWheel);
       el.removeEventListener("keydown", onKeyDown);
     };
-  }, [stageRef, focusRef]);
+  }, [stageRef, focusRef, enabled]);
 
   return {
     dragMovedRef,
