@@ -48,8 +48,8 @@ src/
 ├── app/                  # Application root entry (App.tsx, main.tsx, style.css)
 ├── core/                 # Shared foundation layer
 │   ├── types/            # Canonical coordinate contracts (Point, Dimensions, ViewportSize)
-│   ├── utils/            # Shared pure utilities (assetUrl, webglUtils, cn)
-│   └── components/       # Cross-cutting UI primitives (exit bar, cursor, arc tabs, kokonutui)
+│   ├── utils/            # Shared pure utilities (assetUrl, webglUtils, responsive, focusTrap, cn)
+│   └── components/       # Cross-cutting UI primitives (exit bar, cursor, error boundary, arc tabs, kokonutui)
 │
 ├── data/                 # Static content and data fetchers
 │   ├── content.ts        # Authoritative resume, projects, and career history

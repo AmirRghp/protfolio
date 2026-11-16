@@ -1695,6 +1695,7 @@ export default function Lanyard({
       [frontTexture, backTexture, strapTexture, grain, weave].forEach((texture) => texture.dispose());
       environment.dispose();
       renderer.dispose();
+      renderer.forceContextLoss();
       if (canvas.parentNode) canvas.parentNode.removeChild(canvas);
     };
   }, []);

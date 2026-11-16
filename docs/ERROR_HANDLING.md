@@ -34,8 +34,9 @@ When WebGL is unavailable or the context cannot be restored:
 
 ### Proactive GPU Deprivation Bypass on Mobile & Touch Devices
 Rather than relying on reactive context recovery after a mobile device experiences thermal throttling or Out-Of-Memory (OOM) browser crashes, the application proactively assesses device capabilities via `useResponsiveDevice`:
-- On any touch-first device (`pointer: coarse`, including iPads) or screen $< 1024\text{px}$, `<RoomPreview>` is strictly not rendered in the DOM (`null`).
-- This completely prevents WebGL context allocation, halts all requestAnimationFrame loops, and redirects the user directly into `FlatLanding`.
+- On any touch-first device (`pointer: coarse`, including iPads) or screen $< 1024\text{px}$, `<RoomPreview>` is strictly not rendered in the DOM (`null`), preventing heavy 3D room model loading and multi-pass post-processing.
+- When the entry `<LanyardIntro>` badge is dismissed, `Lanyard.tsx` disposes all geometries, materials, textures, and calls `renderer.forceContextLoss()` to immediately reclaim the GPU context before transitioning into `FlatLanding`.
+- Both `<LanyardIntro>` and `<RoomPreview>` are wrapped in `<SceneErrorBoundary>` in `App.tsx` so any lazy chunk or asset load failure automatically falls back to `FlatLanding`.
 
 ---
 
@@ -54,7 +55,7 @@ The Arcade cabinet includes an option to load a PS1 emulator game via an externa
 ### 3.2. Project Desktop Apps (GitHub Repositories)
 GitHub serves strict `X-Frame-Options: deny` and `Content-Security-Policy: frame-ancestors 'none'` HTTP headers across all `github.com/*` web pages. Navigating an `<iframe>` directly to a GitHub URL causes modern browsers to immediately refuse connection with a blank error box.
 - **`srcDoc` HTML Encapsulation & Strict Sandboxing:** Instead of pointing `iframe.src` directly to `github.com`, `ProjectApp` generates a self-contained, sandboxed `srcDoc` HTML document (`src/data/githubRepoPreview.ts`) with `sandbox="allow-scripts allow-popups"` (strictly omitting `allow-same-origin` so the embedded script cannot access host origin storage or DOM). External website previews retain `sandbox="allow-scripts allow-same-origin allow-forms allow-popups"`.
-- **Markdown Sanitization & `postMessage` Guarding:** `renderMarkdownToHtml` restricts inline links strictly to `https://`, `http://`, `mailto:`, and repository-relative paths (blocking `javascript:`, `data:`, `vbscript:`, and entity-encoded schemes). Inside the frame, the `message` listener verifies `event.source === window.parent` before updating DOM nodes.
+- **Markdown Sanitization & `postMessage` Guarding:** `renderMarkdownToHtml` restricts inline links strictly to `https://`, `http://`, `mailto:`, and repository-relative paths (blocking `javascript:`, `data:`, `vbscript:`, and entity-encoded schemes). Inside the frame, the `message` listener verifies both `event.source === window.parent` and `event.origin` against the parent origin before updating DOM nodes.
 - **API CORS Enrichment & Timeout:** Public GitHub repository metadata (`api.github.com/repos/...`) and raw Markdown (`raw.githubusercontent.com/...`) explicitly support CORS. `fetchGitHubRepoSnapshot` enforces an **8-second** `AbortController` timeout combined with any caller `AbortSignal` and pipes updates safely via `postMessage`.
 - **4-Hour Caching, Schema Validation & Pre-Bundled Offline Snapshots:** API responses are cached in `localStorage` under `portfolio_gh_repo_preview_v1_*` (TTL 4 hours) and validated at runtime via `isValidRepoSnapshot()`. If network requests fail, timeout, hit GitHub API rate limits (HTTP 403), or cached JSON is corrupted, the client transparently renders verified bundled snapshots containing the project file tree and full README markdown. No broken frame is ever shown to the user.
 - **Non-Obtrusive Fallback Controls:** The address bar provides an instant "Summary" button to toggle back to the project overview, and an "Open in new tab" anchor to visit GitHub directly at any time.

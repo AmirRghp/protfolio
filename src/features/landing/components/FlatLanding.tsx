@@ -476,7 +476,7 @@ export default function FlatLanding({
             {/* Work Section */}
             <section className={`${styles.ldWork} ${styles.ldX}`} id="ld-work" aria-label="Selected Work">
               <div className={styles.ldRise}>
-                <DomeGallery projects={DOME_PROJECTS} />
+                <DomeGallery projects={DOME_PROJECTS} paused={!isElementVisible} />
               </div>
             </section>
 
@@ -617,6 +617,7 @@ export default function FlatLanding({
               {/* Floor Pixel Tetris Canvas */}
               <div className={styles.ldFootTetris} aria-hidden="true">
                 <PixelTetris
+                  active={isElementVisible}
                   cellSize={device.isMobile ? 10 : 20}
                   mobileCellSize={10}
                   gap={1}

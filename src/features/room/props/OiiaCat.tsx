@@ -84,9 +84,13 @@ function CatSparkles({ active }: { active: boolean }) {
 
   useFrame((_, delta) => {
     if (!pointsRef.current) return;
+    const mat = pointsRef.current.material as PointsMaterial;
+    if (!active && mat.opacity <= 0.001) {
+      if (mat.opacity !== 0) mat.opacity = 0;
+      return;
+    }
     const audioState = oiiaAudio.getState();
     const isDrop = audioState.isDrop;
-    const mat = pointsRef.current.material as PointsMaterial;
     const targetOpacity = active ? (isDrop ? 0.95 : 0.60) : 0;
     mat.opacity += (targetOpacity - mat.opacity) * Math.min(1, delta * 6);
     mat.size = isDrop ? 0.055 : 0.038;
@@ -111,6 +115,7 @@ function CatPartyLight({
 
   useFrame(() => {
     if (!lightRef.current) return;
+    if (!active && lightRef.current.intensity === 0) return;
     const audioState = oiiaAudio.getState();
     const { color, intensity } = calculatePartyLight(
       audioState.currentTime,
@@ -170,6 +175,8 @@ export default function OiiaCat({
 
   useEffect(() => {
     const catMeshes: Object3D[] = [];
+    const originalMaterials = new Map<Mesh, MeshStandardMaterial>();
+    const clonedMaterials: MeshStandardMaterial[] = [];
     let foundMesh: Mesh | null = null;
     clonedScene.traverse((child) => {
       if (child instanceof Mesh) {
@@ -177,11 +184,15 @@ export default function OiiaCat({
         child.castShadow = false;
         child.receiveShadow = true;
         if (child.material instanceof MeshStandardMaterial) {
-          child.material.side = DoubleSide;
-          child.material.roughness = 0.52;
-          child.material.metalness = 0.04;
-          child.material.envMapIntensity = 0.95;
-          child.material.needsUpdate = true;
+          originalMaterials.set(child, child.material);
+          const clonedMat = child.material.clone();
+          clonedMat.side = DoubleSide;
+          clonedMat.roughness = 0.52;
+          clonedMat.metalness = 0.04;
+          clonedMat.envMapIntensity = 0.95;
+          clonedMat.needsUpdate = true;
+          child.material = clonedMat;
+          clonedMaterials.push(clonedMat);
         }
         if (child.morphTargetInfluences && child.morphTargetInfluences.length > 0) {
           foundMesh = child;
@@ -192,6 +203,14 @@ export default function OiiaCat({
     catMeshRef.current = foundMesh;
     onLoaded?.(catMeshes.length > 0 ? catMeshes : [clonedScene]);
     invalidate();
+    return () => {
+      originalMaterials.forEach((origMat, mesh) => {
+        mesh.material = origMat;
+      });
+      for (const mat of clonedMaterials) {
+        mat.dispose();
+      }
+    };
   }, [clonedScene, invalidate, onLoaded]);
 
   // Subscribe to audio state

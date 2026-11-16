@@ -134,7 +134,7 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     InRoom[Visitor inside 3D Room] --> ClickExit[Clicks WebGL2 'Exit The Room' TactileButton]
-    ClickExit --> ShutterSweep[Upward Black Roller-Shutter Curtain sweep: cubic-bezier 0.77, 0, 0.175, 1]
+    ClickExit --> ShutterSweep[Upward Black Roller-Shutter Curtain sweep: cubic-bezier 0.76, 0, 0.24, 1]
     ShutterSweep --> UpdateHash[Set window.location.hash = '#portfolio']
     UpdateHash --> MountLanding[Mount Flat Landing Portfolio & Initialize PortfolioLoader]
     

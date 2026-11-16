@@ -87,6 +87,11 @@ export default function ExitBar({
     let active = true;
     const step = (now: number) => {
       if (!active) return;
+      if (typeof document !== "undefined" && document.hidden) {
+        p.last = now;
+        p.raf = requestAnimationFrame(step);
+        return;
+      }
       const dt = Math.min(0.033, p.last ? (now - p.last) / 1000 : 0.016);
       p.last = now;
 

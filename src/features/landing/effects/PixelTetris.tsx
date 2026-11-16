@@ -89,6 +89,7 @@ export interface PixelTetrisProps {
   mobilePrefillRows?: number;
   style?: CSSProperties;
   className?: string;
+  active?: boolean;
 }
 
 interface Piece {
@@ -123,6 +124,7 @@ export function PixelTetris({
   mobilePrefillRows,
   style,
   className,
+  active = true,
 }: PixelTetrisProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -485,7 +487,11 @@ export function PixelTetris({
     }
 
     function loop(time: number) {
-      if (!alive) return;
+      if (!alive || !active) return;
+      if (typeof document !== "undefined" && document.hidden) {
+        last = 0;
+        return;
+      }
       const dt = last ? Math.min(time - last, 200) : 0;
       last = time;
 
@@ -547,13 +553,14 @@ export function PixelTetris({
     });
     ro.observe(canvas);
 
-    isIntersecting = true;
-    const io = typeof IntersectionObserver !== "undefined"
+    const hasIntersectionObserver = typeof IntersectionObserver !== "undefined";
+    isIntersecting = !hasIntersectionObserver;
+    const io = hasIntersectionObserver
       ? new IntersectionObserver(
           ([entry]) => {
             const wasIntersecting = isIntersecting;
             isIntersecting = entry.isIntersecting;
-            if (!wasIntersecting && isIntersecting && alive) {
+            if (!wasIntersecting && isIntersecting && alive && active && !document.hidden) {
               last = performance.now();
               cancelAnimationFrame(raf);
               raf = requestAnimationFrame(loop);
@@ -567,16 +574,37 @@ export function PixelTetris({
       io.observe(containerEl);
     }
 
-    raf = requestAnimationFrame(loop);
+    const onVisibilityChange = () => {
+      if (!alive) return;
+      if (document.hidden) {
+        cancelAnimationFrame(raf);
+        last = 0;
+      } else if (active && isIntersecting) {
+        last = performance.now();
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(loop);
+      }
+    };
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisibilityChange);
+    }
+
+    if (active && isIntersecting && (typeof document === "undefined" || !document.hidden)) {
+      raf = requestAnimationFrame(loop);
+    }
 
     return () => {
       alive = false;
       cancelAnimationFrame(raf);
       ro.disconnect();
       if (io) io.disconnect();
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisibilityChange);
+      }
     };
 
   }, [
+    active,
     boardColor,
     stableColors,
     movement,

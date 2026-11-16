@@ -50,8 +50,15 @@ export function useInfiniteDrag({
   const onTouchTapRef = useRef(onTouchTap);
   const wakeRef = useRef<() => void>(() => {});
 
+  const sleepRef = useRef<() => void>(() => {});
+
   useEffect(() => {
     pausedRef.current = paused;
+    if (paused) {
+      sleepRef.current();
+    } else {
+      wakeRef.current();
+    }
   }, [paused]);
 
   useEffect(() => {
@@ -74,7 +81,19 @@ export function useInfiniteDrag({
     let ticking = false;
     let phase: DragPhase = "idle";
 
+    const sleep = () => {
+      if (ticking) {
+        ticking = false;
+        gsap.ticker.remove(tick);
+      }
+    };
+    sleepRef.current = sleep;
+
     const tick = () => {
+      if (pausedRef.current || (typeof document !== "undefined" && document.hidden)) {
+        sleep();
+        return;
+      }
       const ratio = gsap.ticker.deltaRatio(60);
       const alpha = reduced ? 1 : 1 - Math.pow(1 - LERP, ratio);
       const prevX = current.x;
@@ -132,12 +151,14 @@ export function useInfiniteDrag({
         current.y = target.y;
         vel.x = 0;
         vel.y = 0;
-        ticking = false;
-        gsap.ticker.remove(tick);
+        sleep();
       }
     };
 
     const wake = () => {
+      if (pausedRef.current || (typeof document !== "undefined" && document.hidden)) {
+        return;
+      }
       if (!ticking) {
         ticking = true;
         gsap.ticker.add(tick);

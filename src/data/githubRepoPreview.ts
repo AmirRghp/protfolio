@@ -704,7 +704,11 @@ export function renderRepoFilesHtml(snapshot: GitHubRepoSnapshot, repoUrl: strin
     .join("\n");
 }
 
-export function buildGitHubRepoSrcDoc(project: Project, snapshot: GitHubRepoSnapshot): string {
+export function buildGitHubRepoSrcDoc(
+  project: Project,
+  snapshot: GitHubRepoSnapshot,
+  expectedParentOrigin?: string,
+): string {
   const repoUrl = project.githubUrl;
   const filesHtml = renderRepoFilesHtml(snapshot, repoUrl);
   const readmeHtml = renderMarkdownToHtml(snapshot.readmeMarkdown, repoUrl, snapshot.branch);
@@ -1073,8 +1077,10 @@ export function buildGitHubRepoSrcDoc(project: Project, snapshot: GitHubRepoSnap
         });
       });
 
+      var expectedOrigin = ${JSON.stringify(expectedParentOrigin ?? "")};
       window.addEventListener("message", function (event) {
         if (event.source !== window.parent) return;
+        if (expectedOrigin && event.origin && event.origin !== expectedOrigin) return;
         var msg = event.data;
         if (!msg || msg.type !== "gh-repo-update") return;
         if (msg.readmeHtml) {

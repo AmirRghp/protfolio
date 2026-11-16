@@ -124,7 +124,10 @@ export default function ProjectApp({ project, icon }: { project: Project; icon: 
   const abortRef = useRef<AbortController | null>(null);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
 
-  const repoSrcDoc = isGitHub ? buildGitHubRepoSrcDoc(project, getInitialRepoSnapshot(project)) : undefined;
+  const parentOrigin = typeof window !== "undefined" ? window.location.origin : undefined;
+  const repoSrcDoc = isGitHub
+    ? buildGitHubRepoSrcDoc(project, getInitialRepoSnapshot(project), parentOrigin)
+    : undefined;
 
   const clearPending = () => {
     if (timeout.current !== null) {

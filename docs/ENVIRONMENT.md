@@ -28,6 +28,21 @@ export default defineConfig({
     },
     dedupe: ["react", "react-dom"],
   },
+  build: {
+    rolldownOptions: {
+      output: {
+        codeSplitting: {
+          groups: [
+            { name: "vendor-three-addons", test: /node_modules[\\/]three[\\/]examples/ },
+            { name: "vendor-three-core", test: /node_modules[\\/]three/ },
+            { name: "vendor-r3f", test: /node_modules[\\/]@react-three/ },
+            { name: "vendor-motion", test: /node_modules[\\/](?:motion|gsap)/ },
+            { name: "vendor-react", test: /node_modules[\\/](?:react|react-dom|scheduler)/ },
+          ],
+        },
+      },
+    },
+  },
   server: {
     port: 5173,
   },

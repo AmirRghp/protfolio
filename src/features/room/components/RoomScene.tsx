@@ -221,6 +221,7 @@ function CompactKeyboard() {
   const { scene } = useLoader(GLTFLoader, getAssetUrl("assets/models/compact-keyboard.glb"));
   const invalidate = useThree((state) => state.invalidate);
   useEffect(() => {
+    const originalMaterials = new Map<Mesh, MeshBasicMaterial>();
     const createdMaterials: MeshStandardMaterial[] = [];
     scene.traverse((object) => {
       if (object.name === "Sketchfab_model") {
@@ -238,6 +239,7 @@ function CompactKeyboard() {
         object.receiveShadow = true;
         if (object.material instanceof MeshBasicMaterial) {
           const oldMat = object.material;
+          originalMaterials.set(object, oldMat);
           const isBase = oldMat.name === "base";
           const upgraded = new MeshStandardMaterial({
             name: oldMat.name,
@@ -250,7 +252,6 @@ function CompactKeyboard() {
           });
           createdMaterials.push(upgraded);
           object.material = upgraded;
-          oldMat.dispose();
         } else if (object.material instanceof MeshStandardMaterial) {
           object.material.envMapIntensity = 0.9;
           object.material.needsUpdate = true;
@@ -259,6 +260,9 @@ function CompactKeyboard() {
     });
     invalidate();
     return () => {
+      originalMaterials.forEach((origMat, mesh) => {
+        mesh.material = origMat;
+      });
       for (const mat of createdMaterials) {
         mat.dispose();
       }

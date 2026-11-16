@@ -14,6 +14,7 @@ import {
   ARCADE_GAME_URL,
   ARCADE_LOAD_TIMEOUT_MS,
 } from "@/features/arcade/utils/arcadeData";
+import { useFocusTrap } from "@/core/utils/focusTrap";
 import styles from "./ArcadeMenu.module.css";
 
 const Deparkanoid = lazy(() => import("@/features/arcade/games/deparkanoid"));
@@ -80,6 +81,7 @@ const ArcadeMenu = forwardRef<HTMLDivElement, ArcadeMenuProps>(function ArcadeMe
   const loadTimeout = useRef<number | null>(null);
 
   useImperativeHandle(forwardedRef, () => containerRef.current as HTMLDivElement);
+  useFocusTrap(containerRef, active);
 
   const [selectedGameId, setSelectedGameId] = useState<string>("crash");
   const [playing, setPlaying] = useState<boolean>(false);

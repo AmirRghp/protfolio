@@ -24,6 +24,7 @@ import { useViewport, useWindowViewport } from "./use-viewport";
 
 type DomeGalleryProps = {
   projects: DomeProject[];
+  paused?: boolean;
 };
 
 type TileRecord = {
@@ -49,7 +50,7 @@ const NEUTRAL_TILE_POSE: TilePose = {
   normR: 0,
 };
 
-export function DomeGallery({ projects }: DomeGalleryProps) {
+export function DomeGallery({ projects, paused = false }: DomeGalleryProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const worldRef = useRef<HTMLDivElement>(null);
   const tilesRef = useRef<Map<string, TileRecord>>(new Map());
@@ -250,7 +251,7 @@ export function DomeGallery({ projects }: DomeGalleryProps) {
   const { dragMovedRef, wake, nudge } = useInfiniteDrag({
     stageRef,
     focusRef,
-    paused: active !== null,
+    paused: active !== null || paused,
     enabled: !isMobileGrid,
     onStep: applyStep,
     onTouchTap: handleTouchTap,

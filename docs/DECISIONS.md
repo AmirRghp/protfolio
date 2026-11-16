@@ -234,12 +234,12 @@ This document records the foundational architecture decisions, trade-offs, and d
 ### ADR-015: In-Window GitHub Repository Viewer via Sandboxed `srcDoc` & Live API Enrichment
 - **Status:** Accepted (2026-11-11)
 - **Context:**
-  All six portfolio projects link to real GitHub repositories (`github.com/AmirRghp/*`). On the 3D virtual monitor desktop, `ProjectApp` includes a button to "Load inside this window". However, GitHub strictly enforces `X-Frame-Options: deny` and CSP `frame-ancestors: 'none'`, causing browsers to refuse loading GitHub URLs inside raw `<iframe>` tags and forcing visitors to use "Open in new tab", breaking the immersive 3D desktop experience.
+  All eight portfolio projects link to real GitHub repositories (`github.com/AmirRghp/*`). On the 3D virtual monitor desktop, `ProjectApp` includes a button to "Load inside this window". However, GitHub strictly enforces `X-Frame-Options: deny` and CSP `frame-ancestors: 'none'`, causing browsers to refuse loading GitHub URLs inside raw `<iframe>` tags and forcing visitors to use "Open in new tab", breaking the immersive 3D desktop experience.
 - **Decision:**
   1. Generate a self-contained, sandboxed `srcDoc` HTML document styled to GitHub's native dark mode (`src/data/githubRepoPreview.ts`).
   2. Embed structured repository metadata, language indicators, directory trees, one-click `git clone` command copying, and full Markdown `README.md` parsing directly in the browser sandbox.
   3. Query the CORS-enabled public GitHub REST API (`api.github.com/repos/{owner}/{repo}` and raw `README.md`) asynchronously to enrich branch names and file trees in real-time.
-  4. Cache responses in `localStorage` under `portfolio_gh_repo_preview_v1_*` with a 4-hour TTL, backed by pre-bundled static snapshots for all six projects to ensure 100% resilience during network outages or API rate-limiting (HTTP 403).
+  4. Cache responses in `localStorage` under `portfolio_gh_repo_preview_v1_*` with a 4-hour TTL, backed by pre-bundled static snapshots for all eight projects to ensure 100% resilience during network outages or API rate-limiting (HTTP 403).
   5. Provide an address-bar "Summary" button to toggle back to the project overview and an "Open in new tab" link for external navigation.
 - **Consequences:**
   - *Positive:* Completely eliminates "refused to connect" blank iframe errors; users can inspect code structure and read complete project documentation without leaving the 3D room.
@@ -276,7 +276,7 @@ This document records the foundational architecture decisions, trade-offs, and d
   2. **Elevated Wireframe Loading Animation:** The initial landing loader was an identical recreation of a reference site (`harshitr.me`). While mathematically accurate in DOM rect mapping, it lacked personal brand identity and aesthetic cohesion with Amirreza Gholipour's nocturnal cyberpunk AI engineering portfolio. The user requested elevating the wireframe animation with creative, distinctive enhancements rather than retaining a 1:1 replica of the external reference.
 - **Decision:**
   1. **Black Roller-Shutter Exit Transition (`ExitBar`):**
-     - When the visitor activates "Exit The Room" (`TactileButton`), an opaque obsidian curtain (`#000000`) rolls upward from the bottom baseline to cover the 100svh viewport with a custom cubic-bezier curve (`cubic-bezier(0.77, 0, 0.175, 1)`), smoothly occluding the WebGL canvas before mounting `FlatLanding` and handing off to the loader.
+     - When the visitor activates "Exit The Room" (`TactileButton`), an opaque obsidian curtain (`#000000`) rolls upward from the bottom baseline to cover the 100svh viewport with a custom cubic-bezier curve (`cubic-bezier(0.76, 0, 0.24, 1)`), smoothly occluding the WebGL canvas before mounting `FlatLanding` and handing off to the loader.
   2. **Nocturnal Obsidian Calibration Surface (`.plSheet`):**
      - Set the loader background to `#07080d` with an integrated micro-dot matrix ($24\text{px}$) and architectural sub-grid ($96\text{px}$) accented by a subtle cyan radial glow (`rgba(56, 189, 248, 0.055)`).
   3. **Active Downward Spatial Laser Scanner Beam (`.plScanBeam`):**
@@ -397,12 +397,12 @@ This document records the foundational architecture decisions, trade-offs, and d
 ### ADR-022: Infinite 3D Dome Grid with GSAP (`DomeGallery`) & Bespoke Nocturnal Project Artwork
 - **Status:** Accepted (2026-11-14)
 - **Context:**
-  The user requested replacing the 4-branch `WorkAccordion` in `#ld-work` with an interactive **Infinite Dome Grid with GSAP** (`DomeGallery`, adapted from `morphin.dev/components/infinite-dome-grid-with-gsap`) occupying the full `#ld-work` section over the site's transparent background, with a glassmorphic `Selected Work` pill badge anchored at the top-left of the component matching the bottom `Drag to explore...` hint pill. Each of Amirreza Gholipour's 6 real portfolio projects required bespoke, dark-themed AI-generated editorial artwork, and clicking any project card (including corner tiles) required smoothly morphing to the center, unfolding its detail panel with full project details and technology stack chips, and folding back into its exact dome slot on close.
+  The user requested replacing the 4-branch `WorkAccordion` in `#ld-work` with an interactive **Infinite Dome Grid with GSAP** (`DomeGallery`, adapted from `morphin.dev/components/infinite-dome-grid-with-gsap`) occupying the full `#ld-work` section over the site's transparent background, with a glassmorphic `Selected Work` pill badge anchored at the top-left of the component matching the bottom `Drag to explore...` hint pill. Each of Amirreza Gholipour's 8 real portfolio projects required bespoke, dark-themed AI-generated editorial artwork, and clicking any project card (including corner tiles) required smoothly morphing to the center, unfolding its detail panel with full project details and technology stack chips, and folding back into its exact dome slot on close.
 - **Decision:**
   1. **Bespoke Minimalist Smoked-Glass Project Artwork (`public/assets/projects/*.webp`):**
-     - Generated 6 ultra-minimal `#09090b` smoked-glass and brushed-metal studio renders tailored to each project's domain (`covid-image-classification.webp`, `omnidoc-rag.webp`, `omnidoc-vision.webp`, `omniops-sre-agent.webp`, `enterprise-knowledge-copilot.webp`, `laya-finetuning-pipeline.webp`) encoded as compact WebP assets (`10 KB` – `15 KB` each).
+     - Generated 8 ultra-minimal `#09090b` smoked-glass and brushed-metal studio renders tailored to each project's domain (`covid-image-classification.webp`, `omnidoc-rag.webp`, `omnidoc-vision.webp`, `omniops-sre-agent.webp`, `enterprise-knowledge-copilot.webp`, `laya-finetuning-pipeline.webp`, `video-kyc.webp`, `kanban-studio.webp`) encoded as compact WebP assets (`10 KB` – `15 KB` each).
   2. **3D Concave Paraboloid Projection, Coprime Lattice Indexing & Stable Visibility Culling (`dome.ts`, `dome-tile.tsx`, `dome-gallery.tsx`):**
-     - Implemented `getDomeLayout`, `writePose`, `screenToPlanar` (3-iteration fixed-point radial inversion), and `itemIndexAt(col, row, count) = mod(col + row * 2, count)` so every row cycles through all 6 projects without orthogonal or diagonal neighbor repetition.
+     - Implemented `getDomeLayout`, `writePose`, `screenToPlanar` (3-iteration fixed-point radial inversion), and `itemIndexAt(col, row, count) = mod(col + row * 2, count)` so every row cycles through all 8 projects without orthogonal or diagonal neighbor repetition.
      - Registered tile DOM nodes via a stable `useEffect([slot.key, registerTile])` hook in `DomeTile` and checked `rec.hidden || rec.el.style.visibility === "hidden"` in `applyStep`, preventing React state re-renders (`hasInteracted`, `active`) from resetting `TileRecord.hidden = false` while an offscreen tile's DOM node still had `visibility: hidden`.
   3. **Smooth Cursor-Leave Focus Decay & Scroll-Friendly `useInfiniteDrag` (`use-pointer-focus.ts`, `use-infinite-drag.ts`):**
      - Added a continuous `focus.strength` (`[0, 1]`) attenuation scalar to `PointerFocus` and `writePose`. On `pointerleave`, `focus.current` coordinates are preserved while `focus.strength` exponentially decays toward `0` (`FOCUS_STRENGTH_OUT_LERP = 0.065`), allowing magnified tiles to glide smoothly back into the dome curvature instead of snapping in a single frame.
@@ -434,8 +434,24 @@ This document records the foundational architecture decisions, trade-offs, and d
   3. **3D Hit-Testing & Tile Registration Guard (`DomeGallery.module.css`, `dome-gallery.tsx`):**
      - Set `.domeWorld { pointer-events: none; }`, `.tileButton { pointer-events: auto; visibility: hidden; }`, initialized newly registered tiles hidden in `registerTile`, and called `wakeBridgeRef.current()` so both concave tiles (`tz < 0`) receive clicks/taps/hover and StrictMode/resize-added rows never appear unpositioned at center.
 - **Consequences:**
-  - *Positive:* Effortless 2-to-1 card browsing, seamless inner-card morph transitions, non-scrolling mobile project modal, and unobstructed vertical scrolling on mobile (`320px` and `375px+`), reliable finger taps and scroll-safe horizontal panning on touch tablets (`768px+`), and universal side-tile click/hover hit-testing on desktop (`1440px`), verified via Vitest (`51` suites) and Playwright headless Chromium checks.
+  - *Positive:* Effortless 2-to-1 card browsing, seamless inner-card morph transitions, non-scrolling mobile project modal, and unobstructed vertical scrolling on mobile (`320px` and `375px+`), reliable finger taps and scroll-safe horizontal panning on touch tablets (`768px+`), and universal side-tile click/hover hit-testing on desktop (`1440px`), verified via Vitest and Playwright headless Chromium checks.
 
+---
 
-
-
+### ADR-024: Full-Codebase WebGL Memory Lifecycle, Render-Loop Gating & Non-Fabrication Remediation
+- **Status:** Accepted (2026-11-16)
+- **Context:**
+  A comprehensive Senior Frontend & Creative WebGL Engineer codebase audit surfaced memory lifecycle, background loop, accessibility, and documentation alignment findings:
+  1. **GLTF Cache Material Disposal Corruption:** `CompactKeyboard` and `BatmanFigure` disposed original `MeshBasicMaterial` instances on the shared `useLoader(GLTFLoader)` scene and disposed upgraded `MeshStandardMaterial` instances on unmount without restoring the originals, while `OiiaCat` mutated shared materials on its cloned scene.
+  2. **Lanyard WebGL Context Retention:** `Lanyard.tsx` disposed geometries, textures, and `renderer` on unmount without calling `renderer.forceContextLoss()`.
+  3. **Background Loops While in 3D Room:** `FlatLanding` kept `DomeGallery`'s `gsap.ticker` and `PixelTetris`'s `requestAnimationFrame` loop active even when `isOpen` was `false` or `document.hidden` was `true`.
+  4. **`<noscript>` Content Drift:** `index.html` contained outdated descriptions and URLs for `Video KYC` and `Kanban Studio` inside `<noscript>`.
+  5. **Legacy Dead Files:** Deprecated `ProjectCarousel`, `WorkAccordion`, `heroTransition`, and `sceneSnapshot` files and exports remained in `src/features/landing/`.
+- **Decision:**
+  1. Preserve original GLTF materials in a `Map` in `CompactKeyboard`, `BatmanFigure`, and `OiiaCat`, restoring them prior to disposing upgraded/cloned materials on unmount, and early-return from `CatSparkles` and `CatPartyLight` `useFrame` hooks when inactive.
+  2. Invoke `renderer.forceContextLoss()` on `Lanyard` unmount to immediately reclaim GPU resources after the entry gateway completes.
+  3. Gate `DomeGallery` (`paused={!isElementVisible}`), `PixelTetris` (`active={isElementVisible}` + `IntersectionObserver` + `document.hidden`), and `ExitBar` spring physics (`document.hidden`) so zero background ticks run when hidden.
+  4. Wrap `<LanyardIntro>` and `<RoomPreview>` with `<SceneErrorBoundary>` in `App.tsx`, share keyboard focus trapping via `src/core/utils/focusTrap.ts` (`useFocusTrap` / `trapTabKey`), and validate `event.origin` in `githubRepoPreview.ts`.
+  5. Synchronize `<noscript>` entries in `index.html` with `src/data/content.ts` and remove the deprecated `ProjectCarousel`, `WorkAccordion`, `heroTransition`, and `sceneSnapshot` modules.
+- **Consequences:**
+  - *Positive:* Eliminates remount material corruption, frees WebGL contexts deterministically, halts background CPU/GPU loops, enforces strict non-fabrication in `<noscript>`, and removes dead code.

@@ -12,6 +12,7 @@ import { MOBILE_ARCADE_GAMES, readArcadeHighScore } from "@/features/arcade/util
 import { flappyAudio } from "@/features/arcade/games/cyber-flappy/flappyAudio";
 import { tetrisAudio } from "@/features/arcade/games/cyber-tetris/tetrisAudio";
 import { pixelRunAudio } from "@/features/arcade/games/pixel-run/pixelRunAudio";
+import { trapTabKey } from "@/core/utils/focusTrap";
 import MobileGamepad from "./MobileGamepad";
 import styles from "./MobileArcadeModal.module.css";
 
@@ -55,14 +56,6 @@ function applyMasterMute(muted: boolean): void {
   }
 }
 
-function getFocusableElements(container: HTMLElement | null): HTMLElement[] {
-  if (!container) return [];
-  return Array.from(
-    container.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((el) => el.getAttribute("aria-hidden") !== "true");
-}
 
 export default function MobileArcadeModal({
   isOpen,
@@ -194,21 +187,7 @@ export default function MobileArcadeModal({
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Tab") {
-        const focusables = getFocusableElements(modalRef.current);
-        if (focusables.length === 0) return;
-        const first = focusables[0];
-        const last = focusables[focusables.length - 1];
-        const active = document.activeElement;
-
-        if (e.shiftKey) {
-          if (active === first || !modalRef.current?.contains(active)) {
-            e.preventDefault();
-            last.focus();
-          }
-        } else if (active === last || !modalRef.current?.contains(active)) {
-          e.preventDefault();
-          first.focus();
-        }
+        trapTabKey(e, modalRef.current);
         return;
       }
 

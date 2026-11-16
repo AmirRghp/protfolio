@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { LanyardIntro, getInitialIntroPhaseFromSearch, type IntroPhase } from "@/features/lanyard";
 import { RoomPreview, roomNavigationReducer, initialRoomNavigation, oiiaAudio, type RoomDestination, type RoomNavigationState } from "@/features/room";
 import { FlatLanding } from "@/features/landing";
-import { EXIT_SHUTTER_DURATION_MS, MagicCursor, useResponsiveDevice } from "@/core";
+import { EXIT_SHUTTER_DURATION_MS, MagicCursor, SceneErrorBoundary, useResponsiveDevice } from "@/core";
 
 function getInitialNavigation(): RoomNavigationState {
   if (typeof window !== "undefined") {
@@ -200,10 +200,12 @@ export default function App() {
   return (
     <>
       {!lanyardDismissed && (
-        <LanyardIntro
-          onEnter={handleLanyardEnter}
-          onDismissed={handleLanyardDismissed}
-        />
+        <SceneErrorBoundary onError={handleLanyardDismissed}>
+          <LanyardIntro
+            onEnter={handleLanyardEnter}
+            onDismissed={handleLanyardDismissed}
+          />
+        </SceneErrorBoundary>
       )}
       {showMagicCursor && <MagicCursor />}
       <div className="site-shell" data-intro-phase={introPhase} data-view-mode={activeViewMode}>
@@ -218,15 +220,17 @@ export default function App() {
               userSelect: activeViewMode === "flat" ? "none" : "auto",
             }}
           >
-            <RoomPreview
-              navigation={navigation}
-              onNavigate={handleRoomNavigate}
-              introPhase={introPhase}
-              onBuildComplete={handleBuildComplete}
-              onExitToFlat={handleExitToFlat}
-              isAway={activeViewMode === "flat" && !isReentering}
-              isReentering={isReentering}
-            />
+            <SceneErrorBoundary onError={handleExitToFlat}>
+              <RoomPreview
+                navigation={navigation}
+                onNavigate={handleRoomNavigate}
+                introPhase={introPhase}
+                onBuildComplete={handleBuildComplete}
+                onExitToFlat={handleExitToFlat}
+                isAway={activeViewMode === "flat" && !isReentering}
+                isReentering={isReentering}
+              />
+            </SceneErrorBoundary>
           </div>
         )}
         <FlatLanding

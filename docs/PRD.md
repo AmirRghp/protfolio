@@ -144,7 +144,7 @@ Deliver a memorable, production-grade portfolio that showcases Amirreza Gholipou
 
 ### 6.10. Responsive Device Engine & Mobile 3D Room Bypass (`src/core/utils/responsive.ts`)
 - **Dual-Condition Gate:** Evaluates $\text{allowRoom3D} = \text{isDesktop} \land \text{isFine} \land \neg\text{isTouch}$ via React 19 `useSyncExternalStore`.
-- **Zero-Overhead Mobile Flow:** Any touch device or viewport $< 1024\text{px}$ completely bypasses `<RoomPreview>`, freeing GPU and WebGL resources and directing users immediately to the fast, battery-efficient `FlatLanding` portfolio.
+- **Zero-Overhead Mobile Flow:** Any touch device or viewport $< 1024\text{px}$ completely bypasses `<RoomPreview>` (`RoomScene` and its 9 GLTF models), while the initial `LanyardIntro` gateway explicitly releases its WebGL context via `renderer.forceContextLoss()` upon dismissal, directing users immediately to the fast, battery-efficient `FlatLanding` portfolio.
 - **Adaptive Touch Controls:** Replaces room re-entry buttons with a glass pill "Get in Touch" navigation CTA, collapses capabilities and social links to 2 columns on $\ge 375\text{px}$ and 1 column on $< 375\text{px}$, swaps `#ld-work` to the 2-to-1 `MobileWorkGrid` below `768px`, and renders a frosted `34×34px` circular `×` close button on the top-right corner of the compact mobile `ProjectModal` image.
 
 ### 6.11. Mobile Retro Arcade Handheld Experience (`src/features/arcade/components/`)

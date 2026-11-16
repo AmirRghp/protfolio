@@ -19,6 +19,7 @@ export default function BatmanFigure() {
   const invalidate = useThree((state) => state.invalidate);
 
   useEffect(() => {
+    const originalMaterials = new Map<Mesh, MeshBasicMaterial>();
     const createdMaterials: MeshStandardMaterial[] = [];
 
     scene.traverse((object) => {
@@ -28,6 +29,7 @@ export default function BatmanFigure() {
 
         if (object.material instanceof MeshBasicMaterial) {
           const oldMat = object.material;
+          originalMaterials.set(object, oldMat);
           const upgraded = new MeshStandardMaterial({
             name: oldMat.name,
             color: oldMat.color.clone(),
@@ -38,7 +40,6 @@ export default function BatmanFigure() {
           });
           createdMaterials.push(upgraded);
           object.material = upgraded;
-          oldMat.dispose();
         } else if (object.material instanceof MeshStandardMaterial) {
           object.material.roughness = 0.45;
           object.material.metalness = 0.12;
@@ -51,6 +52,9 @@ export default function BatmanFigure() {
     invalidate();
 
     return () => {
+      originalMaterials.forEach((origMat, mesh) => {
+        mesh.material = origMat;
+      });
       for (const mat of createdMaterials) {
         mat.dispose();
       }
