@@ -59,31 +59,59 @@
 
 ## 4. Repository-Local Skills
 
-These are real copies under `.agents/skills/`, not symlinks. Open the exact local path in this table; do not assume a same-named user/plugin skill is overridden automatically. Preserve original names; select by path when duplicates appear.
+These 25 skills are verbatim copies under `.agents/skills/` (not symlinks). Open the exact local path below; do not assume a same-named user/plugin skill overrides them automatically.
 
-| Task | Primary entrypoint | Read only when needed |
+### Vendored Skills Inventory
+
+| Skill | Path | Role in This Project |
 | --- | --- | --- |
-| Context/handoffs | `.agents/skills/context-engineering/SKILL.md` | active plan and actual source |
-| Planning | `.agents/skills/planning-and-task-breakdown/SKILL.md` | `.agents/skills/writing-plans/SKILL.md` |
-| Small complete changes | `.agents/skills/ponytail/SKILL.md` | `.agents/skills/code-simplification/SKILL.md` |
-| Library/API facts | `.agents/skills/source-driven-development/SKILL.md` | `.agents/skills/context7-mcp/SKILL.md` |
-| UI implementation | `.agents/skills/frontend-ui-engineering/SKILL.md` | `.agents/skills/vercel-react-best-practices/SKILL.md` |
-| Reference fidelity | `.agents/skills/frontend-design/SKILL.md` | `.agents/skills/impeccable/SKILL.md` |
-| Interaction/motion | `.agents/skills/emil-design-eng/SKILL.md` | `.agents/skills/gsap-core/SKILL.md`, `.agents/skills/gsap-react/SKILL.md`, `.agents/skills/gsap-timeline/SKILL.md` |
-| Motion review | `.agents/skills/review-animations/SKILL.md` | `.agents/skills/gsap-performance/SKILL.md` |
-| Behavior/regressions | `.agents/skills/test-driven-development/SKILL.md` | `.agents/skills/verification-before-completion/SKILL.md` |
-| Browser verification | `.agents/skills/browser-testing-with-devtools/SKILL.md` | available browser tools; disclose unsupported capabilities |
-| Change review | `.agents/skills/code-review-and-quality/SKILL.md` | `.agents/skills/ponytail-review/SKILL.md` |
-| Durable decisions/copy | `.agents/skills/documentation-and-adrs/SKILL.md` | `.agents/skills/no-ai-slop/SKILL.md` and its `eval.md` |
-| Git | `.agents/skills/git-workflow-and-versioning/SKILL.md` | only authorized Git operations |
-| Measured performance | `.agents/skills/performance-optimization/SKILL.md` | scene profiler and measured before/after results |
-| Tactile Glass UI | `.agents/skills/tactile-glass-ui/SKILL.md` | WebGL2 refractive optical glass buttons |
+| `context-engineering` | `.agents/skills/context-engineering/SKILL.md` | Curate session context across `AGENTS.md`, `docs/`, and active feature modules without context bloat |
+| `concise-planning` | `.agents/skills/concise-planning/SKILL.md` | Turn non-trivial tasks into atomic, scope-bounded checklists with explicit verification steps |
+| `codebase-design` | `.agents/skills/codebase-design/SKILL.md` | Keep `src/core/`, `src/data/`, and `src/features/*` cleanly decoupled via deep modules and seams |
+| `react-best-practices` | `.agents/skills/react-best-practices/SKILL.md` | Optimize React 19 re-renders, transient `useRef` values, passive listeners, and dynamic imports (ignore `server-*` rules; client-only SPA) |
+| `typescript-pro` | `.agents/skills/typescript-pro/SKILL.md` | Enforce strict TypeScript 6 types, generics, and contracts across 3D math, Canvas games, and React props |
+| `frontend-design` | `.agents/skills/frontend-design/SKILL.md` | Craft distinctive UI free of generic AI tropes while adhering to `docs/DESIGN_SYSTEM.md` |
+| `better-accessibility` | `.agents/skills/better-accessibility/SKILL.md` | WCAG 2.2 AA compliance: `320px` reflow, APG keyboard/focus traps, single-pointer drag alternatives, `prefers-reduced-motion` |
+| `3d-web-experience` | `.agents/skills/3d-web-experience/SKILL.md` | Three.js / R3F scenes, GLB compression, GSAP + 3D integration, mobile DPR budgeting, and WebGL fallbacks |
+| `emil-design-eng` | `.agents/skills/emil-design-eng/SKILL.md` | Spring physics, pointer-capture drag, GPU-only transforms, Safari blur caveats, and motion review |
+| `shader-programming-glsl` | `.agents/skills/shader-programming-glsl/SKILL.md` | Vertex/fragment GLSL shaders for `GradientWaves`, `Lanyard`, and optical WebGL effects |
+| `web-games` | `.agents/skills/web-games/SKILL.md` | HTML5 Canvas game loops, hybrid DOM + Canvas handheld UI (`MobileArcadeModal`), Web Audio unlock, and teardown |
+| `tactile-glass-ui` | `.agents/skills/tactile-glass-ui/SKILL.md` | WebGL2 refractive optical glass `TactileButton` integration in `ExitBar` and `FlatLanding` |
+| `test-driven-development` | `.agents/skills/test-driven-development/SKILL.md` | Red-green-refactor workflow and regression tests for Vitest suites |
+| `browser-automation` | `.agents/skills/browser-automation/SKILL.md` | Reliable `@playwright/test` E2E checks using semantic locators and bounded waits across target viewports |
+| `browser-testing-with-devtools` | `.agents/skills/browser-testing-with-devtools/SKILL.md` | Live DOM, console, network, screenshot, and performance trace verification via `chrome-devtools-mcp` |
+| `diagnosing-bugs` | `.agents/skills/diagnosing-bugs/SKILL.md` | Tight feedback-loop root-cause debugging for WebGL, compositor, and state-machine regressions |
+| `verification-before-completion` | `.agents/skills/verification-before-completion/SKILL.md` | Require fresh command evidence (`test`, `typecheck`, `lint`, `build`) before claiming completion |
+| `clean-code-guard` | `.agents/skills/clean-code-guard/SKILL.md` | SOLID, DRY, KISS, YAGNI, and LLM-failure-mode guard pass on generated or modified code |
+| `andrej-karpathy` | `.agents/skills/andrej-karpathy/SKILL.md` | Surgical diffs, surfacing assumptions, and preventing speculative abstractions or overengineering |
+| `five-axis-code-review` | `.agents/skills/five-axis-code-review/SKILL.md` | Line-referenced diff review across correctness, security, readability, performance, and tests |
+| `security-best-practices` | `.agents/skills/security-best-practices/SKILL.md` | React/TS client security (`srcDoc` iframe sandboxing, Markdown sanitization, `postMessage` origin checks) |
+| `web-performance-optimization` | `.agents/skills/web-performance-optimization/SKILL.md` | Core Web Vitals (LCP/INP/CLS), Vite bundle splitting, caching, and media/asset optimization |
+| `git-workflow-and-versioning` | `.agents/skills/git-workflow-and-versioning/SKILL.md` | Atomic commits, safe branching, and clean diff hygiene (only when Git actions are authorized) |
+| `documentation-and-adrs` | `.agents/skills/documentation-and-adrs/SKILL.md` | Capture architectural *why* and trade-offs in `docs/DECISIONS.md` and keep `docs/` synced with code |
+| `writing-for-agents` | `.agents/skills/writing-for-agents/SKILL.md` | Keep `AGENTS.md` and technical documentation concise, high-signal, and free of filler |
 
-### Skill Usage Rules
-- Choose one primary skill and the supporting references actually needed. Load supporting references progressively. Do not invoke every skill simultaneously or duplicate planning workflows merely because a skill suggests them.
-- Copied skills provide guidance, not proof that their examples or API claims match installed library versions. Always verify version-sensitive syntax against installed package declarations in `package.json`.
-- In particular, `<dialog open>` is not a modal focus trap: use `showModal()` or an established accessible primitive and test focus behavior.
-- Context7 and browser skills require available external tools; if a tool is unavailable, use official documentation through an available read-only tool and record the fallback.
+### Task-to-Skill Decision Matrix
+
+| Task Type | Primary Skill | Supporting Skills (Load Only When Needed) |
+| --- | --- | --- |
+| **Planning** | `.agents/skills/concise-planning/SKILL.md` | `.agents/skills/codebase-design/SKILL.md`, `.agents/skills/context-engineering/SKILL.md` |
+| **Implementation (React / TS)** | `.agents/skills/react-best-practices/SKILL.md` | `.agents/skills/typescript-pro/SKILL.md`, `.agents/skills/andrej-karpathy/SKILL.md` |
+| **Implementation (UI / Motion)** | `.agents/skills/emil-design-eng/SKILL.md` | `.agents/skills/frontend-design/SKILL.md`, `.agents/skills/better-accessibility/SKILL.md`, `.agents/skills/tactile-glass-ui/SKILL.md` |
+| **Implementation (3D / Games / Shaders)** | `.agents/skills/3d-web-experience/SKILL.md` | `.agents/skills/shader-programming-glsl/SKILL.md`, `.agents/skills/web-games/SKILL.md` |
+| **Debugging** | `.agents/skills/diagnosing-bugs/SKILL.md` | `.agents/skills/browser-testing-with-devtools/SKILL.md` |
+| **Testing & Browser Checks** | `.agents/skills/test-driven-development/SKILL.md` | `.agents/skills/browser-automation/SKILL.md`, `.agents/skills/browser-testing-with-devtools/SKILL.md`, `.agents/skills/verification-before-completion/SKILL.md` |
+| **Review, Security & Perf** | `.agents/skills/five-axis-code-review/SKILL.md` | `.agents/skills/clean-code-guard/SKILL.md`, `.agents/skills/security-best-practices/SKILL.md`, `.agents/skills/web-performance-optimization/SKILL.md` |
+| **Docs & Git** | `.agents/skills/documentation-and-adrs/SKILL.md` | `.agents/skills/writing-for-agents/SKILL.md`, `.agents/skills/git-workflow-and-versioning/SKILL.md` |
+
+### Precedence, Progressive Disclosure & Guardrails
+- **Progressive Disclosure:** Read a vendored skill's `SKILL.md` (and only the specific companion files needed) *only* when executing a matching task — never preload all 25 skills on session start.
+- **Precedence Rules:**
+  1. Project rules in `AGENTS.md` and canonical specs in `docs/` always override generic skill defaults (e.g., ignore SSR/Next.js guidance in `react-best-practices`).
+  2. `better-accessibility` and `security-best-practices` override aesthetic novelty; `tactile-glass-ui` governs refractive `TactileButton` usage over generic button styling.
+  3. `andrej-karpathy` and `clean-code-guard` govern scope and surgical simplicity over speculative abstractions.
+- **Anti-Hallucination, Anti-Slop & Verification:** Inspect `docs/ARCHITECTURE.md` and `package.json` before designing or editing; never invent library APIs, metrics, or test results; avoid generic AI UI/copy tropes; run the Section 6 verification pipeline before claiming completion.
+- **Browser & Focus Discipline:** `<dialog open>` is not a modal focus trap — use `showModal()`, Radix primitives, or `src/core/utils/focusTrap.ts` and verify focus behavior. Browser skills require available tools (`@playwright/test` or `chrome-devtools-mcp`); disclose any unrun check explicitly.
 
 ---
 
